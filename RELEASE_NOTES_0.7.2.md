@@ -1,0 +1,55 @@
+# fx 0.7.2
+
+**Language package** for [ledocorp/fxlang](https://github.com/ledocorp/fxlang) · 28 July 2026  
+Docs: [ledocorp.org/fx](https://www.ledocorp.org/fx/)
+
+## Highlights
+
+Usable explicit power on top of 0.7.1: growable byte buffers, sub-slices, Map iteration, quieter grow patterns, optional Vec index reads, and a packaged queue library.
+
+| Area | What landed |
+|------|-------------|
+| **Buf / Bytes** | Region-backed `buf_*` + `Bytes` view; `import std/buf` |
+| **Sub-slices** | `a[lo..hi]` → `&[T]` (exclusive `hi`) on arrays, `Vec`, slices |
+| **Map iterate** | Dense `map_nth_key` / `map_nth_value` (+ `std/map` facades) |
+| **Grow ergonomics** | Same value-threading semantics; loop / `&mut` field patterns documented |
+| **Vec `v[i]`** | Read sugar → same emit as `vec_get`; **no** `v[i] = x` writes |
+| **Queue packaging** | `lib/ring_queue.fx` shipped; `fx new` stages it for `std/queue` |
+
+## Install
+
+```text
+# clone this repo, put bin/ on PATH
+fx doctor
+fx version                 # v0.7.2
+fx new hello && cd hello && fx run main.fx   # exit 42
+```
+
+| OS | Binary |
+|----|--------|
+| Windows x86_64 | `bin/fx.exe` |
+| Linux x86_64 | `bin/fx` |
+
+Requirements: a C toolchain (`gcc` default). macOS binaries still to follow.
+
+## Try the 0.7.2 surfaces
+
+```text
+fx run examples/showcase_072/main.fx    # Map iterate + v[i] → 42
+fx run examples/showcase_core/main.fx
+fx run examples/showcase_wrap/compute.fx --host examples/showcase_wrap/host.c
+```
+
+## Docs
+
+- Package: `docs/` in this repo  
+- Web: https://www.ledocorp.org/fx/docs/  
+- Agents: https://www.ledocorp.org/fx/llms.txt  
+
+## Honesty bounds (unchanged intent)
+
+Still not in 0.7.2: traits, closures, `Option`, generic maps beyond `string → i32`, `Vec` index **writes**, nested `Vec<Vec<T>>`, package manager, advanced fx Runtime. Stdlib stays intentionally small.
+
+## Thanks
+
+Stewarded by Shawn Londono / LedoCorp · Apache-2.0
