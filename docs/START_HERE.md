@@ -72,12 +72,15 @@ fx new firmware --scaffold embedded # small arena, no staged std
 | You want… | Look here |
 |-----------|-----------|
 | Understand the language | [LANGUAGE.md](LANGUAGE.md) |
-| Regions / effects | [REGIONS.md](REGIONS.md) |
+| Compact reference | [REFERENCE.md](REFERENCE.md) |
+| Regions / effects / ownership | [REGIONS.md](REGIONS.md) |
 | `import std/…` | [STD.md](STD.md) |
 | Commands and flags | [CLI.md](CLI.md) |
 | Call fx from C / wrap a library | [WRAP.md](WRAP.md) |
+| Project templates | [SCAFFOLDS.md](SCAFFOLDS.md) |
 | Copy-paste demos | [../examples/](../examples/) |
 | What’s in the repo | [../PACKAGE.md](../PACKAGE.md) |
+| Web docs (same content) | https://www.ledocorp.org/fx/docs/ |
 | Read compiler modules (fx) | [../compiler-source/](../compiler-source/) |
 
 ---

@@ -1,35 +1,46 @@
 # Regions and effects
 
-fx makes heap policy **readable in the program text**.
+Heap policy, mutation, and I/O stay readable in the program text.
+This is structured lifetimes, not a garbage collector, and not async/tasks.
+
+Canonical web copy: https://www.ledocorp.org/fx/docs/regions/
 
 ## Effects
 
 ```fx
-fn work() -> i32 effects { alloc, mut } {
-    // may allocate; may mutate
+fn work() -> i32 effects { alloc, mut, io } {
+    // may allocate, mutate, and perform I/O
 }
 ```
 
-- **`alloc`**: this function may perform heap allocation.  
-- **`mut`**: this function may mutate state that requires the effect.
+| Effect | Meaning |
+|--------|---------|
+| `alloc` | May allocate through heap / arena paths |
+| `mut` | May mutate (including exclusive borrows / heap state) |
+| `io` | May perform host I/O (stdout, files, …) |
 
-If a function does not need the heap, omit `alloc`. That is a feature: callers can see the cost.
+Omit effects you do not need. Absence of `alloc` is a feature callers can rely on.
 
-## Regions
+## Region kinds
 
-A **region** is a named arena lifetime:
+| Syntax | Role |
+|--------|------|
+| `region r = arena(n);` | Everyday heap arena (default scaffold) |
+| `region r = temp(n);` | Short-lived heap batch for a tighter scope |
+| `region r = scope;` | Stack borrow region · no heap allocation |
+| `region r = fx(n);` | Hierarchical fx region (advanced nesting) |
+
+### Everyday arena
 
 ```fx
 fn main() -> i32 effects { alloc, mut } {
     region r = arena(4096);
-    // use heap within r
+    // heap work associated with r
     return 0;
-} // r ends → storage associated with the region is released
+} // r ends: storage released together
 ```
 
-Think of it as a scoped pool: you choose the size, you see the scope, and you are not relying on a tracing GC to figure it out later.
-
-### With `std/vec`
+### With std/vec
 
 ```fx
 import std/vec;
@@ -45,7 +56,42 @@ fn main() -> i32 effects { alloc, mut } {
 
 This is the default **simple** scaffold from `fx new`.
 
-### Manual mode
+### Scope borrows (no heap)
+
+```fx
+fn main() -> i32 {
+    let x: i32 = 42;
+    region r = scope;
+    let p: &region r i32 = &region r x;
+    return *p;
+}
+```
+
+## Ownership and borrows
+
+| Form | Meaning |
+|------|---------|
+| `own T` | Owning value (move semantics) |
+| `&T` | Shared / read borrow |
+| `&mut T` | Exclusive mutable borrow |
+| `&region r T` | Borrow tied to region `r` |
+
+Inline `&mut` arguments are released at the statement boundary, which makes recursive “thread a cursor / parser state” patterns practical. Two live exclusive borrows of one owner are rejected.
+
+```fx
+fn bump(a: &mut Acc, v: i32) -> i32 {
+    a.total = a.total + v;
+    return a.total;
+}
+```
+
+## Effects paired with std
+
+- Growing `vec` / `map` / `strbuf` typically needs `alloc` (and often `mut`) plus an active region.
+- `std/io` file and line helpers declare `io` (and `alloc` when reading into strings).
+- Pure numeric helpers (many `std/math` functions) need no effects clause.
+
+## Manual mode
 
 The **minimal** scaffold has no region. Add one when you need heap:
 
@@ -55,12 +101,11 @@ fn main() -> i32 {
 }
 ```
 
----
-
 ## Why this shape?
 
-- **Local reasoning**: open a function and see what it is allowed to do.  
-- **Batch free**: regions free as a unit when they end.  
-- **C-friendly**: the same honesty shows up in emitted C via zspec allocators and errors.
+- **Local reasoning**: open a function and see what it may do
+- **Batch free**: regions free as a unit when they end
+- **C-friendly**: honesty shows up in emitted C via zspec allocators and errors
+- **Not async**: “structured” here means lifetimes, not spawn/join
 
-More language context: [LANGUAGE.md](LANGUAGE.md)
+More: [LANGUAGE.md](LANGUAGE.md) · [REFERENCE.md](REFERENCE.md) · [STD.md](STD.md)

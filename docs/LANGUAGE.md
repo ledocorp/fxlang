@@ -1,54 +1,126 @@
 # The fx language
 
-fx is a **systems language** designed so important decisions stay visible in source: allocation, mutation, and lifetimes are written down, not inferred by a garbage collector or buried in runtime magic.
+fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
+show up in the source, then lower to readable C on a small zspec substrate.
+Version **0.7.1** is already a full programming surface, not just “regions + vec.”
+
+Canonical web copy: https://www.ledocorp.org/fx/docs/language/
+
+## What fx is trying to be
+
+- **Explicit** · no hidden allocator, no tracing GC, no magic control flow
+- **Dual emission** · run natively *and* emit C a competent C programmer can maintain
+- **Tiered** · ownership/regions (safe) → effects → optional refinement contracts
+- **C-native** · wrap existing libraries; do not pretend C never existed
+- **Predictable for humans and agents** · mechanical style, local decisions
 
 ## Design pillars
 
 ### 1. Explicit effects
 
-Functions declare what they may do:
-
 ```fx
-fn main() -> i32 effects { alloc, mut } {
-    // may allocate and mutate
+fn main() -> i32 effects { alloc, mut, io } {
+    // may allocate, mutate, and do I/O
 }
 ```
 
-A function without `alloc` is not allowed to perform heap allocation through the normal language paths. That keeps call sites honest.
+Implemented effects: `alloc`, `mut`, `io`. Pure functions omit the clause. Callers can see cost before reading the body.
 
-### 2. Named regions (structured lifetimes)
-
-Heap work is usually scoped to a **region**: an arena with a clear end:
+### 2. Named regions
 
 ```fx
-region r = arena(4096);
-// allocations associated with r
-// when r ends, that storage is released together
+region r = arena(4096);   // heap arena
+region t = temp(1024);    // short-lived heap batch
+region s = scope;         // stack borrow region (no heap)
+region f = fx(4096);      // hierarchical fx region
 ```
 
-This is closer to “Go-style” explicit lifetimes than to a tracing GC: you see the pool, you see when it dies.
-
-→ Deeper notes: [REGIONS.md](REGIONS.md)
+Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`, all region kinds).
 
 ### 3. Dual emission
 
-fx can:
+- `fx run` / `fx build` · emit, link zspec, run or produce a binary
+- `fx emit-c` · inspect `.c` / `.h`
+- `--host` · C owns `main`; fx is the library
 
-- **Run** a program (`fx run`): emit C, link, execute.  
-- **Emit only** (`fx emit-c`): produce `.c` / `.h` for inspection or your own build.  
-- **Embed**: keep C as `main` and link fx as a library (`--host`).
+### 4. Small but real standard library
 
-Emitted C is meant to be **readable** by a competent C programmer and to use the **zspec** contracts (explicit allocators, `core_Err`, …).
+`std/` is ordinary fx you `import`. See [STD.md](STD.md) for APIs beyond `vec`.
 
-### 4. Small standard library of fx modules
+## Program structure
 
-`std/` is ordinary fx source you `import`. It is not a hidden runtime and not the C headers. Facades wrap common patterns (`vec`, `map`, `string`, …).
+- Apps: usually `fn main() -> i32` (exit code). `main` may also return `Result<i32, core_Err>`.
+- Libraries: `module name;` at the top of a `.fx` file.
+- Imports: `import std/vec;` · last path segment is the alias (`vec.push`).
+- Zspec symbols: `using core;` (for idiomatic `Err` / `core_Err`).
+- C FFI: `extern "c" { fn name(…) -> …; }` then link with `--host` / link flags.
 
-→ [STD.md](STD.md)
+## Types (0.7 surface)
 
----
+| Category | What you can use |
+|----------|------------------|
+| Integers | `i8` `i16` `i32` `i64` · `u8` `u16` `u32` `u64` |
+| Floats | `f32` `f64` (unsuffixed float literals default to `f64`; use `1.5f32`) |
+| Other scalars | `bool` · `string` · `void` · `core_Err` |
+| Aggregates | `struct` · `enum` (unit + payload variants) |
+| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `StrBuilder` · `Map<string, i32>` |
+| Errors | `Result<T, E>` (usually `core_Err`) |
+| Ownership | `own T` · `&T` · `&mut T` · `&region r T` |
+| Generics | Functions and structs (`fn new<T>(…)`, `Box<T>`, `Pair<A,B>`) · no traits |
 
-## Your first programs
+Numeric rule of thumb: same-family ops only; `i32↔i64` and `f32↔f64` can widen; **no** implicit signed↔unsigned or int↔float. Use postfix cast: `x as u32`.
+
+## Control flow and data
+
+- `if` / `else`, `while`, C-style `for`, `break` / `continue`
+- Exhaustive `match` on enums (including payload variants)
+- `defer stmt;` for LIFO cleanup on scope exit
+- Struct literals `P { a: 1 }`, field access, array index `a[i]`, slice read `s[i]`
+
+```fx
+enum Tok { Num(i32), End }
+
+fn value(t: Tok) -> i32 {
+    return match t {
+        Num(n) => n,
+        End => 0,
+    };
+}
+```
+
+## Errors: Result and ?
+
+```fx
+using core;
+
+fn parse_positive(n: i32) -> Result<i32, core_Err> {
+    if (n <= 0) {
+        return Err(CORE_ERR_INVALID_ARG);
+    }
+    return Ok(n);
+}
+
+fn main() -> Result<i32, core_Err> {
+    let v = parse_positive(10)?;
+    return Ok(v);
+}
+```
+
+There is no `Option`: use `Result`. Map lookup misses are errors and compose with `?`.
+
+## Value-threading (important idiom)
+
+Growing collections return an updated handle. **Reassign** the result (same pattern for `vec`, `map`, `strbuf`):
+
+```fx
+v = vec_push(v, 40);
+m = map_insert(m, "width", 30);
+b = strbuf_push(b, "hello");
+```
+
+Prefer `vec_get(v, i)` for element access. There is no operator indexing on `Vec` (`v[i]` is for arrays/slices only).
+
+## First programs
 
 ### Minimal
 
@@ -58,9 +130,9 @@ fn main() -> i32 {
 }
 ```
 
-Create with: `fx new tiny --scaffold minimal`
+`fx new tiny --scaffold minimal`
 
-### Recommended (visible heap)
+### Recommended (visible heap + std/vec)
 
 ```fx
 import std/vec;
@@ -74,40 +146,41 @@ fn main() -> i32 effects { alloc, mut } {
 }
 ```
 
-Create with: `fx new hello` (default **simple** scaffold)
+`fx new hello` (default **simple** scaffold)
+
+### Arrays and slices
+
+```fx
+fn sum(s: &[i32]) -> i32 {
+    let mut acc: i32 = 0;
+    for (let i: i32 = 0; i < s.len; i = i + 1) {
+        acc = acc + s[i];
+    }
+    return acc;
+}
+
+fn main() -> i32 {
+    let table: [i32; 3] = [10, 20, 12];
+    let view: &[i32] = &table;
+    return sum(view);  // 42
+}
+```
 
 ### Working with C
-
-fx can own library functions while C owns `main`:
 
 ```text
 fx run examples/showcase_wrap/compute.fx --host examples/showcase_wrap/host.c
 ```
 
-→ [WRAP.md](WRAP.md)
+See [WRAP.md](WRAP.md) for `extern "c"` and linking.
 
----
+## What not to expect (yet)
 
-## Types and surface (this release)
+- Traits / interfaces / closures / iterators
+- `Option<T>` (use `Result`)
+- Generic `Map` beyond `Map<string, i32>`; map iteration API
+- Mutable slices or subrange slicing `a[lo..hi]`
+- Package manager / large application ecosystem
+- Direct Rust/Go/Zig FFI (C ABI only; others speak C)
 
-This release emphasizes:
-
-- Integer types used in everyday code (`i32`, and wider/narrower as supported)  
-- `Vec` and other collection footholds via `std/` or builtins  
-- Structs, enums, and `bool` where the compiler supports them  
-- Modules via `import` paths (`std/vec`, project-local modules)
-
-The language will keep growing; this package documents **what you can use today** from this tree.
-
----
-
-## Next reading
-
-| Doc | Contents |
-|-----|----------|
-| [START_HERE.md](START_HERE.md) | Install and hello |
-| [SCAFFOLDS.md](SCAFFOLDS.md) | Project templates |
-| [CLI.md](CLI.md) | Commands and flags |
-| [REGIONS.md](REGIONS.md) | Memory model |
-| [STD.md](STD.md) | Standard library map |
-| [WRAP.md](WRAP.md) | C host embed |
+Compact lookup: [REFERENCE.md](REFERENCE.md) · [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [CLI.md](CLI.md)

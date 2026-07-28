@@ -130,13 +130,18 @@ fx run examples/showcase_wrap/compute.fx --host examples/showcase_wrap/host.c
 
 ## Language guides
 
+Also on the web: https://www.ledocorp.org/fx/docs/
+
 | Doc | Topic |
 |-----|--------|
-| [docs/LANGUAGE.md](docs/LANGUAGE.md) | What fx is, first programs |
-| [docs/REGIONS.md](docs/REGIONS.md) | Effects and named regions |
+| [docs/LANGUAGE.md](docs/LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
+| [docs/REFERENCE.md](docs/REFERENCE.md) | Compact 0.7 surface reference |
+| [docs/REGIONS.md](docs/REGIONS.md) | Effects, region kinds, ownership / borrows |
+| [docs/STD.md](docs/STD.md) | Standard library map and APIs |
+| [docs/WRAP.md](docs/WRAP.md) | C host / `extern "c"` |
 | [docs/SCAFFOLDS.md](docs/SCAFFOLDS.md) | Project templates |
-| [docs/STD.md](docs/STD.md) | Standard library |
 | [docs/CLI.md](docs/CLI.md) | Full command surface (incl. `fx doctor` / `fx lsp` / `fx mcp`) |
+| [docs/START_HERE.md](docs/START_HERE.md) | Install and hello |
 
 ---
 
@@ -165,6 +170,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release note
 
-**0.7.1** is a usable language package: compiler, scaffolds, std foothold, Windows/Linux binaries, C wrap path, `fx doctor`, and inspectable `compiler-source/`. The standard library is still small; macOS binaries and deeper docs will follow.
+**0.7.1** is a usable language package: compiler, scaffolds, std foothold, Windows/Linux binaries, C wrap path, `fx doctor`, expanded language docs (aligned with ledocorp.org), and inspectable `compiler-source/`. The standard library is still small; macOS binaries will follow.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**
