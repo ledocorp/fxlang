@@ -22,6 +22,8 @@ enum Expr {
     CallExpr(i32, i32, i32, i32, i32, i32, i32),
     StructLit(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32),
     TryExpr(i32),
+    Index(i32, i32),
+    SliceRange(i32, i32, i32),
 }
 
 enum Stmt {
@@ -63,5 +65,7 @@ fn tag(e: Expr) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 14,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 15,
         TryExpr(_) => 16,
+        Index(_, _) => 17,
+        SliceRange(_, _, _) => 18,
     };
 }

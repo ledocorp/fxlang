@@ -513,6 +513,45 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, "fx_Map_string_i32") != 1) {
         return Ok(596);
     }
+    if (str_contains(c_src, "fx_sh_parse_map_nth_key") != 1) {
+        return Ok(606);
+    }
+    if (str_contains(c_src, "fx_sh_parse_map_nth_value") != 1) {
+        return Ok(607);
+    }
+    if (str_contains(c_src, "map_nth_key") != 1) {
+        return Ok(608);
+    }
+    if (str_contains(c_src, "apply_index_postfix") != 1) {
+        return Ok(609);
+    }
+    if (str_contains(c_src, "expr_index_base_idx") != 1) {
+        return Ok(610);
+    }
+    if (str_contains(c_src, ".data[") != 1) {
+        return Ok(611);
+    }
+    if (str_contains(c_src, "SliceRange") != 1) {
+        return Ok(612);
+    }
+    if (str_contains(c_src, "expr_slice_lo_idx") != 1) {
+        return Ok(613);
+    }
+    if (str_contains(c_src, "fx_Slice_i32") != 1) {
+        return Ok(614);
+    }
+    if (str_contains(c_src, "fx_Buf") != 1) {
+        return Ok(615);
+    }
+    if (str_contains(c_src, "fx_Bytes") != 1) {
+        return Ok(616);
+    }
+    if (str_contains(c_src, "fx_sh_parse_buf_new") != 1) {
+        return Ok(617);
+    }
+    if (str_contains(c_src, "buf_finish") != 1) {
+        return Ok(618);
+    }
     if (str_contains(c_src, "fx_sh_parse_type_span_is_map") != 1) {
         return Ok(597);
     }

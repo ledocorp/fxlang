@@ -24,3 +24,11 @@ fn contains(m: Map<string, i32>, key: string) -> bool {
 fn len(m: Map<string, i32>) -> i32 {
     return map_len(m);
 }
+
+fn nth_key(m: Map<string, i32>, i: i32) -> string {
+    return map_nth_key(m, i);
+}
+
+fn nth_value(m: Map<string, i32>, i: i32) -> i32 {
+    return map_nth_value(m, i);
+}

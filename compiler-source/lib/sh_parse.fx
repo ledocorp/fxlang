@@ -796,6 +796,8 @@ fn unpack_match_body(nodes: Vec<Expr>, bodies_start: i32, arm_i: i32, arm_count:
         CallExpr(_, _, _, _, _, _, _) => -1,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
+        Index(_, _) => -1,
+        SliceRange(_, _, _) => -1,
     };
 }
 
@@ -962,6 +964,50 @@ fn parse_struct_lit_fields_rest(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>,
 }
 
 fn parse_factor(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, nodes: Vec<Expr>) -> Result<ParseOut, core_Err> effects { alloc, mut } {
+    let primary: ParseOut = parse_factor_atom(kinds, vals, lens, pos, nodes)?;
+    return apply_index_postfix(kinds, vals, lens, pos, primary);
+}
+
+// FX-SH-NAT-3/4 - postfix `base[index]` or `base[lo..hi]` (DotDot kind 46).
+fn apply_index_postfix(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, primary: ParseOut) -> Result<ParseOut, core_Err> effects { alloc, mut } {
+    let n: i32 = kinds.len;
+    let cur_idx: i32 = primary.idx;
+    let cur_nodes: Vec<Expr> = primary.nodes;
+    if (*pos >= n) {
+        return Ok(ParseOut { idx: cur_idx, nodes: cur_nodes });
+    }
+    if (vec_get(kinds, *pos) != 44) {
+        return Ok(ParseOut { idx: cur_idx, nodes: cur_nodes });
+    }
+    *pos = *pos + 1;
+    let first: ParseOut = parse_expr(kinds, vals, lens, pos, cur_nodes)?;
+    if (*pos >= n) {
+        return Err(1);
+    }
+    if (vec_get(kinds, *pos) == 46) {
+        *pos = *pos + 1;
+        let hi: ParseOut = parse_expr(kinds, vals, lens, pos, first.nodes)?;
+        if (*pos >= n) {
+            return Err(1);
+        }
+        if (vec_get(kinds, *pos) != 45) {
+            return Err(1);
+        }
+        *pos = *pos + 1;
+        let new_idx: i32 = hi.nodes.len;
+        let nodes2: Vec<Expr> = vec_push(hi.nodes, SliceRange(cur_idx, first.idx, hi.idx));
+        return apply_index_postfix(kinds, vals, lens, pos, ParseOut { idx: new_idx, nodes: nodes2 });
+    }
+    if (vec_get(kinds, *pos) != 45) {
+        return Err(1);
+    }
+    *pos = *pos + 1;
+    let new_idx: i32 = first.nodes.len;
+    let nodes2: Vec<Expr> = vec_push(first.nodes, Index(cur_idx, first.idx));
+    return apply_index_postfix(kinds, vals, lens, pos, ParseOut { idx: new_idx, nodes: nodes2 });
+}
+
+fn parse_factor_atom(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, nodes: Vec<Expr>) -> Result<ParseOut, core_Err> effects { alloc, mut } {
     let n: i32 = kinds.len;
     if (*pos >= n) {
         return Err(1);
@@ -1713,6 +1759,13 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
         let b3: StrBuilder = strbuf_push(b2, "_StrBuilder");
         return Ok(strbuf_finish(b3));
     }
+    // FX-SH-NAT-5 - Buf / Bytes are monomorphic global C types (foundry parity).
+    if (sh_lexer.slice_eq(src, off, ln, "Buf") == 1) {
+        return Ok("fx_Buf");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "Bytes") == 1) {
+        return Ok("fx_Bytes");
+    }
     if (string.len(mod_slug) == 0) {
         return Err(1);
     }
@@ -2130,6 +2183,8 @@ fn eval_expr(nodes: Vec<Expr>, idx: i32) -> i32 {
         },
         StructLit(_, _, count, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => eval_struct_lit_sum(nodes, count, f0, f1, f2, f3, f4, f5, f6, f7, f8),
         TryExpr(inner) => eval_expr(nodes, inner),
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2157,6 +2212,8 @@ fn is_num(nodes: Vec<Expr>, idx: i32, want: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2179,6 +2236,8 @@ fn is_strlit(nodes: Vec<Expr>, idx: i32, src: string, want: string) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2206,6 +2265,8 @@ fn is_add_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2233,6 +2294,8 @@ fn is_sub_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2260,6 +2323,8 @@ fn is_mul_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2287,6 +2352,8 @@ fn is_div_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2314,6 +2381,8 @@ fn is_cmp_lt_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: str
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2343,6 +2412,8 @@ fn is_add(nodes: Vec<Expr>, idx: i32, l: i32, r: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2372,6 +2443,8 @@ fn is_match(nodes: Vec<Expr>, idx: i32, scr: i32, arms: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2401,6 +2474,8 @@ fn is_cmp_lt(nodes: Vec<Expr>, idx: i32, l: i32, r: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2423,6 +2498,8 @@ fn is_ident(nodes: Vec<Expr>, idx: i32, src: string, name: string) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2453,6 +2530,8 @@ fn expr_is_call2_nums(nodes: Vec<Expr>, idx: i32, src: string, callee: string, n
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2551,6 +2630,8 @@ fn ident_is_field_access(nodes: Vec<Expr>, idx: i32, src: string, base: string, 
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2578,6 +2659,8 @@ fn is_add_field_accesses(nodes: Vec<Expr>, idx: i32, src: string, base: string, 
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2605,6 +2688,8 @@ fn is_add_cross_field_accesses(nodes: Vec<Expr>, idx: i32, src: string, lbase: s
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2817,6 +2902,8 @@ fn struct_lit_count(nodes: Vec<Expr>, lit_idx: i32) -> i32 {
         Match(_, _, _) => 0,
         CallExpr(_, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -2892,6 +2979,8 @@ fn struct_lit_field_idx(nodes: Vec<Expr>, lit_idx: i32, field_i: i32) -> i32 {
         Match(_, _, _) => -1,
         CallExpr(_, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
+        Index(_, _) => -1,
+        SliceRange(_, _, _) => -1,
     };
 }
 
@@ -2968,6 +3057,8 @@ fn expr_is_call1_struct_lit(nodes: Vec<Expr>, idx: i32, src: string, callee: str
                 Match(_, _, _) => 0,
                 CallExpr(_, _, _, _, _, _, _) => 0,
                 TryExpr(_) => 0,
+                Index(_, _) => 0,
+                SliceRange(_, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -2985,6 +3076,8 @@ fn expr_is_call1_struct_lit(nodes: Vec<Expr>, idx: i32, src: string, callee: str
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -3762,6 +3855,8 @@ fn expr_is_try_call1_ident(nodes: Vec<Expr>, idx: i32, src: string, callee: stri
     let node: Expr = vec_get(nodes, idx);
     return match node {
         TryExpr(inner) => expr_is_call1_ident(nodes, inner, src, callee, arg),
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
         Num(_) => 0,
         StrLit(_, _) => 0,
         Ident(_, _) => 0,
@@ -3777,6 +3872,8 @@ fn expr_is_try_call1_ident(nodes: Vec<Expr>, idx: i32, src: string, callee: stri
         Match(_, _, _) => 0,
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5525,6 +5622,8 @@ fn expr_is_call1_strlit(nodes: Vec<Expr>, idx: i32, src: string, callee: string,
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5602,6 +5701,8 @@ fn expr_is_ok_struct_lit_nums(nodes: Vec<Expr>, idx: i32, src: string, st_name: 
                 Match(_, _, _) => 0,
                 CallExpr(_, _, _, _, _, _, _) => 0,
                 TryExpr(_) => 0,
+                Index(_, _) => 0,
+                SliceRange(_, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -5619,6 +5720,8 @@ fn expr_is_ok_struct_lit_nums(nodes: Vec<Expr>, idx: i32, src: string, st_name: 
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5671,6 +5774,8 @@ fn expr_is_try_call0(nodes: Vec<Expr>, idx: i32, src: string, callee: string) ->
                 Match(_, _, _) => 0,
                 StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
                 TryExpr(_) => 0,
+                Index(_, _) => 0,
+                SliceRange(_, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -5688,6 +5793,8 @@ fn expr_is_try_call0(nodes: Vec<Expr>, idx: i32, src: string, callee: string) ->
         Match(_, _, _) => 0,
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5716,6 +5823,8 @@ fn expr_is_try_call1_num(nodes: Vec<Expr>, idx: i32, src: string, callee: string
     let node: Expr = vec_get(nodes, idx);
     return match node {
         TryExpr(inner) => expr_is_call1_num(nodes, inner, src, callee, lit),
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
         Num(_) => 0,
         StrLit(_, _) => 0,
         Ident(_, _) => 0,
@@ -5731,6 +5840,8 @@ fn expr_is_try_call1_num(nodes: Vec<Expr>, idx: i32, src: string, callee: string
         Match(_, _, _) => 0,
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5853,6 +5964,8 @@ fn expr_is_call1_ident(nodes: Vec<Expr>, idx: i32, src: string, callee: string, 
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5907,6 +6020,8 @@ fn expr_match_arm_count(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => -1,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
+        Index(_, _) => -1,
+        SliceRange(_, _, _) => -1,
     };
 }
 
@@ -5929,6 +6044,8 @@ fn expr_match_scrutinee_is_ident(nodes: Vec<Expr>, idx: i32, src: string, name: 
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -5951,6 +6068,8 @@ fn expr_match_scrutinee_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => -1,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
+        Index(_, _) => -1,
+        SliceRange(_, _, _) => -1,
     };
 }
 
@@ -5981,6 +6100,8 @@ fn expr_is_call2_ident_num(nodes: Vec<Expr>, idx: i32, src: string, callee: stri
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -6011,6 +6132,8 @@ fn expr_is_call2_call1_ident_num(nodes: Vec<Expr>, idx: i32, src: string, outer:
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -6573,6 +6696,8 @@ fn match_arm_body_idx(nodes: Vec<Expr>, match_idx: i32, arm_i: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => -1,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
+        Index(_, _) => -1,
+        SliceRange(_, _, _) => -1,
     };
 }
 
@@ -6859,6 +6984,8 @@ fn expr_call_arg0_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -6881,6 +7008,8 @@ fn expr_call_arg1_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -6903,6 +7032,8 @@ fn expr_call_arg2_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -6925,6 +7056,8 @@ fn expr_call_arg3_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -6947,6 +7080,8 @@ fn expr_call_arg4_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -6974,6 +7109,8 @@ fn expr_call1_arg_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -7562,6 +7699,8 @@ fn expr_call_callee_is(nodes: Vec<Expr>, idx: i32, src: string, callee: string) 
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -7592,6 +7731,8 @@ fn expr_is_call1_num(nodes: Vec<Expr>, idx: i32, src: string, callee: string, li
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -7625,6 +7766,8 @@ fn expr_is_payload_ctor2_num(nodes: Vec<Expr>, idx: i32, src: string, variant: s
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -7680,6 +7823,8 @@ fn expr_is_payload_ctor_strlit(nodes: Vec<Expr>, idx: i32, src: string, variant:
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -8779,6 +8924,48 @@ fn expr_ok_return_ident_name(nodes: Vec<Expr>, idx: i32, src: string) -> Result<
     return sh_lexer.slice_str(src, off, ln);
 }
 
+// FX-SH-NAT-2 - call shape `fx_{mod}_map_nth_key/value(m, i)` (foundry parity).
+fn emit_map_nth_call_c(mod_slug: string, suffix: string, map_c: string, idx_c: string) -> Result<string, core_Err> effects { alloc, mut } {
+    let b0: StrBuilder = strbuf_new();
+    let b1: StrBuilder = strbuf_push(b0, "fx_");
+    let b2: StrBuilder = strbuf_push(b1, mod_slug);
+    let b3: StrBuilder = strbuf_push(b2, "_");
+    let b4: StrBuilder = strbuf_push(b3, suffix);
+    let b5: StrBuilder = strbuf_push(b4, "(");
+    let b6: StrBuilder = strbuf_push(b5, map_c);
+    let b7: StrBuilder = strbuf_push(b6, ", ");
+    let b8: StrBuilder = strbuf_push(b7, idx_c);
+    let b9: StrBuilder = strbuf_push(b8, ")");
+    return Ok(strbuf_finish(b9));
+}
+
+// FX-SH-NAT-2 - dense nth walk helpers (foundry map_helpers.c.in shape; mod_slug = sh_parse for fn-def preamble).
+fn emit_map_nth_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
+    let b0: StrBuilder = strbuf_new();
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-2 - map_nth_* helpers */\nstatic inline const char* fx_");
+    let b2: StrBuilder = strbuf_push(b1, mod_slug);
+    let b3: StrBuilder = strbuf_push(b2, "_map_nth_key(fx_Map_string_i32 map, int32_t n) {\n    if (n < 0 || map.keys == NULL || map.cap == 0) { return \"\"; }\n    int32_t seen = 0;\n    for (size_t i = 0; i < map.cap; i++) {\n        if (map.keys[i] != NULL) {\n            if (seen == n) { return map.keys[i]; }\n            seen = seen + 1;\n        }\n    }\n    return \"\";\n}\n\nstatic inline int32_t fx_");
+    let b4: StrBuilder = strbuf_push(b3, mod_slug);
+    let b5: StrBuilder = strbuf_push(b4, "_map_nth_value(fx_Map_string_i32 map, int32_t n) {\n    if (n < 0 || map.keys == NULL || map.cap == 0) { return 0; }\n    int32_t seen = 0;\n    for (size_t i = 0; i < map.cap; i++) {\n        if (map.keys[i] != NULL) {\n            if (seen == n) { return map.vals[i]; }\n            seen = seen + 1;\n        }\n    }\n    return 0;\n}\n");
+    return Ok(strbuf_finish(b5));
+}
+
+// FX-SH-NAT-5 - Buf / Bytes typedefs (foundry emit_c uses_buf_bytes shape).
+fn emit_buf_bytes_typedefs_c() -> Result<string, core_Err> effects { alloc, mut } {
+    return Ok("\n/* FX-SH-NAT-5 - Buf / Bytes */\ntypedef struct {\n    uint8_t* data;\n    size_t len;\n    size_t cap;\n} fx_Buf;\n\ntypedef struct {\n    const uint8_t* data;\n    size_t len;\n} fx_Bytes;\n");
+}
+
+// FX-SH-NAT-5 - buf_new / buf_push helpers (foundry buf_helpers.c.in).
+fn emit_buf_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
+    let b0: StrBuilder = strbuf_new();
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-5 - buf_* helpers */\nstatic fx_Buf fx_");
+    let b2: StrBuilder = strbuf_push(b1, mod_slug);
+    let b3: StrBuilder = strbuf_push(b2, "_buf_new(core_Allocator* a) {\n    size_t cap = 16;\n    uint8_t* data = (uint8_t*)core_mem_alloc(a, cap);\n    return (fx_Buf){ .data = data, .len = 0, .cap = cap };\n}\n\nstatic fx_Buf fx_");
+    let b4: StrBuilder = strbuf_push(b3, mod_slug);
+    let b5: StrBuilder = strbuf_push(b4, "_buf_push(core_Allocator* a, fx_Buf b, uint8_t x) {\n    size_t need = b.len + 1;\n    if (need < b.len) { return b; }\n    if (need > b.cap) {\n        size_t ncap = b.cap ? b.cap : 1;\n        while (ncap < need) { ncap = ncap * 2; }\n        uint8_t* nd = (uint8_t*)core_mem_alloc(a, ncap);\n        if (nd == NULL) { return b; }\n        if (b.data != NULL && b.len > 0) { memcpy(nd, b.data, b.len); }\n        b.data = nd;\n        b.cap = ncap;\n    }\n    if (b.data != NULL) { b.data[b.len] = x; }\n    b.len = b.len + 1;\n    return b;\n}\n");
+    return Ok(strbuf_finish(b5));
+}
+
 fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let coff: i32 = expr_call2_callee_off(nodes, idx);
     let cln: i32 = expr_call2_callee_ln(nodes, idx);
@@ -8793,6 +8980,98 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b3: StrBuilder = strbuf_push(b2, ix);
         let b4: StrBuilder = strbuf_push(b3, "]");
         return Ok(strbuf_finish(b4));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "map_nth_key") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let map: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        return emit_map_nth_call_c(mod_slug, "map_nth_key", map, ix);
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "map_nth_value") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let map: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        return emit_map_nth_call_c(mod_slug, "map_nth_value", map, ix);
+    }
+    // FX-SH-NAT-5 - Buf / Bytes builtins (foundry emit_c_helpers shape).
+    if (sh_lexer.slice_eq(src, coff, cln, "buf_new") == 1) {
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "fx_");
+        let b2: StrBuilder = strbuf_push(b1, mod_slug);
+        let b3: StrBuilder = strbuf_push(b2, "_buf_new(core_default_allocator())");
+        return Ok(strbuf_finish(b3));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "buf_push") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let buf: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let x: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "fx_");
+        let b2: StrBuilder = strbuf_push(b1, mod_slug);
+        let b3: StrBuilder = strbuf_push(b2, "_buf_push(core_default_allocator(), ");
+        let b4: StrBuilder = strbuf_push(b3, buf);
+        let b5: StrBuilder = strbuf_push(b4, ", (uint8_t)(");
+        let b6: StrBuilder = strbuf_push(b5, x);
+        let b7: StrBuilder = strbuf_push(b6, "))");
+        return Ok(strbuf_finish(b7));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "buf_len") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let buf: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((int32_t)(");
+        let b2: StrBuilder = strbuf_push(b1, buf);
+        let b3: StrBuilder = strbuf_push(b2, ").len)");
+        return Ok(strbuf_finish(b3));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "buf_get") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let buf: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((uint8_t)(");
+        let b2: StrBuilder = strbuf_push(b1, buf);
+        let b3: StrBuilder = strbuf_push(b2, ").data[(size_t)(");
+        let b4: StrBuilder = strbuf_push(b3, ix);
+        let b5: StrBuilder = strbuf_push(b4, ")])");
+        return Ok(strbuf_finish(b5));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "buf_finish") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let buf: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((fx_Bytes){ .data = (const uint8_t*)(");
+        let b2: StrBuilder = strbuf_push(b1, buf);
+        let b3: StrBuilder = strbuf_push(b2, ").data, .len = (");
+        let b4: StrBuilder = strbuf_push(b3, buf);
+        let b5: StrBuilder = strbuf_push(b4, ").len })");
+        return Ok(strbuf_finish(b5));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "bytes_len") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let bs: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((int32_t)(");
+        let b2: StrBuilder = strbuf_push(b1, bs);
+        let b3: StrBuilder = strbuf_push(b2, ").len)");
+        return Ok(strbuf_finish(b3));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "bytes_get") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let bs: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((uint8_t)(");
+        let b2: StrBuilder = strbuf_push(b1, bs);
+        let b3: StrBuilder = strbuf_push(b2, ").data[(size_t)(");
+        let b4: StrBuilder = strbuf_push(b3, ix);
+        let b5: StrBuilder = strbuf_push(b4, ")])");
+        return Ok(strbuf_finish(b5));
     }
     if (sh_lexer.slice_eq(src, coff, cln, "vec_push") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
@@ -9310,6 +9589,39 @@ fn emit_parser_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
         let b2: StrBuilder = strbuf_push(b1, e);
         let b3: StrBuilder = strbuf_push(b2, ")");
         return Ok(strbuf_finish(b3));
+    }
+    // FX-SH-NAT-3 - Vec/array index sugar → `.data[i]` (same as vec_get).
+    if (tag == 17) {
+        let base_i: i32 = expr_index_base_idx(nodes, idx);
+        let ix_i: i32 = expr_index_ix_idx(nodes, idx);
+        let base: string = emit_parser_expr_c(mod_slug, src, nodes, base_i)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, ix_i)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, base);
+        let b2: StrBuilder = strbuf_push(b1, ".data[");
+        let b3: StrBuilder = strbuf_push(b2, ix);
+        let b4: StrBuilder = strbuf_push(b3, "]");
+        return Ok(strbuf_finish(b4));
+    }
+    // FX-SH-NAT-4 - `a[lo..hi]` → fx_Slice_i32 view (foundry ok_subslice shape).
+    if (tag == 18) {
+        let base_i: i32 = expr_slice_base_idx(nodes, idx);
+        let lo_i: i32 = expr_slice_lo_idx(nodes, idx);
+        let hi_i: i32 = expr_slice_hi_idx(nodes, idx);
+        let base: string = emit_parser_expr_c(mod_slug, src, nodes, base_i)?;
+        let lo: string = emit_parser_expr_c(mod_slug, src, nodes, lo_i)?;
+        let hi: string = emit_parser_expr_c(mod_slug, src, nodes, hi_i)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "(fx_Slice_i32){ .data = (");
+        let b2: StrBuilder = strbuf_push(b1, base);
+        let b3: StrBuilder = strbuf_push(b2, ").data + (size_t)(");
+        let b4: StrBuilder = strbuf_push(b3, lo);
+        let b5: StrBuilder = strbuf_push(b4, "), .len = (size_t)((");
+        let b6: StrBuilder = strbuf_push(b5, hi);
+        let b7: StrBuilder = strbuf_push(b6, ") - (");
+        let b8: StrBuilder = strbuf_push(b7, lo);
+        let b9: StrBuilder = strbuf_push(b8, ")) }");
+        return Ok(strbuf_finish(b9));
     }
     return Err(1);
 }
@@ -9929,6 +10241,8 @@ fn expr_try_inner_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
     let node: Expr = vec_get(nodes, idx);
     return match node {
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
         Num(_) => idx,
         StrLit(_, _) => idx,
         Ident(_, _) => idx,
@@ -9966,6 +10280,8 @@ fn expr_deref_inner_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => idx,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => idx,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10237,6 +10553,8 @@ fn call2_num_at(nodes: Vec<Expr>, call_idx: i32, which: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(_, _, c, f0, f1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => c + f0 + f1,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10280,6 +10598,8 @@ fn expr_ident_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10307,6 +10627,8 @@ fn expr_ident_ln(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10404,6 +10726,8 @@ fn expr_add_operand_idx(nodes: Vec<Expr>, idx: i32, which: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10449,6 +10773,8 @@ fn expr_call2_callee_off(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10476,6 +10802,8 @@ fn expr_call2_callee_ln(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Match(scr, arms, _) => scr + arms,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10649,6 +10977,8 @@ fn expr_strlit_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10676,6 +11006,8 @@ fn expr_strlit_ln(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10831,6 +11163,128 @@ fn expr_ty_tag(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 10,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 11,
         TryExpr(_) => 12,
+        Index(_, _) => 17,
+        SliceRange(_, _, _) => 18,
+    };
+}
+
+fn expr_index_base_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
+    let node: Expr = vec_get(nodes, idx);
+    return match node {
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
+        Num(_) => -1,
+        StrLit(_, _) => -1,
+        Ident(_, _) => -1,
+        Add(_, _) => -1,
+        Sub(_, _) => -1,
+        Mul(_, _) => -1,
+        Div(_, _) => -1,
+        CmpLt(_, _) => -1,
+        CmpNe(_, _) => -1,
+        CmpEq(_, _) => -1,
+        CmpGe(_, _) => -1,
+        Deref(_) => -1,
+        Match(_, _, _) => -1,
+        CallExpr(_, _, _, _, _, _, _) => -1,
+        StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+        TryExpr(_) => -1,
+    };
+}
+
+fn expr_index_ix_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
+    let node: Expr = vec_get(nodes, idx);
+    return match node {
+        Index(_, ix) => ix,
+        SliceRange(_, _, _) => -1,
+        Num(_) => -1,
+        StrLit(_, _) => -1,
+        Ident(_, _) => -1,
+        Add(_, _) => -1,
+        Sub(_, _) => -1,
+        Mul(_, _) => -1,
+        Div(_, _) => -1,
+        CmpLt(_, _) => -1,
+        CmpNe(_, _) => -1,
+        CmpEq(_, _) => -1,
+        CmpGe(_, _) => -1,
+        Deref(_) => -1,
+        Match(_, _, _) => -1,
+        CallExpr(_, _, _, _, _, _, _) => -1,
+        StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+        TryExpr(_) => -1,
+    };
+}
+
+fn expr_slice_base_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
+    let node: Expr = vec_get(nodes, idx);
+    return match node {
+        SliceRange(base, _, _) => base,
+        Index(_, _) => -1,
+        Num(_) => -1,
+        StrLit(_, _) => -1,
+        Ident(_, _) => -1,
+        Add(_, _) => -1,
+        Sub(_, _) => -1,
+        Mul(_, _) => -1,
+        Div(_, _) => -1,
+        CmpLt(_, _) => -1,
+        CmpNe(_, _) => -1,
+        CmpEq(_, _) => -1,
+        CmpGe(_, _) => -1,
+        Deref(_) => -1,
+        Match(_, _, _) => -1,
+        CallExpr(_, _, _, _, _, _, _) => -1,
+        StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+        TryExpr(_) => -1,
+    };
+}
+
+fn expr_slice_lo_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
+    let node: Expr = vec_get(nodes, idx);
+    return match node {
+        SliceRange(_, lo, _) => lo,
+        Index(_, _) => -1,
+        Num(_) => -1,
+        StrLit(_, _) => -1,
+        Ident(_, _) => -1,
+        Add(_, _) => -1,
+        Sub(_, _) => -1,
+        Mul(_, _) => -1,
+        Div(_, _) => -1,
+        CmpLt(_, _) => -1,
+        CmpNe(_, _) => -1,
+        CmpEq(_, _) => -1,
+        CmpGe(_, _) => -1,
+        Deref(_) => -1,
+        Match(_, _, _) => -1,
+        CallExpr(_, _, _, _, _, _, _) => -1,
+        StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+        TryExpr(_) => -1,
+    };
+}
+
+fn expr_slice_hi_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
+    let node: Expr = vec_get(nodes, idx);
+    return match node {
+        SliceRange(_, _, hi) => hi,
+        Index(_, _) => -1,
+        Num(_) => -1,
+        StrLit(_, _) => -1,
+        Ident(_, _) => -1,
+        Add(_, _) => -1,
+        Sub(_, _) => -1,
+        Mul(_, _) => -1,
+        Div(_, _) => -1,
+        CmpLt(_, _) => -1,
+        CmpNe(_, _) => -1,
+        CmpEq(_, _) => -1,
+        CmpGe(_, _) => -1,
+        Deref(_) => -1,
+        Match(_, _, _) => -1,
+        CallExpr(_, _, _, _, _, _, _) => -1,
+        StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+        TryExpr(_) => -1,
     };
 }
 
@@ -10853,6 +11307,8 @@ fn expr_binop_l(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10875,6 +11331,8 @@ fn expr_binop_r(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(coff, cln, a0, a1, _, _, _) => coff + cln + a0 + a1,
         StructLit(o, l, c, f0, f1, f2, f3, f4, f5, f6, f7, f8, _, _, _, _, _, _, _, _) => o + l + c + f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8,
         TryExpr(inner) => inner,
+        Index(base, _) => base,
+        SliceRange(base, _, _) => base,
     };
 }
 
@@ -10917,6 +11375,14 @@ fn infer_expr_ty_kind(nodes: Vec<Expr>, idx: i32, src: string, param_env: string
     if (tag == 12) {
         let inner: i32 = expr_try_inner_idx(nodes, idx);
         return infer_expr_ty_kind(nodes, inner, src, param_env, let_env, struct_ret_env, param_m, let_i32_m, let_struct_m, ret_m);
+    }
+    // FX-SH-NAT-3 - Index sugar: element type treated as i32 in self-host subset (Vec i32 / arrays).
+    if (tag == 17) {
+        return Ok(ty_kind_i32());
+    }
+    // FX-SH-NAT-4 - SliceRange → slice view (struct-ish in self-host subset).
+    if (tag == 18) {
+        return Ok(ty_kind_struct());
     }
     let l: i32 = expr_binop_l(nodes, idx);
     let r: i32 = expr_binop_r(nodes, idx);
@@ -11237,6 +11703,8 @@ fn expr_diag_span_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -11269,6 +11737,8 @@ fn expr_diag_span_len(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -11940,6 +12410,14 @@ fn sh_ast_module_tests() -> Result<i32, core_Err> effects { alloc, mut } {
     let t2: i32 = sh_ast.tag(TryExpr(0));
     if (t2 != 16) {
         return Ok(346);
+    }
+    let t3: i32 = sh_ast.tag(Index(0, 1));
+    if (t3 != 17) {
+        return Ok(347);
+    }
+    let t4: i32 = sh_ast.tag(SliceRange(0, 1, 2));
+    if (t4 != 18) {
+        return Ok(348);
     }
     return Ok(42);
 }
@@ -17352,6 +17830,8 @@ fn expr_is_call1_field_access(nodes: Vec<Expr>, idx: i32, src: string, callee: s
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -19094,6 +19574,8 @@ fn expr_is_call0(nodes: Vec<Expr>, idx: i32) -> i32 {
         Match(_, _, _) => 0,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => 0,
         TryExpr(_) => 0,
+        Index(_, _) => 0,
+        SliceRange(_, _, _) => 0,
     };
 }
 
@@ -22458,12 +22940,18 @@ fn emit_sh_parse_fn_def_runtime_preamble() -> Result<string, core_Err> effects {
     let base: string = emit_sh_parse_runtime_preamble()?;
     let vecs: string = emit_fx_vec_parser_opaque_typedefs()?;
     let gcc: string = emit_sh_parse_fn_def_gcc_runtime()?;
+    let nth: string = emit_map_nth_helpers_c("sh_parse")?;
+    let buf_td: string = emit_buf_bytes_typedefs_c()?;
+    let buf_h: string = emit_buf_helpers_c("sh_parse")?;
     let b0: StrBuilder = strbuf_new();
     let b1: StrBuilder = strbuf_push(b0, "/* SH-C-73 - bootstrap real-parse boot smoke bodies (genuine emit; extends SH-C-55/72) */\n");
     let b2: StrBuilder = strbuf_push(b1, base);
     let b3: StrBuilder = strbuf_push(b2, vecs);
     let b4: StrBuilder = strbuf_push(b3, gcc);
-    return Ok(strbuf_finish(b4));
+    let b5: StrBuilder = strbuf_push(b4, nth);
+    let b6: StrBuilder = strbuf_push(b5, buf_td);
+    let b7: StrBuilder = strbuf_push(b6, buf_h);
+    return Ok(strbuf_finish(b7));
 }
 
 fn emit_sh_parse_pick_st_fn_def(src: string, fn_out: FnOut, mod_st: StructOut, imp_st: StructOut, param_st: StructOut, ret_st: StructOut, enum_st: StructOut, struct_st: StructOut, parse_out_st: StructOut, stmt_step_st: StructOut, block_parse_out_st: StructOut, arg_count_out_st: StructOut, struct_lit_acc_st: StructOut, fn_out_st: StructOut) -> StructOut {

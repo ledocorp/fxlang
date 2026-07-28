@@ -1,6 +1,6 @@
 # fx documentation
 
-User guides for the **0.7.1** language package. HTML versions also live on
+User guides for the **0.7.2** language package. HTML versions also live on
 https://www.ledocorp.org/fx/docs/
 
 | Doc | Topic |

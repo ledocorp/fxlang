@@ -13,6 +13,7 @@ fn new_arena<T>(len: i32) -> Vec<T> effects { alloc } {
 }
 
 fn push<T>(v: Vec<T>, x: T) -> Vec<T> effects { mut } {
+    // Value-threaded: reassign `v = vec.push(v, x)` (or let-chain).
     return vec_push(v, x);
 }
 

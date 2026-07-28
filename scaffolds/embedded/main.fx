@@ -1,4 +1,5 @@
 // Embedded scaffold: small explicit arena, no std import.
+// Grow: let-chains teach value-threading; quieter: v = vec_push(v, x).
 
 fn main() -> i32 effects { alloc, mut } {
     region r = arena(1024);

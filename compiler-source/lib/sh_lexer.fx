@@ -533,7 +533,31 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                                                                                         buf = push_tok(buf, 17, b, 0);
                                                                                         pos = pos + 1;
                                                                                     } else {
-                                                                                        pos = pos + 1;
+                                                                                        // FX-SH-NAT-3/4 - `[` / `]` (44/45); `..` DotDot (46).
+                                                                                        if (b == '[') {
+                                                                                            buf = push_tok(buf, 44, b, 0);
+                                                                                            pos = pos + 1;
+                                                                                        } else {
+                                                                                            if (b == ']') {
+                                                                                                buf = push_tok(buf, 45, b, 0);
+                                                                                                pos = pos + 1;
+                                                                                            } else {
+                                                                                                if (b == '.') {
+                                                                                                    if (pos + 1 < n) {
+                                                                                                        if (str_byte_at(src, pos + 1) == '.') {
+                                                                                                            buf = push_tok(buf, 46, b, 0);
+                                                                                                            pos = pos + 2;
+                                                                                                        } else {
+                                                                                                            pos = pos + 1;
+                                                                                                        }
+                                                                                                    } else {
+                                                                                                        pos = pos + 1;
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    pos = pos + 1;
+                                                                                                }
+                                                                                            }
+                                                                                        }
                                                                                     }
                                                                                 }
                                                                             }
@@ -721,6 +745,56 @@ fn check_while_loop() -> i32 effects { alloc, mut } {
     return 0;
 }
 
+fn check_vec_index_brackets() -> i32 effects { alloc, mut } {
+    region r = arena(fx_defaults.arena_boot());
+    let src: string = "v[0]";
+    let buf: TokBuf = lex(src);
+    if (buf.kinds.len != 4) {
+        return 1;
+    }
+    if (expect_ident(buf, 0, src, "v") != 0) {
+        return 2;
+    }
+    if (expect_kind(buf, 1, 44) != 0) {
+        return 3;
+    }
+    if (expect_num(buf, 2, 0) != 0) {
+        return 4;
+    }
+    if (expect_kind(buf, 3, 45) != 0) {
+        return 5;
+    }
+    return 0;
+}
+
+fn check_subslice_dotdot() -> i32 effects { alloc, mut } {
+    region r = arena(fx_defaults.arena_boot());
+    let src: string = "a[1..4]";
+    let buf: TokBuf = lex(src);
+    if (buf.kinds.len != 6) {
+        return 1;
+    }
+    if (expect_ident(buf, 0, src, "a") != 0) {
+        return 2;
+    }
+    if (expect_kind(buf, 1, 44) != 0) {
+        return 3;
+    }
+    if (expect_num(buf, 2, 1) != 0) {
+        return 4;
+    }
+    if (expect_kind(buf, 3, 46) != 0) {
+        return 5;
+    }
+    if (expect_num(buf, 4, 4) != 0) {
+        return 6;
+    }
+    if (expect_kind(buf, 5, 45) != 0) {
+        return 7;
+    }
+    return 0;
+}
+
 fn smoke_tests() -> i32 effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     if (check_let_add() != 0) {
@@ -731,6 +805,12 @@ fn smoke_tests() -> i32 effects { alloc, mut } {
     }
     if (check_while_loop() != 0) {
         return 3;
+    }
+    if (check_vec_index_brackets() != 0) {
+        return 4;
+    }
+    if (check_subslice_dotdot() != 0) {
+        return 5;
     }
     return 42;
 }

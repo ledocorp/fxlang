@@ -1,6 +1,6 @@
 # Reference (0.7 surface)
 
-Compact lookup for everyday fx in the **0.7.1** package.
+Compact lookup for everyday fx in the **0.7.2** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 
@@ -74,9 +74,10 @@ Details: [REGIONS.md](REGIONS.md)
 - Logical: `!` `&&` `||` (bool)
 - Compare: `== != < <= > >=`
 - Index: `a[i]` on arrays (R/W) and slices (read-only)
+- Sub-slice: `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, or slices)
 - Cast: `expr as T` · deref: `*p`
 
-**No** `v[i]` on `Vec`; use `vec_get` / facade `vec.get`.
+**No** `v[i] = x` on `Vec`; reads may use `v[i]` or `vec_get` / facade `vec.get`.
 
 ## Statements
 
@@ -111,12 +112,12 @@ Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_inse
 | `minimal` | Bare `main`; add region yourself |
 | `embedded` | Tiny arena; builtin `vec_*`; no staged std |
 
-## Honesty bound (not in 0.7 yet)
+## Honesty bound (not in 0.7.2 yet)
 
 - Traits, closures, iterators, `Option`
-- `Vec` operator index; nested `Vec<Vec<T>>`; `Vec<f32>` etc.
-- Generic maps beyond `string → i32`; map iteration
-- `&mut [T]`, subrange slices
+- Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types
+- Generic maps beyond `string → i32`; insertion-order map iteration (nth is table order)
+- `Vec` index **writes** (`v[i] = x`); `&mut [T]`
 - Package manager; advanced fx Runtime device/capability model
 - Non-C FFI
 

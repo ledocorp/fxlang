@@ -2,7 +2,8 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-Version **0.7.1** is already a full programming surface, not just “regions + vec.”
+Version **0.7.2** is already a full programming surface, not just “regions + vec.”
+It includes Buf/Bytes, sub-slices, Map iterate, grow ergonomics, and optional Vec `v[i]`.
 
 Canonical web copy: https://www.ledocorp.org/fx/docs/language/
 
@@ -110,7 +111,7 @@ There is no `Option`: use `Result`. Map lookup misses are errors and compose wit
 
 ## Value-threading (important idiom)
 
-Growing collections return an updated handle. **Reassign** the result (same pattern for `vec`, `map`, `strbuf`):
+Growing collections return an updated handle. **Reassign** the result (same pattern for `vec`, `map`, `strbuf`, `buf`):
 
 ```fx
 v = vec_push(v, 40);
@@ -118,7 +119,13 @@ m = map_insert(m, "width", 30);
 b = strbuf_push(b, "hello");
 ```
 
-Prefer `vec_get(v, i)` for element access. There is no operator indexing on `Vec` (`v[i]` is for arrays/slices only).
+Three teaching patterns (no hidden mutation):
+
+1. **Tutorial let-chains** (scaffolds): `let v2 = vec.push(v, 40);`
+2. **Loop reassignment**: `v = vec.push(v, n);` inside a `while`
+3. **`&mut` state fields**: `p.nodes = vec.push(p.nodes, x);` instead of rebuilding the whole struct
+
+Prefer `vec_get(v, i)` or optional sugar `v[i]` (same emit as `vec_get`; writes `v[i] = x` rejected). Arrays/slices keep their own `a[i]`.
 
 ## First programs
 
@@ -162,6 +169,7 @@ fn sum(s: &[i32]) -> i32 {
 fn main() -> i32 {
     let table: [i32; 3] = [10, 20, 12];
     let view: &[i32] = &table;
+    let mid: &[i32] = table[0..2];  // exclusive end → [10, 20]
     return sum(view);  // 42
 }
 ```
@@ -179,7 +187,7 @@ See [WRAP.md](WRAP.md) for `extern "c"` and linking.
 - Traits / interfaces / closures / iterators
 - `Option<T>` (use `Result`)
 - Generic `Map` beyond `Map<string, i32>`; map iteration API
-- Mutable slices or subrange slicing `a[lo..hi]`
+- Mutable slices (`&mut [T]`)
 - Package manager / large application ecosystem
 - Direct Rust/Go/Zig FFI (C ABI only; others speak C)
 

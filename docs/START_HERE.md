@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.7.1 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.7.2 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
 **Site:** http://www.ledocorp.org
 
 ---
@@ -27,7 +27,7 @@ fx doctor
 
 ```text
 # From the repo root, or with bin/ already on PATH:
-fx version                    # expect v0.7.1
+fx version                    # expect v0.7.2
 
 fx new hello
 cd hello

@@ -2,6 +2,9 @@
 //   effects { alloc, mut }  states heap + mutation
 //   region r = arena(n)     named lifetime; free when r ends
 //   import std/vec          staged std/ beside this project (or FX_STD_ROOT)
+// Grow: let-chains teach value-threading. Quieter patterns (same semantics):
+//   v = vec.push(v, x);              // loop / accumulator reassignment
+//   p.nodes = vec.push(p.nodes, x);  // &mut state field update
 
 import std/vec;
 
