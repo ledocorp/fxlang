@@ -1,0 +1,6 @@
+# Local smoke / build artifacts (not part of the language package)
+_smoke_hello/
+**/out/
+*.o
+*.exe
+!bin/fx.exe
