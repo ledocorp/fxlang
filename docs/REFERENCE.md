@@ -3,6 +3,7 @@
 Compact lookup for everyday fx in the **0.7.2** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
+For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).
 
 Canonical web copy: https://www.ledocorp.org/fx/docs/reference/
 
@@ -123,4 +124,4 @@ Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_inse
 
 Advanced: refinement types (`where` predicates) exist as a verification tier and typically need an external prover pipeline. Not required for everyday 0.7 programs.
 
-[LANGUAGE.md](LANGUAGE.md) · [CLI.md](CLI.md) · https://www.ledocorp.org/fx/llms.txt
+[LANGUAGE.md](LANGUAGE.md) · [CLI.md](CLI.md) · [SURFACE.md](SURFACE.md) · https://www.ledocorp.org/fx/llms.txt

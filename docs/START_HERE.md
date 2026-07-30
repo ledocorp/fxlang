@@ -71,6 +71,7 @@ fx new firmware --scaffold embedded # small arena, no staged std
 
 | You want… | Look here |
 |-----------|-----------|
+| **Everything that exists (cheatsheet)** | [SURFACE.md](SURFACE.md) |
 | Understand the language | [LANGUAGE.md](LANGUAGE.md) |
 | Compact reference | [REFERENCE.md](REFERENCE.md) |
 | Regions / effects / ownership | [REGIONS.md](REGIONS.md) |

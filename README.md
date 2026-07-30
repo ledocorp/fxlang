@@ -134,6 +134,8 @@ Also on the web: https://www.ledocorp.org/fx/docs/
 
 | Doc | Topic |
 |-----|--------|
+| [docs/START_HERE.md](docs/START_HERE.md) | Install and hello |
+| [docs/SURFACE.md](docs/SURFACE.md) | **As-implemented surface map** (full cheatsheet) |
 | [docs/LANGUAGE.md](docs/LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
 | [docs/REFERENCE.md](docs/REFERENCE.md) | Compact 0.7 surface reference |
 | [docs/REGIONS.md](docs/REGIONS.md) | Effects, region kinds, ownership / borrows |
@@ -141,7 +143,6 @@ Also on the web: https://www.ledocorp.org/fx/docs/
 | [docs/WRAP.md](docs/WRAP.md) | C host / `extern "c"` |
 | [docs/SCAFFOLDS.md](docs/SCAFFOLDS.md) | Project templates |
 | [docs/CLI.md](docs/CLI.md) | Full command surface (incl. `fx doctor` / `fx lsp` / `fx mcp`) |
-| [docs/START_HERE.md](docs/START_HERE.md) | Install and hello |
 
 ---
 
