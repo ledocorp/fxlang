@@ -26,8 +26,9 @@ fx doctor
 ## Five-minute hello
 
 ```text
-# From the repo root, or with bin/ already on PATH:
+# Put package bin/ on PATH (zspec is found next to bin/, any cwd):
 fx version                    # expect v0.7.3
+fx doctor
 
 fx new hello
 cd hello
@@ -40,7 +41,7 @@ Windows without PATH:
 .\bin\fx.exe doctor
 .\bin\fx.exe new hello
 cd hello
-..\bin\fx.exe run main.fx
+..\bin\fx.exe run main.fx     # or absolute path to bin\fx.exe
 ```
 
 Linux without PATH:

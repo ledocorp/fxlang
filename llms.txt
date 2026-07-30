@@ -28,8 +28,9 @@
 ## Package (source of binaries and examples)
 
 - https://github.com/ledocorp/fxlang
-- Quick path: put bin/ on PATH → `fx doctor` → `fx new hello` → `fx run main.fx` (exit 42)
-- Also in repo: docs/ (incl. SURFACE.md), scaffolds/, std/, lib/, examples/, zspec/, compiler-source/ (read-only), llms.txt
+- Quick path: put package `bin/` on PATH → `fx doctor` → `fx new hello` → `cd hello` → `fx run main.fx` (exit 42)
+- zspec/libzspec resolve from the package beside `bin/` (not only cwd) — keep `bin/`, `zspec/`, `build/` together
+- Also in repo: docs/ (incl. SURFACE.md, releases/), scaffolds/, std/, lib/, examples/, zspec/, compiler-source/ (read-only), llms.txt
 
 ## Generation hints
 
