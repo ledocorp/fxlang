@@ -14,30 +14,26 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: pwsh
+        shell: cmd
     steps:
       - uses: actions/checkout@v4
       - name: doctor
-        run: |
-          $ErrorActionPreference = 'Continue'
-          & .\bin\fx.exe doctor
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        run: bin\fx.exe doctor
       - name: showcase_core
+        # Demo success is exit 42; `if errorlevel N` means >= N.
         run: |
-          $ErrorActionPreference = 'Continue'
-          & .\bin\fx.exe run examples/showcase_core/main.fx
-          if ($LASTEXITCODE -ne 42) {
-            Write-Error "expected exit 42, got $LASTEXITCODE"
-            exit 1
-          }
+          bin\fx.exe run examples\showcase_core\main.fx
+          if errorlevel 43 exit /b 1
+          if errorlevel 42 exit /b 0
+          echo expected exit 42
+          exit /b 1
       - name: tool_bytes
         run: |
-          $ErrorActionPreference = 'Continue'
-          & .\bin\fx.exe run examples/tool_bytes/main.fx
-          if ($LASTEXITCODE -ne 42) {
-            Write-Error "expected exit 42, got $LASTEXITCODE"
-            exit 1
-          }
+          bin\fx.exe run examples\tool_bytes\main.fx
+          if errorlevel 43 exit /b 1
+          if errorlevel 42 exit /b 0
+          echo expected exit 42
+          exit /b 1
 
   linux:
     runs-on: ubuntu-latest
