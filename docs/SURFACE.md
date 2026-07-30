@@ -1,7 +1,7 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.7.2  
-**Map ID:** FX-0.7.3-M1  
+**Package version:** 0.7.3  
+**Map ID:** FX-0.7.3-M6  
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
@@ -49,7 +49,7 @@ Comments: `//` line comments. Refinement `where` is verification-tier (not requi
 | Floats | `f32` `f64` |
 | Scalars | `bool` `string` `void` `core_Err` |
 | User types | `struct` · `enum` (unit + payload variants) |
-| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `StrBuilder` · `Map<string, i32>` · `Buf` / `Bytes` |
+| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `&mut [T]` · `StrBuilder` · `Map<string, i32>` · `Map<string, string>` · `Buf` / `Bytes` |
 | Sum | `Result<T, E>` (typically `core_Err`) |
 | Ownership | `own T` · `&T` · `&mut T` · `&region r T` |
 | Generics | type params on functions/structs · **no traits** |
@@ -68,7 +68,7 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 | Bitwise | `& \| ^ << >>` on integer families |
 | Logical | `!` `&&` `\|\|` |
 | Compare | `== != < <= > >=` |
-| Index | `a[i]` arrays R/W; slices read-only; Vec reads via `v[i]` or `vec_get` |
+| Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get` (no `v[i]=x`) |
 | Sub-slice | `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, slices) |
 | Other | `expr as T` · `*p` deref |
 
@@ -124,13 +124,17 @@ Teaching patterns: scaffold let-chains · loop reassignment · `&mut` field upda
 
 | Surface | Can | Cannot / limit |
 |---------|-----|----------------|
-| `Vec<T>` | `vec_new` / `push` / `get` / `.len`; read `v[i]` | write `v[i]=x`; many nested / exotic element types |
+| `Vec<T>` | `vec_new` / `push` / `get` / `.len`; read `v[i]` | **`v[i]=x` refused** (grow via push/reassign); nested/exotic elems |
 | Arrays `[T; N]` | index R/W; sub-slice | — |
-| `&[T]` | read index; sub-slice | **`&mut [T]` not shipped** |
+| `&[T]` | read index; sub-slice | write through immutable view |
+| `&mut [T]` | index write-through (array-backed) | `&mut Vec` as slice; mut sub-slices |
 | `StrBuilder` | `strbuf_new` / `push` / `finish` / `len` | — |
-| `string` helpers | `str_compare` `str_concat` `str_len` `str_byte_at` | rich unicode / regex |
-| `Map<string, i32>` | insert/remove/get/contains/len; `map_nth_key` / `map_nth_value` | other key/value types; insertion-order iterate |
+| `string` helpers | `str_compare` `str_concat` `str_len` `str_byte_at` | rich unicode / regex; no silent `Bytes`↔`string` builtin |
+| `Map<string, i32>` | insert/remove/get/contains/len; `map_nth_*` | — |
+| `Map<string, string>` | `map_new_ss` / shared map builtins; `std/map.*_ss` | other KV shapes still out |
 | `Buf` / `Bytes` | `buf_new`/`push`/`len`/`get`/`finish`; `bytes_len`/`bytes_get` | general streaming I/O API |
+
+**Taught text path:** StrBuilder → `string` → `write_file` → scan with `byte_at` → `Buf` / `Bytes`. See `examples/tool_text`.
 
 `Vec` elements commonly used: integers (incl. unsigned widths), `bool`, `string`, structs, payload enums. Prefer builtins over thin `std/vec.get` for non-`i32` elements.
 
@@ -144,7 +148,7 @@ Ordinary fx. Import like any library. Linking still uses zspec for usual alloc p
 |--------|------|--------|
 | `vec` | `new` / `push` / `get` / `len` (+ arena variants) | thin `get` oriented to `i32` |
 | `string` | compare / concat / builder facades | — |
-| `map` | `Map<string,i32>` + `nth_key` / `nth_value` | **only** that map shape |
+| `map` | `Map<string,i32>` + `*_ss` for `Map<string,string>` | not a fully generic map |
 | `set` | presence set over map | — |
 | `buf` | `Buf` + `Bytes` view facades | — |
 | `box` / `pair` | ownership / pair helpers | — |
@@ -193,12 +197,12 @@ Non-C FFI is **not** shipped.
 
 ## G. Honesty bounds & deferred
 
-### Not in 0.7.2
+### Not in 0.7.3
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
-- Generic maps beyond `string → i32`; insertion-order map iteration
-- `Vec` index **writes**; `&mut [T]`
+- Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
+- `Vec` index **writes** (by design — see Vec write story); `&mut Vec` as a mut slice; mut sub-slices
 - Package manager; sockets / full net std
 - Advanced fx Runtime (device-aware regions, capabilities, migration)
 - Neuton / OS product; Experimental horizon features
@@ -222,10 +226,14 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 |------|------|
 | Hello + visible heap | `fx new hello` → `fx run` |
 | Grow collections | value-thread `vec` / `map` / `buf` / `strbuf` |
-| Iterate a map | `map_nth_*` / `std/map.nth_*` (table order) |
-| Bytes | `Buf` / `Bytes` + `std/buf` |
-| Files | `std/io` + `effects { io }` |
-| Embed in C | `--host` + [WRAP.md](WRAP.md) |
+| Iterate a map | `map_nth_*` / `std/map.nth_*` (table order) · see `examples/tool_tally` |
+| Bytes | `Buf` / `Bytes` + `std/buf` · see `examples/tool_bytes` |
+| Files | `std/io` + `effects { io }` · see `examples/tool_files` |
+| Text path (str↔bytes↔file) | StrBuilder → file → `byte_at` → Buf · see `examples/tool_text` |
+| Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
+| Mut slice write | `&mut [T]` on arrays · `programs/lv073_mut_slice.fx` |
+| Result / `?` | general emit · see `examples/tool_result` |
+| Embed in C | `--host` + [WRAP.md](WRAP.md) · `examples/showcase_wrap` |
 | Inspect lowering | `fx emit-c` |
 
 ---

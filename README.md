@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.7.2](VERSION)  
+**Version:** [0.7.3](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE)
 
@@ -74,7 +74,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.7.2
+fx version                 # v0.7.3
 fx new hello
 cd hello
 fx run main.fx             # exit 42
@@ -169,8 +169,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ---
 
-## Release note
+## Release notes
 
-**0.7.2** adds Buf/Bytes, sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), grow ergonomics, optional Vec `v[i]` reads, and queue packaging (`lib/ring_queue`) on top of the 0.7.1 language package. Compiler, scaffolds, Windows/Linux binaries, C wrap path, `fx doctor`, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.7.3](docs/releases/0.7.3.md).
+
+**0.7.3** is the maturity pack on top of 0.7.2: surface map, week-two tools, taught text path, `Map<string,string>`, array-backed `&mut [T]`, general Result/`?` emit, crystal-refuse Vec index writes, and trust polish (`fx doctor`, smoke CI). Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

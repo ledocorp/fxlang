@@ -552,6 +552,36 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, "buf_finish") != 1) {
         return Ok(618);
     }
+    if (str_contains(c_src, "fx_Map_string_string") != 1) {
+        return Ok(619);
+    }
+    if (str_contains(c_src, "map_new_ss") != 1) {
+        return Ok(620);
+    }
+    if (str_contains(c_src, "map_insert_ss") != 1) {
+        return Ok(621);
+    }
+    if (str_contains(c_src, "map_nth_value_ss") != 1) {
+        return Ok(622);
+    }
+    if (str_contains(c_src, "fx_MutSlice_i32") != 1) {
+        return Ok(623);
+    }
+    if (str_contains(c_src, "fx_sh_parse_type_span_is_mut_slice") != 1) {
+        return Ok(624);
+    }
+    if (str_contains(c_src, "fx_sh_parse_type_span_is_array") != 1) {
+        return Ok(625);
+    }
+    if (str_contains(c_src, "fx_sh_parse_map_mut_slice_type_c") != 1) {
+        return Ok(626);
+    }
+    if (str_contains(c_src, "fx_sh_parse_emit_parser_index_assign_line") != 1) {
+        return Ok(627);
+    }
+    if (str_contains(c_src, "FX-SH-NAT-7") != 1) {
+        return Ok(628);
+    }
     if (str_contains(c_src, "fx_sh_parse_type_span_is_map") != 1) {
         return Ok(597);
     }
@@ -2103,6 +2133,32 @@ fn fixture_ok_vec_enum_tests() -> Result<i32, core_Err> effects { alloc, io, mut
     return Ok(42);
 }
 
+fn fixture_ok_mut_slice_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
+    let c_src: string = sh_parse.parse_and_emit_ok_mut_slice()?;
+    if (str_contains(c_src, "fx_MutSlice_i32") != 1) {
+        return Ok(230);
+    }
+    if (str_contains(c_src, "fx_ok_mut_slice_Array_i32_3") != 1) {
+        return Ok(231);
+    }
+    if (str_contains(c_src, "int32_t fx_ok_mut_slice_bump(fx_MutSlice_i32 s)") != 1) {
+        return Ok(232);
+    }
+    if (str_contains(c_src, "s.data[0] = (s.data[0] + 1)") != 1) {
+        return Ok(233);
+    }
+    if (str_contains(c_src, "view.data[1] = 9") != 1) {
+        return Ok(234);
+    }
+    if (str_contains(c_src, "int32_t fx_ok_mut_slice_main(void)") != 1) {
+        return Ok(235);
+    }
+    if (str_contains(c_src, "return ((view.data[0] + view.data[1]) + view.data[2])") != 1) {
+        return Ok(236);
+    }
+    return Ok(42);
+}
+
 fn fixture_ok_while_zero_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_ok_while_zero()?;
     if (str_contains(c_src, "int32_t fx_ok_while_zero_main(void)") != 1) {
@@ -2448,6 +2504,10 @@ fn emit_fixture_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let vec_enum_ok: i32 = fixture_ok_vec_enum_tests()?;
     if (vec_enum_ok != 42) {
         return Ok(vec_enum_ok);
+    }
+    let mut_slice_ok: i32 = fixture_ok_mut_slice_tests()?;
+    if (mut_slice_ok != 42) {
+        return Ok(mut_slice_ok);
     }
     let while_zero_ok: i32 = fixture_ok_while_zero_tests()?;
     if (while_zero_ok != 42) {

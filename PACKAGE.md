@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.7.2 (see [VERSION](VERSION))  
+**Version:** 0.7.3 (see [VERSION](VERSION))  
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
 This repository is the **fx language package**: everything you need to install the compiler and write programs.
@@ -16,7 +16,7 @@ This repository is the **fx language package**: everything you need to install t
 | `zspec/include/zspec/` | C headers for linking emitted C |
 | `scaffolds/` | Templates used by `fx new` |
 | `std/` | Standard library (fx modules) |
-| `docs/` | User documentation |
+| `docs/` | User documentation (incl. `docs/releases/`) |
 | `examples/` | Optional demos |
 | `compiler-source/` | Inspectable fx compiler modules (read-only; not how you run fx) |
 | `LICENSE` / `NOTICE` | Apache-2.0 |

@@ -1,6 +1,6 @@
 # Reference (0.7 surface)
 
-Compact lookup for everyday fx in the **0.7.2** package.
+Compact lookup for everyday fx in the **0.7.3** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).
@@ -38,8 +38,8 @@ Comments: `//` line comments. Refinement `where` is contextual (verification tie
 | Floats | `f32` `f64` |
 | Scalars | `bool` `string` `void` `core_Err` |
 | User types | `struct Name { … }` · `enum Name { A, B(T) }` |
-| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `StrBuilder` · `Map<string, i32>` |
-| Sum | `Result<T, E>` |
+| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `&mut [T]` · `StrBuilder` · `Map<string, i32>` · `Map<string, string>` · `Buf` / `Bytes` |
+| Sum | `Result<T, E>` (typically `core_Err`) |
 | Ownership | `own T` · `&T` · `&mut T` · `&region r T` |
 | Generics | Type params on functions/structs · no traits |
 
@@ -74,11 +74,11 @@ Details: [REGIONS.md](REGIONS.md)
 - Bitwise: `& | ^ << >>` on integer families
 - Logical: `!` `&&` `||` (bool)
 - Compare: `== != < <= > >=`
-- Index: `a[i]` on arrays (R/W) and slices (read-only)
+- Index: arrays R/W; `&[T]` read-only; `&mut [T]` write-through (array-backed); Vec **read** via `v[i]` / `vec_get`
 - Sub-slice: `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, or slices)
 - Cast: `expr as T` · deref: `*p`
 
-**No** `v[i] = x` on `Vec`; reads may use `v[i]` or `vec_get` / facade `vec.get`.
+**No** `v[i] = x` on `Vec` (by design). For in-place writes use arrays + `&mut [T]`.
 
 ## Statements
 
@@ -113,12 +113,12 @@ Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_inse
 | `minimal` | Bare `main`; add region yourself |
 | `embedded` | Tiny arena; builtin `vec_*`; no staged std |
 
-## Honesty bound (not in 0.7.2 yet)
+## Honesty bound (not in 0.7.3 yet)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types
-- Generic maps beyond `string → i32`; insertion-order map iteration (nth is table order)
-- `Vec` index **writes** (`v[i] = x`); `&mut [T]`
+- Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration (nth is table order)
+- `Vec` index **writes** (`v[i] = x` — refused); `&mut Vec` as slice; mut sub-slices
 - Package manager; advanced fx Runtime device/capability model
 - Non-C FFI
 

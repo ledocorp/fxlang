@@ -32,3 +32,35 @@ fn nth_key(m: Map<string, i32>, i: i32) -> string {
 fn nth_value(m: Map<string, i32>, i: i32) -> i32 {
     return map_nth_value(m, i);
 }
+
+fn new_ss() -> Map<string, string> effects { alloc } {
+    return map_new_ss();
+}
+
+fn insert_ss(m: Map<string, string>, key: string, value: string) -> Map<string, string> effects { alloc, mut } {
+    return map_insert(m, key, value);
+}
+
+fn remove_ss(m: Map<string, string>, key: string) -> Map<string, string> effects { alloc, mut } {
+    return map_remove(m, key);
+}
+
+fn get_ss(m: Map<string, string>, key: string) -> Result<string, core_Err> {
+    return map_get(m, key);
+}
+
+fn contains_ss(m: Map<string, string>, key: string) -> bool {
+    return map_contains(m, key);
+}
+
+fn len_ss(m: Map<string, string>) -> i32 {
+    return map_len(m);
+}
+
+fn nth_key_ss(m: Map<string, string>, i: i32) -> string {
+    return map_nth_key(m, i);
+}
+
+fn nth_value_ss(m: Map<string, string>, i: i32) -> string {
+    return map_nth_value(m, i);
+}

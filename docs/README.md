@@ -1,6 +1,6 @@
 # fx documentation
 
-User guides for the **0.7.2** language package. HTML versions also live on
+User guides for the **0.7.3** language package. HTML versions also live on
 https://www.ledocorp.org/fx/docs/
 
 | Doc | Topic |
@@ -14,5 +14,6 @@ https://www.ledocorp.org/fx/docs/
 | [WRAP.md](WRAP.md) | C host / `extern "c"` |
 | [CLI.md](CLI.md) | Commands and flags |
 | [SCAFFOLDS.md](SCAFFOLDS.md) | `fx new` templates |
+| [releases/](releases/) | Version release notes |
 
 Agent index (website): https://www.ledocorp.org/fx/llms.txt

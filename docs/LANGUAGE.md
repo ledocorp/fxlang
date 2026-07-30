@@ -2,8 +2,8 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-Version **0.7.2** is already a full programming surface, not just “regions + vec.”
-It includes Buf/Bytes, sub-slices, Map iterate, grow ergonomics, and optional Vec `v[i]`.
+Version **0.7.3** is already a full programming surface, not just “regions + vec.”
+It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), grow ergonomics, Vec `v[i]` reads, array-backed `&mut [T]`, and general Result/`?`.
 
 Canonical web copy: https://www.ledocorp.org/fx/docs/language/
 
@@ -125,7 +125,7 @@ Three teaching patterns (no hidden mutation):
 2. **Loop reassignment**: `v = vec.push(v, n);` inside a `while`
 3. **`&mut` state fields**: `p.nodes = vec.push(p.nodes, x);` instead of rebuilding the whole struct
 
-Prefer `vec_get(v, i)` or optional sugar `v[i]` (same emit as `vec_get`; writes `v[i] = x` rejected). Arrays/slices keep their own `a[i]`.
+Prefer `vec_get(v, i)` or sugar `v[i]` for **reads** (writes `v[i] = x` refused). For in-place writes use arrays + `&mut [T]`.
 
 ## First programs
 
@@ -186,8 +186,8 @@ See [WRAP.md](WRAP.md) for `extern "c"` and linking.
 
 - Traits / interfaces / closures / iterators
 - `Option<T>` (use `Result`)
-- Generic `Map` beyond `Map<string, i32>`; map iteration API
-- Mutable slices (`&mut [T]`)
+- Generic `Map` beyond `string→i32` / `string→string`; insertion-order iteration
+- `Vec` index writes; `&mut Vec` as a slice; mut sub-slices
 - Package manager / large application ecosystem
 - Direct Rust/Go/Zig FFI (C ABI only; others speak C)
 

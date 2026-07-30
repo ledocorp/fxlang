@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.7.2`) |
+| `fx version` | Print version (expect `v0.7.3`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -17,7 +17,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 
 ### `fx doctor`
 
-Reports whether `gcc`, `clang`, and/or `zig` are on your `PATH`, and whether zspec headers/libraries can be found by walking up from the current directory. Exit code 0 if at least one C toolchain is found.
+Reports C toolchains on `PATH`, zspec include/library discovery, and whether `std/` facades resolve (`FX_STD_ROOT` or nearby `std/`). Exit **1** if there is no C toolchain or zspec is incomplete (link would fail). Exit **0** with an explicit hint if std is missing but CC+zspec are ok.
 
 ### `fx new`
 

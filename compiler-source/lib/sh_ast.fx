@@ -24,6 +24,8 @@ enum Expr {
     TryExpr(i32),
     Index(i32, i32),
     SliceRange(i32, i32, i32),
+    // FX-SH-NAT-7 - array literal `[a, b, …]` (count + up to 8 elem indices).
+    ArrayLit(i32, i32, i32, i32, i32, i32, i32, i32, i32),
 }
 
 enum Stmt {
@@ -37,6 +39,8 @@ enum Stmt {
     Break,
     Continue,
     Region(i32, i32, i32),
+    // FX-SH-NAT-7 - `base[index] = value` (mut slice / array write).
+    IndexAssign(i32, i32, i32),
 }
 
 enum TopItem {
@@ -67,5 +71,6 @@ fn tag(e: Expr) -> i32 {
         TryExpr(_) => 16,
         Index(_, _) => 17,
         SliceRange(_, _, _) => 18,
+        ArrayLit(_, _, _, _, _, _, _, _, _) => 19,
     };
 }

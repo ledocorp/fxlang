@@ -1,0 +1,90 @@
+# Smoke — packaged fx
+# Demo programs exit 42 on success; assert that explicitly (GHA treats nonzero as fail).
+# macOS: skip-clean until a Darwin binary ships.
+
+name: smoke
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: doctor
+        run: |
+          $ErrorActionPreference = 'Continue'
+          & .\bin\fx.exe doctor
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: showcase_core
+        run: |
+          $ErrorActionPreference = 'Continue'
+          & .\bin\fx.exe run examples/showcase_core/main.fx
+          if ($LASTEXITCODE -ne 42) {
+            Write-Error "expected exit 42, got $LASTEXITCODE"
+            exit 1
+          }
+      - name: tool_bytes
+        run: |
+          $ErrorActionPreference = 'Continue'
+          & .\bin\fx.exe run examples/tool_bytes/main.fx
+          if ($LASTEXITCODE -ne 42) {
+            Write-Error "expected exit 42, got $LASTEXITCODE"
+            exit 1
+          }
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: doctor
+        run: |
+          chmod +x bin/fx
+          ./bin/fx doctor
+      - name: showcase_core
+        run: |
+          set +e
+          ./bin/fx run examples/showcase_core/main.fx
+          code=$?
+          set -e
+          if [ "$code" -ne 42 ]; then
+            echo "expected exit 42, got $code"
+            exit 1
+          fi
+      - name: tool_bytes
+        run: |
+          set +e
+          ./bin/fx run examples/tool_bytes/main.fx
+          code=$?
+          set -e
+          if [ "$code" -ne 42 ]; then
+            echo "expected exit 42, got $code"
+            exit 1
+          fi
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: skip until Darwin binary
+        run: |
+          if [ -x bin/fx ] && file bin/fx | grep -qi 'Mach-O'; then
+            set +e
+            ./bin/fx doctor || exit $?
+            ./bin/fx run examples/showcase_core/main.fx
+            code=$?
+            set -e
+            if [ "$code" -ne 42 ]; then
+              echo "expected exit 42, got $code"
+              exit 1
+            fi
+          else
+            echo "macOS binary not in this package yet — skip-clean."
+            exit 0
+          fi

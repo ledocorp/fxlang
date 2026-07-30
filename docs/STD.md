@@ -11,7 +11,7 @@ import std/map;
 import std/string;
 ```
 
-## Modules in 0.7.2
+## Modules in 0.7.3
 
 | Module | Role |
 |--------|------|
@@ -99,6 +99,6 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 
 ## Growth
 
-The stdlib is intentionally small in 0.7.x. The 0.7.2 package adds Buf/Bytes, sub-slices, Map iterate, grow ergonomics, and optional `v[i]`. Later packages may add richer I/O, paths, JSON, time/RNG, and testing helpers, still as explicit, allocator-aware fx code.
+The stdlib is intentionally small in 0.7.x. The 0.7.2 baseline added Buf/Bytes facades and Map iterate; 0.7.3 adds `Map<string,string>` helpers (`*_ss`). Later packages may add richer I/O, paths, JSON, time/RNG, and testing helpers, still as explicit, allocator-aware fx code.
 
 [LANGUAGE.md](LANGUAGE.md) · [REGIONS.md](REGIONS.md) · [REFERENCE.md](REFERENCE.md)

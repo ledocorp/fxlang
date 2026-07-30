@@ -1,0 +1,53 @@
+# fx · LedoCorp · for LLMs and agents
+
+> Canonical public docs for the fx systems language (package version 0.7.3).
+> Package: https://github.com/ledocorp/fxlang (Apache-2.0)
+> Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
+
+## Product
+
+- Home: https://www.ledocorp.org/fx/
+- Pitch: explicit systems language; named regions + effects; dual emission to readable C; wrap/host with C main
+- Not a GC language; not a batteries-included app platform
+- Surface: numeric tower, ownership/borrows, Result/?, structs/enums/match, generics (no traits), Vec/arrays/`&[T]`/`&mut [T]`/Map/StrBuilder/Buf, modules, extern "c"
+- Also: sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), `Map<string,string>` (`map_new_ss`), grow ergonomics, Vec `v[i]` **reads**, array-backed `&mut [T]` writes, `lib/ring_queue` for `std/queue`
+- Week-two tools: `examples/tool_{files,bytes,tally,text,result}`
+
+## Documentation (prefer these URLs)
+
+- Docs index: https://www.ledocorp.org/fx/docs/
+- **Surface map (complete cheatsheet):** https://www.ledocorp.org/fx/docs/surface/
+- Start / install: https://www.ledocorp.org/fx/docs/start/
+- Language tour: https://www.ledocorp.org/fx/docs/language/
+- Reference (0.7): https://www.ledocorp.org/fx/docs/reference/
+- Regions and effects: https://www.ledocorp.org/fx/docs/regions/
+- Standard library: https://www.ledocorp.org/fx/docs/std/
+- C wrap / host: https://www.ledocorp.org/fx/docs/wrap/
+- CLI (doctor, run, emit-c, lsp, mcp): https://www.ledocorp.org/fx/docs/cli/
+
+## Package (source of binaries and examples)
+
+- https://github.com/ledocorp/fxlang
+- Quick path: put bin/ on PATH → `fx doctor` → `fx new hello` → `fx run main.fx` (exit 42)
+- Also in repo: docs/ (incl. SURFACE.md), scaffolds/, std/, lib/, examples/, zspec/, compiler-source/ (read-only), llms.txt
+
+## Generation hints
+
+- Prefer `effects { alloc, mut }` + `region r = arena(n)` for heap work; `io` when using std/io
+- Value-thread growers: `v = vec_push(v, x)` / `m = map_insert(...)` / `b = strbuf_push(...)` / `b = buf_push(...)`
+- Vec: read with `vec_get` or `v[i]`; **no** `v[i] = x` — grow via push/reassign; for in-place writes use arrays + `&mut [T]`
+- `&mut [T]`: index write-through on **array-backed** slices only (not `&mut Vec`)
+- Map iterate: `map_nth_key` / `map_nth_value` (table order); shapes `string → i32` and `string → string` (`map_new_ss` / `*_ss`)
+- Prefer `Result` + `?` (no Option); `using core;` for Err/core_Err — general emit works (see `examples/tool_result`)
+- Text path: StrBuilder → `write_file` → `str_byte_at` → Buf/Bytes (`examples/tool_text`)
+- Use `fx check` / `fx run`; inspect C with `fx emit-c`
+- For C interop: `extern "c" { … }` and/or `fx run lib.fx --host host.c`
+- Do not invent a GC, traits, closures, generic maps beyond documented shapes, or implicit global allocator
+- Stay within documented surface (see SURFACE.md); if unsure, follow scaffolds and examples
+
+## Out of scope on this site
+
+- Private compiler foundry / internal roadmaps
+- Advanced fx Runtime (device/caps/migration) — deferred, not current package
+- Neuton / Experimental horizon
+- LedoCorp monetization (not documented here)
