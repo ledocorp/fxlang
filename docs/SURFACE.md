@@ -1,7 +1,7 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.7.3  
-**Map ID:** FX-0.7.3-M6  
+**Package version:** 0.7.4  
+**Map ID:** FX-0.7.4-M6  
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
@@ -9,6 +9,8 @@ This page is the **complete inventory of shipped functionality** in the public l
 Use it as a cheatsheet and as a depth ledger: if something is not listed here, do not assume it exists.
 
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
+Prefer [COMPOSITION.md](COMPOSITION.md) when asking “how do I build a graph / table / ring in fx?”
+Prefer [TRACKING.md](TRACKING.md) when asking “how does emitted C map back to fx?”
 
 ---
 
@@ -68,7 +70,7 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 | Bitwise | `& \| ^ << >>` on integer families |
 | Logical | `!` `&&` `\|\|` |
 | Compare | `== != < <= > >=` |
-| Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get` (no `v[i]=x`) |
+| Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get`; Vec **slot write** via `vec_set` (no `v[i]=x`) |
 | Sub-slice | `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, slices) |
 | Other | `expr as T` · `*p` deref |
 
@@ -124,7 +126,7 @@ Teaching patterns: scaffold let-chains · loop reassignment · `&mut` field upda
 
 | Surface | Can | Cannot / limit |
 |---------|-----|----------------|
-| `Vec<T>` | `vec_new` / `push` / `get` / `.len`; read `v[i]` | **`v[i]=x` refused** (grow via push/reassign); nested/exotic elems |
+| `Vec<T>` | `vec_new` / `push` / `get` / `vec_set` / `.len`; read `v[i]` | **`v[i]=x` refused** — use `vec_set` for slots; grow via push; nested/exotic elems |
 | Arrays `[T; N]` | index R/W; sub-slice | — |
 | `&[T]` | read index; sub-slice | write through immutable view |
 | `&mut [T]` | index write-through (array-backed) | `&mut Vec` as slice; mut sub-slices |
@@ -156,6 +158,7 @@ Ordinary fx. Import like any library. Linking still uses zspec for usual alloc p
 | `fmt` | integer / tag format helpers | — |
 | `io` | lines + text file read/write | declare `io` (+ `alloc` when needed) |
 | `queue` | bounded queue facade | needs `lib/ring_queue.fx` (shipped; `fx new` stages it) |
+| `pool` | id-pool facade (`make`/`alloc`/`get`/`set`/`len`) | needs `lib/id_pool.fx` (shipped; `fx new` stages it); `set` → `vec_set` (D2) |
 | `fx_defaults` | small defaults helpers | — |
 
 Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the project so imports resolve offline. Or set `FX_STD_ROOT`.
@@ -202,7 +205,7 @@ Non-C FFI is **not** shipped.
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
-- `Vec` index **writes** (by design — see Vec write story); `&mut Vec` as a mut slice; mut sub-slices
+- `Vec` index **assign sugar** `v[i]=x` (by design — use `vec_set`); `&mut Vec` as a mut slice; mut sub-slices
 - Package manager; sockets / full net std
 - Advanced fx Runtime (device-aware regions, capabilities, migration)
 - Neuton / OS product; Experimental horizon features
@@ -231,11 +234,27 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Files | `std/io` + `effects { io }` · see `examples/tool_files` |
 | Text path (str↔bytes↔file) | StrBuilder → file → `byte_at` → Buf · see `examples/tool_text` |
 | Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
-| Mut slice write | `&mut [T]` on arrays · `programs/lv073_mut_slice.fx` |
+| Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
+| Vec slot write | `vec_set` / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` |
+| Graph / IR shape | ids into Vecs · `examples/pattern_ids` · or **`std/pool`** · `examples/pattern_pool` · [COMPOSITION.md](COMPOSITION.md) |
+| Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |
+| Fixed ring | array + cursors · `examples/pattern_ring` · or `std/queue` |
 | Result / `?` | general emit · see `examples/tool_result` |
 | Embed in C | `--host` + [WRAP.md](WRAP.md) · `examples/showcase_wrap` |
-| Inspect lowering | `fx emit-c` |
+| Inspect lowering | `fx emit-c` (annotate comments) · [TRACKING.md](TRACKING.md) |
+| Map C line → fx | `fx emit-c --debug-source` + `fx locate` · [TRACKING.md](TRACKING.md) |
 
 ---
 
-[START_HERE.md](START_HERE.md) · [LANGUAGE.md](LANGUAGE.md) · [REFERENCE.md](REFERENCE.md) · [STD.md](STD.md) · [CLI.md](CLI.md) · [REGIONS.md](REGIONS.md) · [WRAP.md](WRAP.md)
+## Composition doctrine (FX-0.7.4)
+
+Teach **Lane A** (fx method): value-threaded grow, indices over interior pointers, arrays/`&mut [T]` for local mut, **`std/pool`** ids.
+**No unsafe dialect.** Optional non-production convenience helper is authorized later and non-default.
+
+→ [COMPOSITION.md](COMPOSITION.md) · dual-emit tracking → [TRACKING.md](TRACKING.md)
+
+**Landed D1–D2 + NAT-8:** `std/pool` + `vec_set` slot mut (not `v[i]=x`). D3 phase types and D4 convenience helper **skipped**.
+
+---
+
+[START_HERE.md](START_HERE.md) · [COMPOSITION.md](COMPOSITION.md) · [TRACKING.md](TRACKING.md) · [LANGUAGE.md](LANGUAGE.md) · [REFERENCE.md](REFERENCE.md) · [STD.md](STD.md) · [CLI.md](CLI.md) · [REGIONS.md](REGIONS.md) · [WRAP.md](WRAP.md)

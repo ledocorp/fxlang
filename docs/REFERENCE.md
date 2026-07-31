@@ -74,11 +74,11 @@ Details: [REGIONS.md](REGIONS.md)
 - Bitwise: `& | ^ << >>` on integer families
 - Logical: `!` `&&` `||` (bool)
 - Compare: `== != < <= > >=`
-- Index: arrays R/W; `&[T]` read-only; `&mut [T]` write-through (array-backed); Vec **read** via `v[i]` / `vec_get`
+- Index: arrays R/W; `&[T]` read-only; `&mut [T]` write-through (array-backed); Vec **read** via `v[i]` / `vec_get`; Vec **slot** via `vec_set`
 - Sub-slice: `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, or slices)
 - Cast: `expr as T` · deref: `*p`
 
-**No** `v[i] = x` on `Vec` (by design). For in-place writes use arrays + `&mut [T]`.
+**No** `v[i] = x` on `Vec` (by design). Slot writes: `vec_set` / `std/vec.set`. Views: arrays + `&mut [T]`.
 
 ## Statements
 
@@ -97,7 +97,7 @@ Details: [REGIONS.md](REGIONS.md)
 
 | Area | Builtins (common) | std facade |
 |------|-------------------|------------|
-| Vec | `vec_new` `vec_push` `vec_get` · `.len` | `std/vec` (`new`/`push`/`get`/`len`) |
+| Vec | `vec_new` `vec_push` `vec_get` `vec_set` · `.len` | `std/vec` (`new`/`push`/`get`/`set`/`len`) |
 | String | `str_compare` `str_concat` `str_len` `str_byte_at` | `std/string` |
 | Builder | `strbuf_new` `strbuf_push` `strbuf_finish` `strbuf_len` | `builder`/`append`/`build` |
 | Map | `map_new` `map_insert` `map_get` `map_contains` … | `std/map` · set via `std/set` |

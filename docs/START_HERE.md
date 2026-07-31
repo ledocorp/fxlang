@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.7.3 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.7.4 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
 **Site:** http://www.ledocorp.org
 
 ---
@@ -27,7 +27,7 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.7.3
+fx version                    # expect v0.7.4
 fx doctor
 
 fx new hello
@@ -73,6 +73,8 @@ fx new firmware --scaffold embedded # small arena, no staged std
 | You want… | Look here |
 |-----------|-----------|
 | **Everything that exists (cheatsheet)** | [SURFACE.md](SURFACE.md) |
+| **How to compose hard programs** | [COMPOSITION.md](COMPOSITION.md) |
+| **Map C errors back to fx** | [TRACKING.md](TRACKING.md) |
 | Understand the language | [LANGUAGE.md](LANGUAGE.md) |
 | Compact reference | [REFERENCE.md](REFERENCE.md) |
 | Regions / effects / ownership | [REGIONS.md](REGIONS.md) |

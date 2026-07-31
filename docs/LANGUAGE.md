@@ -5,6 +5,8 @@ show up in the source, then lower to readable C on a small zspec substrate.
 Version **0.7.3** is already a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), grow ergonomics, Vec `v[i]` reads, array-backed `&mut [T]`, and general Result/`?`.
 
+**How to compose** (ids, local mut, grow/freeze, dual-emit tracking): [COMPOSITION.md](COMPOSITION.md) · [TRACKING.md](TRACKING.md).
+
 Canonical web copy: https://www.ledocorp.org/fx/docs/language/
 
 ## What fx is trying to be

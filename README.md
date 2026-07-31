@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.7.3](VERSION)  
+**Version:** [0.7.4](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE)
 
@@ -74,7 +74,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.7.3
+fx version                 # v0.7.4
 fx new hello
 cd hello
 fx run main.fx             # exit 42
@@ -171,8 +171,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.7.3](docs/releases/0.7.3.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.7.4](docs/releases/0.7.4.md).
 
-**0.7.3** is the maturity pack on top of 0.7.2: surface map, week-two tools, taught text path, `Map<string,string>`, array-backed `&mut [T]`, general Result/`?` emit, crystal-refuse Vec index writes, and trust polish (`fx doctor`, smoke CI). Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
+**0.7.4** is the composition pack: how to build under regions (`COMPOSITION.md`), dual-emit tracking (`TRACKING.md`), `std/pool` + `lib/id_pool`, `vec_set` slot mut (still no `v[i]=x`), and `pattern_*` examples. Builds on 0.7.3 maturity (surface map, week-two tools, Result/`?`, `&mut [T]`). Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

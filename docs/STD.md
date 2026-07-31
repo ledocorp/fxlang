@@ -24,6 +24,7 @@ import std/string;
 | `fmt` | Integer / tag formatting helpers |
 | `io` | Lines + minimal file I/O (`effects { io }`) |
 | `queue` | Bounded queue facade (see caveat below) |
+| `pool` | Id-pool facade (`make`/`alloc`/`get`/`set`/`len`) — needs `lib/id_pool` |
 | `buf` | Growable `Buf` + `Bytes` view |
 | `fx_defaults` | Small defaults-related constants/helpers |
 
@@ -44,7 +45,8 @@ Quieter patterns (same semantics): loop `v = vec.push(v, n)`, and `&mut` state `
 - Facade: `vec.new` / `push` / `get` / `len` (and arena variants where applicable)
 - Builtins: `vec_new`, `vec_push`, `vec_get`, field `.len`
 - Elements: integers (incl. unsigned widths), `bool`, `string`, structs, payload enums
-- Reads: `v[i]` sugar or `get` / `vec_get` (same emit); **no** `v[i] = x` writes
+- Reads: `v[i]` sugar or `get` / `vec_get` (same emit); **no** `v[i] = x`
+- Slot writes: `vec_set` / `std/vec.set` (requires `mut`; no grow)
 - Note: the thin `std/vec.get` facade is typed around everyday `i32` use; for other element types prefer builtins
 
 ## String and StrBuilder
@@ -95,6 +97,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 ## Caveats
 
 - **`std/queue`** needs `lib/ring_queue.fx` beside the project (or package root). `fx new` (simple) stages both `std/` and `lib/ring_queue.fx`. The public package ships `lib/`.
+- **`std/pool`** needs `lib/id_pool.fx` (also staged by `fx new`). `set` uses `vec_set` (stable slot write; D2).
 - `fx new` (simple) copies a Core `std/` set beside your project so imports resolve offline.
 
 ## Growth

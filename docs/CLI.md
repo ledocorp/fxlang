@@ -61,13 +61,17 @@ Default linking expects **gcc** and the zspec library that matches your OS (`bui
 
 ```text
 fx emit-c main.fx -o out_c
+fx emit-c main.fx -o out_c --debug-source   # .fxmap + #line
 ```
 
-Inspect the generated C without linking.
+Inspect the generated C without linking. Default emit includes `/* fx: … */` annotate comments.
+`--debug-source` adds a machine map for `fx locate` and debugger `#line`s.
+→ [TRACKING.md](TRACKING.md)
 
 ### Power path: `fx cc`
 
 Same family of flags as run/build, for hosts who want full control over emit + link.
+`fx cc` uses debug-source internally so C toolchain messages can remap to `.fx`.
 
 ### Agent / editor helpers
 

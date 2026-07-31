@@ -582,6 +582,16 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, "FX-SH-NAT-7") != 1) {
         return Ok(628);
     }
+    // FX-SH-NAT-8 - vec_set CallExpr lowering present in live emit.
+    if (str_contains(c_src, "vec_set") != 1) {
+        return Ok(629);
+    }
+    if (str_contains(c_src, "FX-SH-NAT-8") != 1) {
+        return Ok(630);
+    }
+    if (str_contains(c_src, ").data[") != 1) {
+        return Ok(631);
+    }
     if (str_contains(c_src, "fx_sh_parse_type_span_is_map") != 1) {
         return Ok(597);
     }

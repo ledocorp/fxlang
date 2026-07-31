@@ -17,6 +17,11 @@ fn push<T>(v: Vec<T>, x: T) -> Vec<T> effects { mut } {
     return vec_push(v, x);
 }
 
+// FX-0.7.4-D2 - slot write (no grow). Prefer this over refused `v[i] = x`.
+fn set<T>(v: Vec<T>, i: i32, x: T) -> Vec<T> effects { mut } {
+    return vec_set(v, i, x);
+}
+
 fn get<T>(v: Vec<T>, i: i32) -> i32 effects { alloc } {
     return vec_get(v, i);
 }

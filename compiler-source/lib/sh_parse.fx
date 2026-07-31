@@ -9501,6 +9501,26 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b4: StrBuilder = strbuf_push(b3, "]");
         return Ok(strbuf_finish(b4));
     }
+    // FX-SH-NAT-8 - vec_set(v, i, x) → ((v).data[i] = (x), (v))  (stable slot; no grow)
+    if (sh_lexer.slice_eq(src, coff, cln, "vec_set") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let vec: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let ix: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let val: string = emit_parser_expr_c(mod_slug, src, nodes, a2)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((");
+        let b2: StrBuilder = strbuf_push(b1, vec);
+        let b3: StrBuilder = strbuf_push(b2, ").data[");
+        let b4: StrBuilder = strbuf_push(b3, ix);
+        let b5: StrBuilder = strbuf_push(b4, "] = (");
+        let b6: StrBuilder = strbuf_push(b5, val);
+        let b7: StrBuilder = strbuf_push(b6, "), (");
+        let b8: StrBuilder = strbuf_push(b7, vec);
+        let b9: StrBuilder = strbuf_push(b8, "))");
+        return Ok(strbuf_finish(b9));
+    }
     if (sh_lexer.slice_eq(src, coff, cln, "map_nth_key") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
