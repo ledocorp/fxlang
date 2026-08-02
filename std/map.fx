@@ -9,6 +9,11 @@ fn insert(m: Map<string, i32>, key: string, value: i32) -> Map<string, i32> effe
     return map_insert(m, key, value);
 }
 
+/// FX-0.7.5-A2 - accumulate delta at key (slot add or insert).
+fn add_i32(m: Map<string, i32>, key: string, delta: i32) -> Map<string, i32> effects { alloc, mut } {
+    return map_add_i32(m, key, delta);
+}
+
 fn remove(m: Map<string, i32>, key: string) -> Map<string, i32> effects { alloc, mut } {
     return map_remove(m, key);
 }

@@ -592,6 +592,16 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, ").data[") != 1) {
         return Ok(631);
     }
+    // FX-SH-NAT-9 - map_add_i32 CallExpr + helpers present in live emit.
+    if (str_contains(c_src, "map_add_i32") != 1) {
+        return Ok(632);
+    }
+    if (str_contains(c_src, "FX-SH-NAT-9") != 1) {
+        return Ok(633);
+    }
+    if (str_contains(c_src, "fx_sh_parse_map_add_i32") != 1) {
+        return Ok(634);
+    }
     if (str_contains(c_src, "fx_sh_parse_type_span_is_map") != 1) {
         return Ok(597);
     }

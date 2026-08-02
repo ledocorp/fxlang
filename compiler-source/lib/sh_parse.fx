@@ -9402,6 +9402,25 @@ fn emit_map_ss_helpers_c(mod_slug: string) -> Result<string, core_Err> effects {
     return Ok(strbuf_finish(b39));
 }
 
+// FX-SH-NAT-9 - map_insert (si) + map_add_i32; reuses map_slot from NAT-6 preamble.
+fn emit_map_add_i32_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
+    let b0: StrBuilder = strbuf_new();
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-9 - map_add_i32 (si insert + accumulate) */\nstatic inline fx_Map_string_i32 fx_");
+    let b2: StrBuilder = strbuf_push(b1, mod_slug);
+    let b3: StrBuilder = strbuf_push(b2, "_map_insert(core_Allocator* a, fx_Map_string_i32 map, const char* key, int32_t value) {\n    if ((map.len + 1) * 4 >= map.cap * 3) {\n        size_t ncap = map.cap ? map.cap * 2 : 16;\n        const char** nk = (const char**)core_mem_alloc(a, ncap * sizeof(const char*));\n        int32_t* nv = (int32_t*)core_mem_alloc(a, ncap * sizeof(int32_t));\n        if (nk == NULL || nv == NULL) { return map; }\n        for (size_t i = 0; i < ncap; i++) { nk[i] = NULL; }\n        for (size_t i = 0; i < map.cap; i++) {\n            if (map.keys[i] != NULL) {\n                size_t j = fx_");
+    let b4: StrBuilder = strbuf_push(b3, mod_slug);
+    let b5: StrBuilder = strbuf_push(b4, "_map_slot(nk, ncap, map.keys[i]);\n                nk[j] = map.keys[i];\n                nv[j] = map.vals[i];\n            }\n        }\n        map.keys = nk; map.vals = nv; map.cap = ncap;\n    }\n    size_t slot = fx_");
+    let b6: StrBuilder = strbuf_push(b5, mod_slug);
+    let b7: StrBuilder = strbuf_push(b6, "_map_slot(map.keys, map.cap, key);\n    if (map.keys[slot] == NULL) { map.keys[slot] = key; map.len = map.len + 1; }\n    map.vals[slot] = value;\n    return map;\n}\n\nstatic inline fx_Map_string_i32 fx_");
+    let b8: StrBuilder = strbuf_push(b7, mod_slug);
+    let b9: StrBuilder = strbuf_push(b8, "_map_add_i32(core_Allocator* a, fx_Map_string_i32 map, const char* key, int32_t delta) {\n    if (map.cap != 0 && map.keys != NULL) {\n        size_t slot = fx_");
+    let b10: StrBuilder = strbuf_push(b9, mod_slug);
+    let b11: StrBuilder = strbuf_push(b10, "_map_slot(map.keys, map.cap, key);\n        if (map.keys[slot] != NULL) {\n            map.vals[slot] = map.vals[slot] + delta;\n            return map;\n        }\n    }\n    return fx_");
+    let b12: StrBuilder = strbuf_push(b11, mod_slug);
+    let b13: StrBuilder = strbuf_push(b12, "_map_insert(a, map, key, delta);\n}\n");
+    return Ok(strbuf_finish(b13));
+}
+
 fn emit_map_mod_call_c(mod_slug: string, fn_suffix: string, args: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
     let b1: StrBuilder = strbuf_push(b0, "fx_");
@@ -9520,6 +9539,23 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b8: StrBuilder = strbuf_push(b7, vec);
         let b9: StrBuilder = strbuf_push(b8, "))");
         return Ok(strbuf_finish(b9));
+    }
+    // FX-SH-NAT-9 - map_add_i32(m, key, delta) → fx_{mod}_map_add_i32(alloc, m, key, delta)
+    if (sh_lexer.slice_eq(src, coff, cln, "map_add_i32") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let map: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let key: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let delta: string = emit_parser_expr_c(mod_slug, src, nodes, a2)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "core_default_allocator(), ");
+        let b2: StrBuilder = strbuf_push(b1, map);
+        let b3: StrBuilder = strbuf_push(b2, ", ");
+        let b4: StrBuilder = strbuf_push(b3, key);
+        let b5: StrBuilder = strbuf_push(b4, ", ");
+        let b6: StrBuilder = strbuf_push(b5, delta);
+        return emit_map_mod_call_c(mod_slug, "map_add_i32", strbuf_finish(b6));
     }
     if (sh_lexer.slice_eq(src, coff, cln, "map_nth_key") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
@@ -23909,6 +23945,7 @@ fn emit_sh_parse_fn_def_runtime_preamble() -> Result<string, core_Err> effects {
     let gcc: string = emit_sh_parse_fn_def_gcc_runtime()?;
     let nth: string = emit_map_nth_helpers_c("sh_parse")?;
     let map_ss: string = emit_map_ss_helpers_c("sh_parse")?;
+    let map_add: string = emit_map_add_i32_helpers_c("sh_parse")?;
     let buf_td: string = emit_buf_bytes_typedefs_c()?;
     let buf_h: string = emit_buf_helpers_c("sh_parse")?;
     let ms_td: string = emit_mut_slice_typedefs_c("sh_parse")?;
@@ -23919,10 +23956,11 @@ fn emit_sh_parse_fn_def_runtime_preamble() -> Result<string, core_Err> effects {
     let b4: StrBuilder = strbuf_push(b3, gcc);
     let b5: StrBuilder = strbuf_push(b4, nth);
     let b6: StrBuilder = strbuf_push(b5, map_ss);
-    let b7: StrBuilder = strbuf_push(b6, buf_td);
-    let b8: StrBuilder = strbuf_push(b7, buf_h);
-    let b9: StrBuilder = strbuf_push(b8, ms_td);
-    return Ok(strbuf_finish(b9));
+    let b7: StrBuilder = strbuf_push(b6, map_add);
+    let b8: StrBuilder = strbuf_push(b7, buf_td);
+    let b9: StrBuilder = strbuf_push(b8, buf_h);
+    let b10: StrBuilder = strbuf_push(b9, ms_td);
+    return Ok(strbuf_finish(b10));
 }
 
 fn emit_sh_parse_pick_st_fn_def(src: string, fn_out: FnOut, mod_st: StructOut, imp_st: StructOut, param_st: StructOut, ret_st: StructOut, enum_st: StructOut, struct_st: StructOut, parse_out_st: StructOut, stmt_step_st: StructOut, block_parse_out_st: StructOut, arg_count_out_st: StructOut, struct_lit_acc_st: StructOut, fn_out_st: StructOut) -> StructOut {

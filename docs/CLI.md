@@ -7,13 +7,14 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.7.3`) |
+| `fx version` | Print version (expect `v0.7.5`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
 | `fx run <file.fx>` | Emit C, link, run |
 | `fx build <file.fx>` | Emit C and link (do not run) |
 | `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only |
+| `fx bind <header.h> --out <file.fx>` | Cleaned C header → inspectable `extern "c"` stubs (`[--module name]`) |
 
 ### `fx doctor`
 

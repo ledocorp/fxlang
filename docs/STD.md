@@ -11,7 +11,7 @@ import std/map;
 import std/string;
 ```
 
-## Modules in 0.7.3
+## Modules in 0.7.5
 
 | Module | Role |
 |--------|------|
@@ -24,7 +24,7 @@ import std/string;
 | `fmt` | Integer / tag formatting helpers |
 | `io` | Lines + minimal file I/O (`effects { io }`) |
 | `queue` | Bounded queue facade (see caveat below) |
-| `pool` | Id-pool facade (`make`/`alloc`/`get`/`set`/`len`) — needs `lib/id_pool` |
+| `pool` | Id-pool facade (`make`/`alloc`/`get`/`set`/`len`/`raw`/`from_raw`) — typed **`Id`**; needs `lib/id_pool` |
 | `buf` | Growable `Buf` + `Bytes` view |
 | `fx_defaults` | Small defaults-related constants/helpers |
 
@@ -64,10 +64,11 @@ Quieter patterns (same semantics): loop `v = vec.push(v, n)`, and `&mut` state `
 
 ## Map and set
 
-- Implemented map: **`Map<string, i32>` only**
-- `map_new` / `insert` / `remove` / `get` / `contains` / `len`
+- Implemented map: **`Map<string, i32>`** (+ `Map<string, string>` ss variants)
+- `map_new` / `insert` / **`add_i32`** / `remove` / `get` / `contains` / `len`
+- **`map_add_i32`**: existing key → slot add (no grow); miss → insert (may grow)
 - Dense iterate: `map_nth_key` / `map_nth_value` (index `0 .. map_len(m)`; table order, not insertion order; OOB → `""` / `0`)
-- Facade `std/map`: `nth_key` / `nth_value`
+- Facade `std/map`: `nth_key` / `nth_value` / `add_i32`
 - `map_get` returns `Result<i32, core_Err>` · miss is an error · composes with `?`
 - `std/set`: insert / contains / len over the same map shape
 
@@ -97,7 +98,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 ## Caveats
 
 - **`std/queue`** needs `lib/ring_queue.fx` beside the project (or package root). `fx new` (simple) stages both `std/` and `lib/ring_queue.fx`. The public package ships `lib/`.
-- **`std/pool`** needs `lib/id_pool.fx` (also staged by `fx new`). `set` uses `vec_set` (stable slot write; D2).
+- **`std/pool`** needs `lib/id_pool.fx` (also staged by `fx new`). Handles are typed **`Id`**. `set` uses `vec_set` (stable slot write; D2). `raw` / `from_raw` unwrap/wrap explicitly.
 - `fx new` (simple) copies a Core `std/` set beside your project so imports resolve offline.
 
 ## Growth

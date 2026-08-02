@@ -1,6 +1,6 @@
 # Composition under regions
 
-**Package:** 0.7.4 · **Pack:** FX-0.7.4  
+**Package:** 0.7.5 · **Pack:** FX-0.7.5  
 **Normative monorepo canon:** `docs/specs/COMPOSITION_UNDER_REGIONS.md`  
 **Site:** https://www.ledocorp.org/fx/docs/composition/
 
@@ -65,7 +65,7 @@ fx run examples/pattern_ids/main.fx     # SoA Vecs
 fx run examples/pattern_pool/main.fx    # std/pool + lib/id_pool
 ```
 
-`pool.set` / `vec_set` write a **stable slot** (no realloc). Grow remains `push` / reassign. Still **no** `v[i] = x`.
+`pool.set` / `vec_set` write a **stable slot** (no realloc). Handles are typed **`Id`** (bare `i32` at get/set is a type error). Grow remains `push` / reassign. Still **no** `v[i] = x`.
 
 ### 5. Fixed ring (cursors + array)
 
@@ -74,6 +74,15 @@ fx run examples/pattern_ring/main.fx
 ```
 
 Also see `std/queue` + `lib/ring_queue` for a packaged FIFO.
+
+### 6. Non-toy programs (0.7.5-A3)
+
+```text
+fx run examples/composition_tally/main.fx   # multi-pass Map add_i32 → 42
+fx run examples/composition_reach/main.fx   # typed Id pool + BFS reachability → 42
+```
+
+Harness: `.\scripts\test-composition-patterns.ps1` (opt-in; includes pattern_* + composition_*).
 
 ---
 

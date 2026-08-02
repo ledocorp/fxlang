@@ -1,11 +1,12 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.7.4  
-**Map ID:** FX-0.7.4-M6  
+**Package version:** 0.7.5  
+**Map ID:** FX-0.7.5-M6  
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
+Horizon A adds typed **`Id`**, **`map_add_i32`**, and non-toy `composition_*` programs.
 Use it as a cheatsheet and as a depth ledger: if something is not listed here, do not assume it exists.
 
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
@@ -132,7 +133,7 @@ Teaching patterns: scaffold let-chains · loop reassignment · `&mut` field upda
 | `&mut [T]` | index write-through (array-backed) | `&mut Vec` as slice; mut sub-slices |
 | `StrBuilder` | `strbuf_new` / `push` / `finish` / `len` | — |
 | `string` helpers | `str_compare` `str_concat` `str_len` `str_byte_at` | rich unicode / regex; no silent `Bytes`↔`string` builtin |
-| `Map<string, i32>` | insert/remove/get/contains/len; `map_nth_*` | — |
+| `Map<string, i32>` | insert/remove/get/contains/len; **`map_add_i32`** / `std/map.add_i32`; `map_nth_*` | accumulate = slot add or insert |
 | `Map<string, string>` | `map_new_ss` / shared map builtins; `std/map.*_ss` | other KV shapes still out |
 | `Buf` / `Bytes` | `buf_new`/`push`/`len`/`get`/`finish`; `bytes_len`/`bytes_get` | general streaming I/O API |
 
@@ -158,7 +159,7 @@ Ordinary fx. Import like any library. Linking still uses zspec for usual alloc p
 | `fmt` | integer / tag format helpers | — |
 | `io` | lines + text file read/write | declare `io` (+ `alloc` when needed) |
 | `queue` | bounded queue facade | needs `lib/ring_queue.fx` (shipped; `fx new` stages it) |
-| `pool` | id-pool facade (`make`/`alloc`/`get`/`set`/`len`) | needs `lib/id_pool.fx` (shipped; `fx new` stages it); `set` → `vec_set` (D2) |
+| `pool` | id-pool facade (`make`/`alloc`/`get`/`set`/`len`/`raw`/`from_raw`) | needs `lib/id_pool.fx`; handles are typed **`Id`** (not bare `i32` at get/set); `set` → `vec_set` (D2) |
 | `fx_defaults` | small defaults helpers | — |
 
 Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the project so imports resolve offline. Or set `FX_STD_ROOT`.
@@ -191,8 +192,9 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 |------------|----------------|
 | Dual emission | `fx run` / `build` / `emit-c` → readable C on zspec |
 | C owns `main` | `fx run lib.fx --host host.c` |
-| Extra link | `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
-| Examples | `examples/showcase_core` · `showcase_wrap` · `showcase_072` |
+| Extra link | `--link` / `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
+| Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
+| Examples | `showcase_*` · `bind_*` · `wasm_smoke` · `composition_*` |
 
 Non-C FFI is **not** shipped.
 
@@ -230,17 +232,19 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Hello + visible heap | `fx new hello` → `fx run` |
 | Grow collections | value-thread `vec` / `map` / `buf` / `strbuf` |
 | Iterate a map | `map_nth_*` / `std/map.nth_*` (table order) · see `examples/tool_tally` |
+| Tally / accumulate | `map_add_i32` / `std/map.add_i32` · `programs/lv075_map_add.fx` · `examples/tool_tally` · **`examples/composition_tally`** |
 | Bytes | `Buf` / `Bytes` + `std/buf` · see `examples/tool_bytes` |
 | Files | `std/io` + `effects { io }` · see `examples/tool_files` |
 | Text path (str↔bytes↔file) | StrBuilder → file → `byte_at` → Buf · see `examples/tool_text` |
 | Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
 | Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
 | Vec slot write | `vec_set` / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` |
-| Graph / IR shape | ids into Vecs · `examples/pattern_ids` · or **`std/pool`** · `examples/pattern_pool` · [COMPOSITION.md](COMPOSITION.md) |
+| Graph / IR shape | typed **`Id`** into pool · `examples/pattern_ids` · **`std/pool`** · `examples/pattern_pool` · **`examples/composition_reach`** · `programs/lv075_typed_id.fx` · [COMPOSITION.md](COMPOSITION.md) |
 | Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |
 | Fixed ring | array + cursors · `examples/pattern_ring` · or `std/queue` |
 | Result / `?` | general emit · see `examples/tool_result` |
 | Embed in C | `--host` + [WRAP.md](WRAP.md) · `examples/showcase_wrap` |
+| C header → stubs | `fx bind` Level 1 · `examples/bind_smoke` · Level 2 `bind_stb_sprintf` · [WRAP.md](WRAP.md) |
 | Inspect lowering | `fx emit-c` (annotate comments) · [TRACKING.md](TRACKING.md) |
 | Map C line → fx | `fx emit-c --debug-source` + `fx locate` · [TRACKING.md](TRACKING.md) |
 
@@ -253,7 +257,7 @@ Teach **Lane A** (fx method): value-threaded grow, indices over interior pointer
 
 → [COMPOSITION.md](COMPOSITION.md) · dual-emit tracking → [TRACKING.md](TRACKING.md)
 
-**Landed D1–D2 + NAT-8:** `std/pool` + `vec_set` slot mut (not `v[i]=x`). D3 phase types and D4 convenience helper **skipped**.
+**Landed D1–D2 + NAT-8 + A1–A3 + NAT-9:** `std/pool` typed **`Id`**, `map_add_i32`, `composition_*` programs, `vec_set` slot mut (not `v[i]=x`). D3/D4 **skipped**. A4 **hold/skip**.
 
 ---
 

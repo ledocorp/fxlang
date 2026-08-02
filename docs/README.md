@@ -1,13 +1,14 @@
 # fx documentation
 
-User guides for the **0.7.4** language package. HTML versions also live on
+User guides for the **0.7.5** language package (
+typed `Id`, `map_add_i32`, `composition_tally` / `composition_reach`). HTML also on
 https://www.ledocorp.org/fx/docs/
 
 | Doc | Topic |
 |-----|--------|
 | [START_HERE.md](START_HERE.md) | Install, `fx doctor`, five-minute hello |
 | [SURFACE.md](SURFACE.md) | **As-implemented surface map** (cheatsheet + depth ledger) |
-| [COMPOSITION.md](COMPOSITION.md) | **How to build** under regions (ids, local mut, grow/freeze) |
+| [COMPOSITION.md](COMPOSITION.md) | **How to build** under regions (ids, accumulate, reachability) |
 | [TRACKING.md](TRACKING.md) | Dual-emit: annotate comments, `.fxmap`, `#line`, `fx locate` |
 | [LANGUAGE.md](LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
 | [REFERENCE.md](REFERENCE.md) | Compact 0.7 surface reference |

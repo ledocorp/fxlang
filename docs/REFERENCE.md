@@ -1,6 +1,6 @@
 # Reference (0.7 surface)
 
-Compact lookup for everyday fx in the **0.7.3** package.
+Compact lookup for everyday fx in the **0.7.5** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).
@@ -100,10 +100,12 @@ Details: [REGIONS.md](REGIONS.md)
 | Vec | `vec_new` `vec_push` `vec_get` `vec_set` · `.len` | `std/vec` (`new`/`push`/`get`/`set`/`len`) |
 | String | `str_compare` `str_concat` `str_len` `str_byte_at` | `std/string` |
 | Builder | `strbuf_new` `strbuf_push` `strbuf_finish` `strbuf_len` | `builder`/`append`/`build` |
-| Map | `map_new` `map_insert` `map_get` `map_contains` … | `std/map` · set via `std/set` |
+| Map | `map_new` `map_insert` **`map_add_i32`** `map_get` `map_contains` `map_nth_*` … | `std/map` (`add_i32`, …) · set via `std/set` |
+| Pool | (via facade / lib) | `std/pool` + `lib/id_pool` — typed **`Id`**; `set` → `vec_set` |
 | Fmt / IO | (via facades) | `std/fmt` · `std/io` |
 
-Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_insert(m, k, v)`, `b = strbuf_push(b, s)`.
+Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_insert(m, k, v)`, `m = map_add_i32(m, k, d)`, `b = strbuf_push(b, s)`.
+Non-toy compose: `examples/composition_tally`, `examples/composition_reach`.
 
 ## Scaffolds
 
@@ -113,7 +115,7 @@ Growing ops are **value-threaded**: reassign `v = vec_push(v, x)`, `m = map_inse
 | `minimal` | Bare `main`; add region yourself |
 | `embedded` | Tiny arena; builtin `vec_*`; no staged std |
 
-## Honesty bound (not in 0.7.3 yet)
+## Honesty bound (not in 0.7 yet)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types

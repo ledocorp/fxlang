@@ -52,8 +52,19 @@ Full flag list: [CLI.md](CLI.md).
 - Keep policy and algorithms in fx with visible effects and regions
 - Inspect emitted C with `fx emit-c` when you want to see the lowering
 
+## Generating Level 1 stubs (`fx bind`)
+
+```text
+fx bind path/to/cleaned.h --out lib_raw.fx [--module name]
+```
+
+Produces inspectable `extern "c"` stubs (skips macros / unknown types as comments).
+Smoke: `examples/bind_smoke` — `fx run main.fx --link host.c` (exit 42).
+Level 2 (hand-written Result wrapper over real lib): `examples/bind_stb_sprintf` — bind stubs → `stb_safe` → stb_sprintf shim (exit 42).
+
 ## Honesty bound
 
-- C FFI works; large-library wrapping is still **manual** (no wrapper generator yet)
+- C FFI works; `fx bind` covers Level 1 raw stubs — ownership policy is not invented for you
+- Level 2 wrappers stay hand-written (see `bind_stb_sprintf/stb_safe.fx`)
 - There is no direct Rust/Go/Zig FFI · those ecosystems speak C on their side
 - `std/io` itself uses `extern "c"` for host puts / file ops

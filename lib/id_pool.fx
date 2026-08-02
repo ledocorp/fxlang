@@ -1,5 +1,11 @@
-// lib/id_pool.fx — region id-pool; set uses vec_set (FX-0.7.4-D2 slot mut, no rebuild).
+// lib/id_pool.fx — region id-pool with typed Id (FX-0.7.5-A1).
+// Grow: value-threaded alloc. Slot write: vec_set (D2). No escaping pointers.
 module id_pool;
+
+/// Typed pool index — not interchangeable with bare i32 at call sites.
+struct Id {
+    raw: i32,
+}
 
 struct Pool {
     data: Vec<i32>,
@@ -7,7 +13,7 @@ struct Pool {
 
 struct Alloc {
     pool: Pool,
-    id: i32,
+    id: Id,
 }
 
 fn make() -> Pool effects { alloc } {
@@ -19,17 +25,25 @@ fn len(p: Pool) -> i32 {
     return p.data.len;
 }
 
+fn from_raw(n: i32) -> Id {
+    return Id { raw: n };
+}
+
+fn raw(id: Id) -> i32 {
+    return id.raw;
+}
+
 fn alloc(p: Pool, x: i32) -> Alloc effects { alloc, mut } {
     let d: Vec<i32> = vec_push(p.data, x);
-    let id: i32 = d.len - 1;
+    let id: Id = Id { raw: d.len - 1 };
     return Alloc { pool: Pool { data: d }, id: id };
 }
 
-fn get(p: Pool, id: i32) -> i32 {
-    return vec_get(p.data, id);
+fn get(p: Pool, id: Id) -> i32 {
+    return vec_get(p.data, id.raw);
 }
 
-fn set(p: Pool, id: i32, x: i32) -> Pool effects { alloc, mut } {
+fn set(p: Pool, id: Id, x: i32) -> Pool effects { alloc, mut } {
     // D2: stable-slot write — identity/capacity unchanged (not growable-Vec v[i]=x).
-    return Pool { data: vec_set(p.data, id, x) };
+    return Pool { data: vec_set(p.data, id.raw, x) };
 }

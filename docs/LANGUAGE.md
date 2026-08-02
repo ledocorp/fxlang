@@ -2,10 +2,12 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-Version **0.7.3** is already a full programming surface, not just “regions + vec.”
-It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), grow ergonomics, Vec `v[i]` reads, array-backed `&mut [T]`, and general Result/`?`.
+The **0.7.5** package is a full programming surface, not just “regions + vec.”
+It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
+typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / `vec_set` slot writes,
+array-backed `&mut [T]`, and general Result/`?`. Non-toy demos: `examples/composition_tally`, `composition_reach`.
 
-**How to compose** (ids, local mut, grow/freeze, dual-emit tracking): [COMPOSITION.md](COMPOSITION.md) · [TRACKING.md](TRACKING.md).
+**How to compose** (ids, accumulate, reachability, grow/freeze, dual-emit tracking): [COMPOSITION.md](COMPOSITION.md) · [TRACKING.md](TRACKING.md).
 
 Canonical web copy: https://www.ledocorp.org/fx/docs/language/
 
@@ -66,7 +68,7 @@ Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`,
 | Floats | `f32` `f64` (unsuffixed float literals default to `f64`; use `1.5f32`) |
 | Other scalars | `bool` · `string` · `void` · `core_Err` |
 | Aggregates | `struct` · `enum` (unit + payload variants) |
-| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `StrBuilder` · `Map<string, i32>` |
+| Collections | `Vec<T>` · `[T; N]` · `&[T]` · `&mut [T]` · `StrBuilder` · `Map<string, i32>` · `Map<string, string>` · `Buf` / `Bytes` · pool **`Id`** |
 | Errors | `Result<T, E>` (usually `core_Err`) |
 | Ownership | `own T` · `&T` · `&mut T` · `&region r T` |
 | Generics | Functions and structs (`fn new<T>(…)`, `Box<T>`, `Pair<A,B>`) · no traits |

@@ -6,11 +6,12 @@ import std/io;
 fn main() -> i32 effects { alloc, mut, io } {
     region r = arena(16384);
 
-    // Simulated category tallies (as if tokens were already classified).
+    // Simulated category tallies — accumulate with map.add_i32 (FX-0.7.5-A2).
     let m: Map<string, i32> = map.new();
-    m = map.insert(m, "ok", 10);
-    m = map.insert(m, "warn", 12);
-    m = map.insert(m, "err", 20);
+    m = map.add_i32(m, "ok", 10);
+    m = map.add_i32(m, "warn", 7);
+    m = map.add_i32(m, "err", 20);
+    m = map.add_i32(m, "warn", 5);
 
     let total: i32 = 0;
     let i: i32 = 0;
