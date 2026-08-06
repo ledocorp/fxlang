@@ -21,6 +21,7 @@ This repository is the **fx language package**: everything you need to install t
 | `compiler-source/` | Inspectable fx compiler modules (read-only; not how you run fx) |
 | `third_party/qbe/obj/qbe` | Linux QBE binary (IR → native; Windows IR uses it via WSL) |
 | `LICENSE` / `NOTICE` | Apache-2.0 |
+| `docs/LICENSES.md` | Third-party open-source inventory (QBE, …) |
 | `CONTRIBUTING.md` / `SECURITY.md` | Project policy |
 
 ## How to use it

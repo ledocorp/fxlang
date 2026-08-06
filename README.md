@@ -2,7 +2,7 @@
 
 **Version:** [0.8.1](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
-**License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE)
+**License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
 
 ---
 

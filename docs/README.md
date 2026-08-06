@@ -20,6 +20,7 @@ HTML also on https://www.ledocorp.org/fx/docs/
 | [WRAP.md](WRAP.md) | C host / `extern "c"` |
 | [CLI.md](CLI.md) | Commands and flags |
 | [SCAFFOLDS.md](SCAFFOLDS.md) | `fx new` templates |
+| [LICENSES.md](LICENSES.md) | Third-party open-source components in this package |
 | [releases/](releases/) | Version release notes |
 
 Agent index (website): https://www.ledocorp.org/fx/llms.txt
