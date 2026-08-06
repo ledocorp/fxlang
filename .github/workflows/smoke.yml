@@ -1,5 +1,7 @@
 # Smoke — packaged fx
 # Demo programs exit 42 on success; assert that explicitly (GHA treats nonzero as fail).
+# Linux: IR → native (ships third_party/qbe/obj/qbe).
+# Windows: emit-C path in CI (IR on Windows still needs WSL + the shipped Linux QBE).
 # macOS: skip-clean until a Darwin binary ships.
 
 name: smoke
@@ -21,15 +23,16 @@ jobs:
         run: bin\fx.exe doctor
       - name: showcase_core
         # Demo success is exit 42; `if errorlevel N` means >= N.
+        # Use --emit-c: GitHub windows-latest has no WSL IR toolchain by default.
         run: |
-          bin\fx.exe run examples\showcase_core\main.fx
+          bin\fx.exe run examples\showcase_core\main.fx --emit-c
           if errorlevel 43 exit /b 1
           if errorlevel 42 exit /b 0
           echo expected exit 42
           exit /b 1
       - name: tool_bytes
         run: |
-          bin\fx.exe run examples\tool_bytes\main.fx
+          bin\fx.exe run examples\tool_bytes\main.fx --emit-c
           if errorlevel 43 exit /b 1
           if errorlevel 42 exit /b 0
           echo expected exit 42
@@ -41,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: doctor
         run: |
-          chmod +x bin/fx
+          chmod +x bin/fx third_party/qbe/obj/qbe
           ./bin/fx doctor
       - name: showcase_core
         run: |

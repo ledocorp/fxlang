@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.8.0](VERSION)  
+**Version:** [0.8.1](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE)
 
@@ -75,7 +75,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.8.0
+fx version                 # v0.8.1
 fx new hello
 cd hello
 fx run main.fx             # IR → native; exit 42
@@ -174,8 +174,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.0](docs/releases/0.8.0.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.1](docs/releases/0.8.1.md).
 
-**0.8.0** leads with **IR → native** by default, keeps **readable emit-C** first-class (annotate / `.fxmap` / `fx locate`), and ships writeable-fx dogfood Apps 1–5 (CHIP‑8, JSON wrap + pure, textdiff) plus adoption polish (clearer diagnostics, shared CLI host recipe, wilder JSON including `\uXXXX`). Composition under regions, typed pool `Id`, `vec_set`, and dual paths remain the method — still no `v[i]=x`, no unsafe dialect. Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
+**0.8.1** ships the **QBE** binary in the language package so default IR → native works for strangers (Linux natively; Windows via WSL). Builds on **0.8.0**: IR by default, readable emit-C, dogfood Apps 1–5, composition under regions — still no `v[i]=x`, no unsafe dialect. macOS prebuilt binary still later.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

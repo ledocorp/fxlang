@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.8.0 (see [VERSION](VERSION))  
+**Version:** 0.8.1 (see [VERSION](VERSION))  
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
 This repository is the **fx language package**: everything you need to install the compiler and write programs.
@@ -19,6 +19,7 @@ This repository is the **fx language package**: everything you need to install t
 | `docs/` | User documentation (incl. `docs/releases/`) |
 | `examples/` | Optional demos |
 | `compiler-source/` | Inspectable fx compiler modules (read-only; not how you run fx) |
+| `third_party/qbe/obj/qbe` | Linux QBE binary (IR → native; Windows IR uses it via WSL) |
 | `LICENSE` / `NOTICE` | Apache-2.0 |
 | `CONTRIBUTING.md` / `SECURITY.md` | Project policy |
 
