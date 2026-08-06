@@ -2394,6 +2394,27 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
     });
 }
 
+/// FX-IR-SH-4 - `parse_fn_def` → return `i32` only (AST stays inside `sh_parse`; `sh_ir` never sees `Vec<Expr>`).
+fn parse_ir1_main_return_num() -> Result<i32, core_Err> effects { alloc, mut } {
+    let src: string = "fn main() -> i32 {\n    return 0;\n}\n";
+    let buf = sh_lexer.lex(src);
+    let pos: i32 = 0;
+    let empty: Vec<Expr> = vec_new(0);
+    let empty_stmts: Vec<Stmt> = vec_new(0);
+    let fn_out: FnOut = parse_fn_def(buf.kinds, buf.vals, buf.lens, src, "", &mut pos, empty, empty_stmts)?;
+    if (sh_lexer.slice_eq(src, fn_out.name_off, fn_out.name_len, "main") != 1) {
+        return Err(1);
+    }
+    if (fn_out.body_len < 1) {
+        return Err(1);
+    }
+    let ret_idx: i32 = stmt_return_expr_idx(fn_out.stmts, fn_out.body_start);
+    if (ret_idx < 0) {
+        return Err(1);
+    }
+    return Ok(eval_expr(fn_out.nodes, ret_idx));
+}
+
 fn parse_let_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>) -> Result<LetOut, core_Err> effects { alloc, mut } {
     let pos: i32 = 0;
     let n: i32 = kinds.len;

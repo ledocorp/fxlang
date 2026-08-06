@@ -10,6 +10,9 @@ Canonical web copy: https://www.ledocorp.org/fx/docs/wrap/
 - **fx owns main** · normal `fx run main.fx` (scaffolds)
 - **C owns main** · `fx run lib.fx --host host.c` · fx exports functions C calls
 
+For argv CLIs, prefer the shared helpers in `examples/cli_host/fx_cli_host.h`
+(fx owns logic; C owns argv / usage / stderr / exit). See dogfood App 2/4/5 hosts.
+
 ## Bundled demo
 
 ```text
@@ -68,3 +71,17 @@ Level 2 (hand-written Result wrapper over real lib): `examples/bind_stb_sprintf`
 - Level 2 wrappers stay hand-written (see `bind_stb_sprintf/stb_safe.fx`)
 - There is no direct Rust/Go/Zig FFI · those ecosystems speak C on their side
 - `std/io` itself uses `extern "c"` for host puts / file ops
+
+## Checklist: new `--link` example
+
+When you add an `examples/*` tree with `main.fx` that needs C sidecars:
+
+1. Document the exact `fx run` / `fx build` link line in that example’s README.  
+2. Confirm both `fx run` and `fx run --emit-c` when you claim dual-path quality.  
+3. Keep host/link flags next to the example so strangers can copy them without hunting.
+
+## What’s next for wraps
+
+Priority list (JSON deepen, fs/paths, hashes, compress, backlog items such as
+package managers and large SDKs): [LIBRARIES.md](LIBRARIES.md).
+Overall sequence: [NEXT.md](NEXT.md).

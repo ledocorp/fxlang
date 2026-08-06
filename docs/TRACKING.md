@@ -1,7 +1,6 @@
 # Dual-emit tracking (fx ↔ C)
 
-**Package:** 0.7.4 · **Pack:** FX-0.7.4  
-**Deep guide (monorepo):** `docs/DEBUGGING_EMITTED_C.md` · design: `docs/specs/EMIT_SOURCE_MAP.md`  
+**Package:** 0.8.0  
 **Site:** https://www.ledocorp.org/fx/docs/tracking/
 
 fx promises **readable C** and a way to map failures back to `.fx` sources.
@@ -49,15 +48,10 @@ Granularity is per **statement / significant fragment**, not every physical C li
 
 ---
 
-## Agent notes
+## Tips
 
-- Inspect C with `fx emit-c` when auditing lowering.
-- Use `fx locate` or MCP `fx_locate` when you have a C line from a toolchain error.
-- Do not invent DWARF fx variable names — not in this package story.
-- Composition method: [COMPOSITION.md](COMPOSITION.md).
+- Keep annotate mode on when reading emitted C with an agent.  
+- Use `--debug-source` when chasing a gcc error or stepping in a debugger.  
+- Layer 1 (`fx check`) before layer 2 — most mistakes never need C.
 
----
-
-## Related CLI
-
-→ [CLI.md](CLI.md) (`emit-c`, `cc`, `locate`, `mcp`)
+→ [CLI.md](CLI.md) · [WRAP.md](WRAP.md) · [LANGUAGE.md](LANGUAGE.md)

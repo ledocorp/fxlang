@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.7.5 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.8.0 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
 **Site:** http://www.ledocorp.org
 
 ---
@@ -27,12 +27,13 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.7.5
+fx version                    # expect v0.8.0
 fx doctor
 
 fx new hello
 cd hello
-fx run main.fx                # expect exit code 42
+fx run main.fx                # IR → native; expect exit code 42
+fx run main.fx --emit-c       # optional: emit-C → native
 ```
 
 Windows without PATH:
@@ -72,6 +73,10 @@ fx new firmware --scaffold embedded # small arena, no staged std
 
 | You want… | Look here |
 |-----------|-----------|
+| **What’s next** | [NEXT.md](NEXT.md) |
+| **Quality habits** | [QUALITY.md](QUALITY.md) |
+| **Planned dogfood apps** | [DOGFOOD.md](DOGFOOD.md) |
+| **C library wrap priorities** | [LIBRARIES.md](LIBRARIES.md) |
 | **Everything that exists (cheatsheet)** | [SURFACE.md](SURFACE.md) |
 | **How to compose hard programs** | [COMPOSITION.md](COMPOSITION.md) |
 | **Map C errors back to fx** | [TRACKING.md](TRACKING.md) |

@@ -11,7 +11,7 @@ import std/map;
 import std/string;
 ```
 
-## Modules in 0.7.5
+## Modules in 0.8.0
 
 | Module | Role |
 |--------|------|
@@ -27,6 +27,14 @@ import std/string;
 | `pool` | Id-pool facade (`make`/`alloc`/`get`/`set`/`len`/`raw`/`from_raw`) — typed **`Id`**; needs `lib/id_pool` |
 | `buf` | Growable `Buf` + `Bytes` view |
 | `fx_defaults` | Small defaults-related constants/helpers |
+
+## Mutation reminder
+
+- Grow: reassign (`vec.push` / `vec_push`)
+- Slot write: `vec_set` / `std/vec.set` under `mut` (no realloc)
+- **No** `v[i] = x` on growable `Vec`
+
+See [COMPOSITION.md](COMPOSITION.md). Library wrap priorities beyond `std/`: [LIBRARIES.md](LIBRARIES.md).
 
 ## Value-threading
 

@@ -1,8 +1,8 @@
 # Composition under regions
 
-**Package:** 0.7.5 · **Pack:** FX-0.7.5  
-**Normative monorepo canon:** `docs/specs/COMPOSITION_UNDER_REGIONS.md`  
-**Site:** https://www.ledocorp.org/fx/docs/composition/
+**Package:** 0.8.0  
+**Site:** https://www.ledocorp.org/fx/docs/composition/  
+**What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md)
 
 How to build **real programs** in fx without treating it as incomplete Rust — and without an unsafe dialect.
 
@@ -16,6 +16,27 @@ How to build **real programs** in fx without treating it as incomplete Rust — 
 | **B — convenience helper** | Not shipped (skipped); not an unsafe path | **No** | N/A |
 
 There is **no unsafe path**. Prefer Lane A always.
+
+---
+
+## Mutation policy (locked)
+
+Region-local **slot** mutation is part of the language method today.
+What we are **not** adding:
+
+- Growable-`Vec` index-assign sugar (`v[i] = x`)
+- Rust-style `Cell` / hidden shared interior mutability
+- A “soft” dialect where scripts get different mutability physics
+
+| Kind | How |
+|------|-----|
+| **Grow** (may reallocate) | Reassign: `v = vec_push(v, x)` |
+| **Slot write** (capacity unchanged) | `v = vec_set(v, i, x)` under `mut` (in-place store) |
+| **Fixed tables** | Arrays + `&mut [T]` |
+| **Graphs / IR** | Ids / pools + `pool.set` |
+
+`vec_set` is an ordinary store into stable storage — not a full vector rebuild.
+The reassignment keeps identity/grow honest at the source level.
 
 ---
 
@@ -75,7 +96,7 @@ fx run examples/pattern_ring/main.fx
 
 Also see `std/queue` + `lib/ring_queue` for a packaged FIFO.
 
-### 6. Non-toy programs (0.7.5-A3)
+### 6. Composition example programs
 
 ```text
 fx run examples/composition_tally/main.fx   # multi-pass Map add_i32 → 42
@@ -92,8 +113,29 @@ Default C includes `/* fx: … */` traces. For machine maps and remapped C diagn
 
 ---
 
+## Teaching corpus
+
+Short algorithm slices under `examples/teaching/` — each exits **42**:
+
+| Example | Shows |
+|---------|--------|
+| `teaching/uf_step` | Union-find + `vec_set` path compress |
+| `teaching/heap_sift` | Min-heap sift-up with slot swaps |
+| `teaching/graph_bfs` | BFS on SoA edges + color table |
+| `teaching/stack_vm` | Tiny stack VM (PUSH / MUL) |
+
+```text
+fx run examples/teaching/uf_step/main.fx
+fx run examples/teaching/uf_step/main.fx --emit-c
+```
+
+See [DOGFOOD.md](DOGFOOD.md) for the larger dogfood apps.
+
 ## Related
 
+- [NEXT.md](NEXT.md) — what’s next  
+- [DOGFOOD.md](DOGFOOD.md) — CHIP‑8, JSON CLIs, textdiff  
+- [LIBRARIES.md](LIBRARIES.md) — C wrap priorities  
 - [SURFACE.md](SURFACE.md) — what exists today  
 - [REGIONS.md](REGIONS.md) — effects and region kinds  
 - [LANGUAGE.md](LANGUAGE.md) — language tour  

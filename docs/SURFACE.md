@@ -1,12 +1,11 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.7.5  
-**Map ID:** FX-0.7.5-M6  
+**Package version:** 0.8.0  
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
-Horizon A adds typed **`Id`**, **`map_add_i32`**, and non-toy `composition_*` programs.
+It includes typed pool **`Id`**, **`map_add_i32`**, and the `composition_*` / `bind_*` examples.
 Use it as a cheatsheet and as a depth ledger: if something is not listed here, do not assume it exists.
 
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
@@ -175,8 +174,8 @@ Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the pro
 | `fx help` | help |
 | `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` |
 | `fx check` | parse + typecheck |
-| `fx run` / `fx build` | emit, link (+ run); `--release` / `--watch` |
-| `fx emit-c` | `.c` / `.h` only |
+| `fx run` / `fx build` | IR → native (default); `--emit-c` for C path; `--release` / `--watch` |
+| `fx emit-c` | `.c` / `.h` only (no link) |
 | `fx cc` | power emit+link path |
 | `fx lsp` | language server (stdio) — basic |
 | `fx mcp` | lean MCP (`check` / `locate` / `run`, …) |
@@ -190,7 +189,7 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 
 | Capability | As implemented |
 |------------|----------------|
-| Dual emission | `fx run` / `build` / `emit-c` → readable C on zspec |
+| Dual native paths | `fx run` / `build` → IR → native; `--emit-c` / `fx emit-c` → readable C on zspec |
 | C owns `main` | `fx run lib.fx --host host.c` |
 | Extra link | `--link` / `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
@@ -250,7 +249,7 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 
 ---
 
-## Composition doctrine (FX-0.7.4)
+## Composition doctrine
 
 Teach **Lane A** (fx method): value-threaded grow, indices over interior pointers, arrays/`&mut [T]` for local mut, **`std/pool`** ids.
 **No unsafe dialect.** Optional non-production convenience helper is authorized later and non-default.

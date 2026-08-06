@@ -12,4 +12,8 @@ module cjson_raw;
 extern "c" {
     // parse a JSON number literal; return i32 value or -1
     fn cjson_ref_parse_number(json: string) -> i32;
+    // walk dotted/[index] path; return leaf number or -1
+    fn cjson_ref_path_i32(json: string, path: string) -> i32;
+    // 1 if path resolves; 0 otherwise
+    fn cjson_ref_path_exists(json: string, path: string) -> i32;
 }

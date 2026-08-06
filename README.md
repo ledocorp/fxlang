@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.7.5](VERSION)  
+**Version:** [0.8.0](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE)
 
@@ -49,11 +49,12 @@ When `r` ends, that arena is gone. The effects clause told you the function may 
 When you need the C world:
 
 ```text
-fx emit-c main.fx -o out_c          # inspect the lowering
+fx run main.fx --emit-c             # emit-C → native
+fx emit-c main.fx -o out_c          # inspect .c / .h only
 fx run lib.fx --host host.c         # C main + fx library
 ```
 
-Emitted C is not a dump of IR. It is meant to look like something a competent C programmer could maintain.
+Emitted C is meant to look like something a competent C programmer could maintain.
 
 ---
 
@@ -74,10 +75,11 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.7.5
+fx version                 # v0.8.0
 fx new hello
 cd hello
-fx run main.fx             # exit 42
+fx run main.fx             # IR → native; exit 42
+fx run main.fx --emit-c    # optional: emit-C → native
 ```
 
 | OS      | Binary              |
@@ -110,12 +112,13 @@ Map: [PACKAGE.md](PACKAGE.md)
 
 ---
 
-## Dual emission & C interop
+## Dual native paths
 
-fx treats C as a first-class destination, not an escape hatch:
+Same checked programs, two native lowerings:
 
-- **`fx run` / `fx build`**: emit, link with zspec, run or produce a binary
-- **`fx emit-c`**: generate `.c` / `.h` you can read and own
+- **`fx run` / `fx build`**: **IR → native** by default
+- **`fx run --emit-c`**: emit-C → native when you want the C path
+- **`fx emit-c`**: generate `.c` / `.h` you can read and own (no link)
 - **`--host`**: keep your C `main`, link fx as the library
 
 Demo:
@@ -124,7 +127,7 @@ Demo:
 fx run examples/showcase_wrap/compute.fx --host examples/showcase_wrap/host.c
 ```
 
-→ [docs/WRAP.md](docs/WRAP.md) · [docs/CLI.md](docs/CLI.md)
+→ [docs/WRAP.md](docs/WRAP.md) · [docs/CLI.md](docs/CLI.md) · [docs/TRACKING.md](docs/TRACKING.md)
 
 ---
 
@@ -137,7 +140,7 @@ Also on the web: https://www.ledocorp.org/fx/docs/
 | [docs/START_HERE.md](docs/START_HERE.md) | Install and hello |
 | [docs/SURFACE.md](docs/SURFACE.md) | **As-implemented surface map** (full cheatsheet) |
 | [docs/LANGUAGE.md](docs/LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
-| [docs/REFERENCE.md](docs/REFERENCE.md) | Compact 0.7 surface reference |
+| [docs/REFERENCE.md](docs/REFERENCE.md) | Compact surface reference |
 | [docs/REGIONS.md](docs/REGIONS.md) | Effects, region kinds, ownership / borrows |
 | [docs/STD.md](docs/STD.md) | Standard library map and APIs |
 | [docs/WRAP.md](docs/WRAP.md) | C host / `extern "c"` |
@@ -171,8 +174,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.7.5](docs/releases/0.7.5.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.0](docs/releases/0.8.0.md).
 
-**0.7.5** is the composition-power pack (Horizon A): how to build under regions (`COMPOSITION.md`), dual-emit tracking (`TRACKING.md`), `std/pool` + typed **`Id`**, `vec_set` slot mut (still no `v[i]=x`), and `pattern_*` examples. **`map_add_i32`**, non-toy `composition_tally` / `composition_reach`. Builds on 0.7.3 maturity (surface map, week-two tools, Result/`?`, `&mut [T]`). Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
+**0.8.0** leads with **IR → native** by default, keeps **readable emit-C** first-class (annotate / `.fxmap` / `fx locate`), and ships writeable-fx dogfood Apps 1–5 (CHIP‑8, JSON wrap + pure, textdiff) plus adoption polish (clearer diagnostics, shared CLI host recipe, wilder JSON including `\uXXXX`). Composition under regions, typed pool `Id`, `vec_set`, and dual paths remain the method — still no `v[i]=x`, no unsafe dialect. Compiler, scaffolds, Windows/Linux binaries, C wrap path, docs, and inspectable `compiler-source/` stay in the tree. The standard library is still small; macOS binaries will follow.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

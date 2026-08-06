@@ -7,13 +7,13 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.7.5`) |
+| `fx version` | Print version (expect `v0.8.0`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
-| `fx run <file.fx>` | Emit C, link, run |
-| `fx build <file.fx>` | Emit C and link (do not run) |
-| `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only |
+| `fx run <file.fx>` | IR → native (default); link and run |
+| `fx build <file.fx>` | Same backends as run (link; do not run) |
+| `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link) |
 | `fx bind <header.h> --out <file.fx>` | Cleaned C header → inspectable `extern "c"` stubs (`[--module name]`) |
 
 ### `fx doctor`
@@ -39,15 +39,19 @@ fx new firmware --scaffold embedded
 ### `fx run` / `fx build`
 
 ```text
-fx run main.fx
+fx run main.fx                 # IR → native (default)
+fx run main.fx --emit-c        # emit-C → native
 fx run main.fx --release
 fx build main.fx -o out
 ```
+
+By default, `fx run` / `fx build` lower through the **IR → native** path. Pass **`--emit-c`** to use the readable C emission path instead (same checked program, different lowering). Advanced: `--backend auto|ir|c`.
 
 Useful flags:
 
 | Flag | Meaning |
 |------|---------|
+| `--emit-c` | Use emit-C → native instead of IR → native |
 | `-o <dir>` | Output directory (default `out/`) |
 | `--release` | Optimize more; less debug instrumentation |
 | `--watch` | Rebuild when sources change |
@@ -55,6 +59,7 @@ Useful flags:
 | `--host <file.c>` | Use this C file as `main`; link fx objects with it |
 | `--link-args-file <path>` | Extra linker args, one per line |
 | `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths |
+| `--backend auto\|ir\|c` | Advanced backend select (`auto` = IR-first with emit-C fallback) |
 
 Default linking expects **gcc** and the zspec library that matches your OS (`build/gcc` or `build/gcc-linux`).
 

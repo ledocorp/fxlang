@@ -1,5 +1,5 @@
-// Level 2 safe wrapper over cJSON FFI shim (BINDGEN-3 + FX-WF-3/5).
-// Kept local for bind smoke; durable copy also at lib/cjson_safe.fx.
+// FX-WF-3/5 — Level 2 cJSON facade (repo lib; link cjson_ref.c + cJSON.c).
+// Opaque trees stay in C; fx sees Result / i32 only.
 module cjson_safe;
 
 using core;
@@ -12,7 +12,6 @@ extern "c" {
     fn cjson_ref_path_print(json: string, path: string, raw: i32) -> i32;
 }
 
-/// Parse a JSON number literal (e.g. "42"); Err on failure.
 fn parse_number(json: string) -> Result<i32, core_Err> {
     let n = cjson_ref_parse_number(json);
     if (n < 0) {
@@ -21,7 +20,6 @@ fn parse_number(json: string) -> Result<i32, core_Err> {
     return Ok(n);
 }
 
-/// Walk a dotted / `[index]` path to a JSON number.
 fn path_i32(json: string, path: string) -> Result<i32, core_Err> {
     let n = cjson_ref_path_i32(json, path);
     if (n < 0) {
@@ -30,7 +28,6 @@ fn path_i32(json: string, path: string) -> Result<i32, core_Err> {
     return Ok(n);
 }
 
-/// True when the path resolves to any JSON value.
 fn path_exists(json: string, path: string) -> Result<i32, core_Err> {
     let n = cjson_ref_path_exists(json, path);
     if (n == 0) {
@@ -52,6 +49,7 @@ fn path_eq_str(json: string, path: string, expect: string) -> Result<i32, core_E
     return Ok(1);
 }
 
+/// Print path value to stdout (raw!=0 → bare; else JSON fragment). Ok(0) on success.
 fn path_print(json: string, path: string, raw: i32) -> Result<i32, core_Err> {
     let n = cjson_ref_path_print(json, path, raw);
     if (n != 0) {

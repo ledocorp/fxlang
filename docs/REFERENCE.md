@@ -1,6 +1,6 @@
 # Reference (0.7 surface)
 
-Compact lookup for everyday fx in the **0.7.5** package.
+Compact lookup for everyday fx in the **0.8.0** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).

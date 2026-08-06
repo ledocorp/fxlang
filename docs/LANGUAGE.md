@@ -2,7 +2,7 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-The **0.7.5** package is a full programming surface, not just “regions + vec.”
+The **0.8.0** package is a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
 typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / `vec_set` slot writes,
 array-backed `&mut [T]`, and general Result/`?`. Non-toy demos: `examples/composition_tally`, `composition_reach`.
