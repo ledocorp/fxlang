@@ -13,6 +13,4 @@ fx run examples/tool_files/fail_rename.fx   # 4
 fx run examples/tool_files/fail_delete.fx   # 6
 ```
 
-Regression: `.\scripts\test-week2-tools.ps1`
-
-Note: content-verified `read_file` + `?` is proven in the monorepo (`programs/p2_file_io.fx`) via an fx-owned emit bridge. This package example stays on the general emit path so it runs from `examples/` with the public binary.
+Both native paths are supported: add `--emit-c` when you want the C lowering.
