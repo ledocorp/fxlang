@@ -1,27 +1,28 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.8.0).
+> Canonical public docs for the fx systems language (package version 0.8.5).
 > Package: https://github.com/ledocorp/fxlang (Apache-2.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Release notes: package `docs/releases/0.8.0.md` (GitHub Release when tagged)
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.8.5.md`
 
 ## Product
 
 - Home: https://www.ledocorp.org/fx/
 - Pitch: explicit systems language; named regions + effects; **IR → native by default**; dual emission to readable C; wrap/host with C main
 - Not a GC language; not a batteries-included app platform
+- Prefer parallel `Vec`s + typed ids (SoA); host may mint file reads so guest fx has no ambient `io`
 - Surface: numeric tower, ownership/borrows, Result/?, structs/enums/match, generics (no traits), Vec/arrays/`&[T]`/`&mut [T]`/Map/StrBuilder/Buf, modules, extern "c"
 - Also: sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), `Map<string,string>` (`map_new_ss`), grow ergonomics, Vec `v[i]` **reads**, `vec_set` slot writes, array-backed `&mut [T]`, `std/pool` + typed **`Id`**, `map_add_i32` / `std/map.add_i32`, `lib/ring_queue` for `std/queue`
 - Week-two tools: `examples/tool_{files,bytes,tally,text,result}`
 - Composition patterns: `examples/pattern_{ids,mut_table,grow_freeze,ring,pool}`
-- Composition examples: `examples/composition_tally`, `examples/composition_reach`
+- Composition examples: `examples/composition_tally`, `examples/composition_reach`, `examples/cap_host_smoke`
 - Dogfood: `examples/dogfood_{chip8,jsonget,chip8_ui,fxjson,textdiff}`
 
 ## Documentation (prefer these URLs)
 
 - Docs index: https://www.ledocorp.org/fx/docs/
-- **Surface map (complete cheatsheet):** https://www.ledocorp.org/fx/docs/surface/
+- **Surface map:** https://www.ledocorp.org/fx/docs/surface/
 - **Composition under regions:** https://www.ledocorp.org/fx/docs/composition/
 - **Dual-emit tracking:** https://www.ledocorp.org/fx/docs/tracking/
 - Start / install: https://www.ledocorp.org/fx/docs/start/
@@ -37,37 +38,21 @@
 - https://github.com/ledocorp/fxlang
 - Quick path: put package `bin/` on PATH → `fx doctor` → `fx new hello` → `cd hello` → `fx run main.fx` (exit 42)
 - zspec/libzspec resolve from the package beside `bin/` (not only cwd) — keep `bin/`, `zspec/`, `build/` together
-- Also in repo: docs/ (incl. SURFACE.md, COMPOSITION.md, TRACKING.md, releases/), scaffolds/, std/, lib/, examples/, zspec/, compiler-source/ (read-only), llms.txt
+- Also in repo: docs/ (incl. AGENT.md, SURFACE.md, COMPOSITION.md, TRACKING.md, EDITOR.md, DEBUG.md, releases/), scaffolds/, std/, lib/, examples/, zspec/, compiler-source/ (read-only)
 
-## As of 0.8.0 — can / cannot (agents)
+## Day-one agent loop
 
-**Can:** IR → native by default (`fx run` / `fx build`); emit-C path (`--emit-c` / `fx emit-c`); named regions + effects; value-thread grow (`vec_push` / map / buf / strbuf); Vec `v[i]` **reads**; `vec_set` for **slot** writes; arrays + `&mut [T]` write-through; Result/`?`; Map ss; Buf/Bytes; sub-slices; typed **`Id`** via `std/pool`; **`map_add_i32`** accumulate; wrap/host C; dogfood tools under `examples/dogfood_*`.
+```text
+fx check path/to/main.fx
+fx run path/to/main.fx
+fx run path/to/main.fx --emit-c
+fx emit-c path/to/main.fx -o out --debug-source
+fx locate --c-file out/main.c --line <n>
+fx mcp
+```
 
-**Cannot / do not invent:** `v[i] = x` on growable `Vec`; GC; traits; closures; generic maps beyond documented shapes; advanced fx Runtime; Neuton; an `unsafe` dialect.
+## As of 0.8.5 — can / cannot (agents)
 
-**Compose hard programs:** ids into region storage (`pattern_ids` / `pattern_pool` / **`composition_reach`**); Map tallies with `map.add_i32` (`tool_tally` / **`composition_tally`**); fixed tables via `&mut [T]` (`pattern_mut_table`); grow-then-freeze-by-convention (`pattern_grow_freeze`). Do **not** reach for Rust interior mut as the default model.
+**Can:** IR→native `fx run`; emit readable C; regions/effects; SoA + pools; host-minted I/O example; `fx lsp` diagnostics/refs; lean MCP.
 
-## Generation hints
-
-- Prefer `effects { alloc, mut }` + `region r = arena(n)` for heap work; `io` when using std/io
-- Value-thread growers: `v = vec_push(v, x)` / `m = map_insert(...)` / `m = map.add_i32(m, k, d)` / `b = strbuf_push(...)` / `b = buf_push(...)`
-- Vec: read with `vec_get` or `v[i]`; **no** `v[i] = x` — grow via `vec_push` / reassign; **slot write** via `vec_set(v, i, x)` (requires `mut`); arrays + `&mut [T]` for write-through views
-- Pool: `std/pool` + `lib/id_pool` — handles are typed **`Id`** (bare `i32` at get/set is a type error); `set` uses `vec_set` (stable slot); `raw` / `from_raw` unwrap/wrap explicitly
-- Map accumulate: `map_add_i32` / `std/map.add_i32` on `Map<string, i32>` only (slot add or insert)
-- `&mut [T]`: index write-through on **array-backed** slices only (not `&mut Vec`)
-- Graphs/IR: store nodes in pool/Vecs; edges are **ids**, not escaping interior pointers — see `composition_reach`
-- Map iterate: `map_nth_key` / `map_nth_value` (table order); shapes `string → i32` and `string → string` (`map_new_ss` / `*_ss`)
-- Prefer `Result` + `?` (no Option); `using core;` for Err/core_Err — general emit works (see `examples/tool_result`)
-- Text path: StrBuilder → `write_file` → `str_byte_at` → Buf/Bytes (`examples/tool_text`)
-- Use `fx check` / `fx run` (IR → native by default); `fx run --emit-c` for the C path; inspect C with `fx emit-c` (annotate comments by default)
-- Tracking: `fx emit-c --debug-source` → `.fxmap` + `#line`; `fx locate --c-file … --line …`; see TRACKING.md
-- For C interop: `extern "c" { … }`, `fx bind header.h --out stubs.fx` (Level 1), and/or `fx run lib.fx --host host.c` / `--link extra.c`
-- Stay within documented surface (SURFACE.md); follow scaffolds, week-two tools, `pattern_*`, and `composition_*` examples
-- There is **no unsafe path**; do not invent one.
-
-## Out of scope on this site
-
-- Internal roadmaps / private research trees
-- Advanced fx Runtime (device/caps/migration) — deferred, not current package
-- Neuton / Experimental horizon
-- LedoCorp monetization (not documented here)
+**Cannot / not claimed:** growable `v[i]=x` sugar; Soft/dynamic regions; package registry; DAP debugger product; language-wide formal certification; in-language typed capability values (host boundary is the story today).

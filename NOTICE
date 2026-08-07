@@ -13,8 +13,9 @@ do not modify the Apache License, Version 2.0.
 ---
 
 Third-party software distributed with this package is summarized in
-docs/LICENSES.md. Currently:
+docs/LICENSES.md (public language package) / public/docs/LICENSES.md (monorepo).
+Currently shipped in the public package:
 
   QBE — http://c9x.me/compile/
   Copyright © 2015-2017 Quentin Carbonneaux
-  License: MIT (see third_party/qbe/LICENSE)
+  License: MIT (see third_party/qbe/LICENSE / public/third_party/qbe/LICENSE)

@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.8.1](VERSION)  
+**Version:** [0.8.5](VERSION)  
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
 
@@ -75,7 +75,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.8.1
+fx version                 # v0.8.5
 fx new hello
 cd hello
 fx run main.fx             # IR → native; exit 42
@@ -146,6 +146,7 @@ Also on the web: https://www.ledocorp.org/fx/docs/
 | [docs/WRAP.md](docs/WRAP.md) | C host / `extern "c"` |
 | [docs/SCAFFOLDS.md](docs/SCAFFOLDS.md) | Project templates |
 | [docs/CLI.md](docs/CLI.md) | Full command surface (incl. `fx doctor` / `fx lsp` / `fx mcp`) |
+| [docs/EDITOR.md](docs/EDITOR.md) | Day-one Cursor / VS Code → `fx lsp` |
 
 ---
 
@@ -174,8 +175,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.1](docs/releases/0.8.1.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.5](docs/releases/0.8.5.md).
 
-**0.8.1** ships the **QBE** binary in the language package so default IR → native works for strangers (Linux natively; Windows via WSL). Builds on **0.8.0**: IR by default, readable emit-C, dogfood Apps 1–5, composition under regions — still no `v[i]=x`, no unsafe dialect. macOS prebuilt binary still later.
+**0.8.5** is a polish release: day-one editor/`fx lsp`, agent loop docs, SoA composition guidance, and host-minted I/O example — on top of **0.8.1** (shipped QBE) and **0.8.0** (IR by default, dogfood Apps 1–5). Still no `v[i]=x`, no unsafe dialect. macOS prebuilt binary still later.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

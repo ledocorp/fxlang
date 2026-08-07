@@ -12,7 +12,7 @@ If we ship additional third-party code later, it will be named here with its lic
 
 ## Not in this package
 
-Examples that wrap external C libraries (cJSON, xxHash, stb, raylib, …) may appear in the **private monorepo** or as optional demos. Those libraries are **not** redistributed in the language package unless listed in the table above. When an example links against a system- or vendor-installed library, that library’s own license applies to that dependency — it is not part of this Apache-2.0 tree.
+Examples that wrap external C libraries (cJSON, xxHash, stb, raylib, …) may appear as optional demos outside this package. Those libraries are **not** redistributed in the language package unless listed in the table above. When an example links against a system- or vendor-installed library, that library’s own license applies to that dependency — it is not part of this Apache-2.0 tree.
 
 ## Summary for redistributors
 

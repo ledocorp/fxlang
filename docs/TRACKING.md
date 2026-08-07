@@ -54,4 +54,7 @@ Granularity is per **statement / significant fragment**, not every physical C li
 - Use `--debug-source` when chasing a gcc error or stepping in a debugger.  
 - Layer 1 (`fx check`) before layer 2 — most mistakes never need C.
 
-→ [CLI.md](CLI.md) · [WRAP.md](WRAP.md) · [LANGUAGE.md](LANGUAGE.md)
+## Related
+
+- [DEBUG.md](DEBUG.md) — step-by-step `#line` + gdb  
+- [CLI.md](CLI.md) · [WRAP.md](WRAP.md) · [LANGUAGE.md](LANGUAGE.md)

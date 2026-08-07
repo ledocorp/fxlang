@@ -19,6 +19,7 @@ Optional demos. **Not** required to install fx or create apps.
 | [pattern_pool/](pattern_pool/) | Composition: `std/pool` id-pool → exit 42 |
 | [composition_tally/](composition_tally/) | Multi-pass Map `add_i32` tally → exit 42 |
 | [composition_reach/](composition_reach/) | Typed pool Ids + reachability → exit 42 |
+| [cap_host_smoke/](cap_host_smoke/) | Host mints file read; guest has no `io` → exit 42 / deny 5 |
 | [bind_smoke/](bind_smoke/) | `fx bind` stubs + `--link` C → exit 42 |
 | [bind_stb_sprintf/](bind_stb_sprintf/) | bind → Result wrapper → stb_sprintf → exit 42 |
 | [bind_cjson/](bind_cjson/) | bind → Result wrapper → cJSON → exit 42 |
@@ -40,6 +41,7 @@ fx run examples/pattern_ring/main.fx
 fx run examples/pattern_pool/main.fx
 fx run examples/composition_tally/main.fx
 fx run examples/composition_reach/main.fx
+fx run examples/cap_host_smoke/main.fx
 fx run examples/bind_smoke/main.fx --link examples/bind_smoke/host.c
 ```
 

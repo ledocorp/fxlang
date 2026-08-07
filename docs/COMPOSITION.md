@@ -1,8 +1,8 @@
 # Composition under regions
 
-**Package:** 0.8.0  
+**Package:** 0.8.5  
 **Site:** https://www.ledocorp.org/fx/docs/composition/  
-**What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md)
+**What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)
 
 How to build **real programs** in fx without treating it as incomplete Rust — and without an unsafe dialect.
 
@@ -103,7 +103,24 @@ fx run examples/composition_tally/main.fx   # multi-pass Map add_i32 → 42
 fx run examples/composition_reach/main.fx   # typed Id pool + BFS reachability → 42
 ```
 
-Harness: `.\scripts\test-composition-patterns.ps1` (opt-in; includes pattern_* + composition_*).
+### 7. SoA / structured state (preferred over nested growables)
+
+When state feels “too nested,” prefer **parallel `Vec`s + typed `Id`**, not `Vec` fields inside structs that grow. Canonical walkthrough: `composition_reach` (nodes / adj / queue / color as siblings under one region). Keep types (`i32`, `Id`, effects) visible on purpose — domain names reduce noise, not soft inference.
+
+### 8. Host-minted I/O authority (no ambient guest `io`)
+
+When a tool must not open arbitrary files from fx code, put **`fopen` in the C host**:
+allowlist the path, read bytes, pass a `string` into a guest library with **no `io` effect**.
+Denial is a distinct process exit (example uses **5**).
+
+```text
+fx run examples/cap_host_smoke/main.fx            # exit 42
+fx build examples/cap_host_smoke/guest_lib.fx -o build/cap_host_smoke --emit-c --host examples/cap_host_smoke/host.c
+```
+
+Typed in-language capability values remain **later**. Same region / slot-mut physics — not a soft dialect.
+
+Dogfood apps that still use ambient `io` are honest process-trust tools — see [DOGFOOD.md](DOGFOOD.md).
 
 ---
 

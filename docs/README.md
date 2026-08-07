@@ -11,7 +11,10 @@ HTML also on https://www.ledocorp.org/fx/docs/
 | [QUALITY.md](QUALITY.md) | Dual-path and CLI quality habits |
 | [LIBRARIES.md](LIBRARIES.md) | C wrap priorities (now / soon / backlog) |
 | [SURFACE.md](SURFACE.md) | **As-implemented surface map** (cheatsheet + depth ledger) |
-| [COMPOSITION.md](COMPOSITION.md) | **How to build** under regions (ids, slot mut, no sugar) |
+| [EDITOR.md](EDITOR.md) | Day-one `fx lsp` + tree-sitter |
+| [DEBUG.md](DEBUG.md) | `#line` + gdb recipe (no DAP required) |
+| [AGENT.md](AGENT.md) | Agent day-one: check / locate / run / MCP |
+| [COMPOSITION.md](COMPOSITION.md) | **How to build** under regions (ids, slot mut, host-minted I/O) |
 | [TRACKING.md](TRACKING.md) | Dual-emit: annotate comments, `.fxmap`, `#line`, `fx locate` |
 | [LANGUAGE.md](LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
 | [REFERENCE.md](REFERENCE.md) | Compact surface reference |

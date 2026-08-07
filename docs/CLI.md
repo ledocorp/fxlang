@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.8.1`) |
+| `fx version` | Print version (expect `v0.8.5`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -83,7 +83,7 @@ Same family of flags as run/build, for hosts who want full control over emit + l
 
 | Command | Role |
 |---------|------|
-| `fx lsp` | Language server (stdio) |
+| `fx lsp` | Language server (stdio) — see [EDITOR.md](EDITOR.md) |
 | `fx mcp` | Lean MCP server (`fx_check`, `fx_locate`, `fx_run`, …) |
 | `fx locate --c-file <f.c> --line <n>` | Map a C line back to fx via `.fxmap` |
 
