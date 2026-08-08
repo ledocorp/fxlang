@@ -11,7 +11,7 @@ Syntax highlighting can use a tree-sitter grammar when you install one separatel
 ## Prerequisites
 
 1. Put the package `bin/` on your `PATH` (or use the full path to `fx` / `fx.exe`).  
-2. Confirm in a terminal: `fx version` (expect **v0.9.0**) and `fx check` on a `.fx` file.
+2. Confirm in a terminal: `fx version` (expect **v0.9.1**) and `fx check` on a `.fx` file.
 
 ---
 

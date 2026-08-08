@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.9.0](VERSION)  
+**Version:** [0.9.1](VERSION)  
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
@@ -76,7 +76,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.9.0
+fx version                 # v0.9.1
 fx new hello
 cd hello
 fx run main.fx             # IR → native when QBE is present; exit 42
@@ -178,8 +178,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.9.0](docs/releases/0.9.0.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.9.1](docs/releases/0.9.1.md).
 
-**0.9.0** adds capability regions (`FsCap` / `OutCap` / `std/guest`) for scripting, embedded guests, and extensions — same region physics, host-minted authority. Builds on **0.8.5** polish and **0.8.1** shipped QBE. Staged packages may include Windows `qbe.exe` for native PE IR alongside Linux QBE. Still no `v[i]=x`, no Soft-fx. macOS prebuilt binary still later.
+**0.9.1** stages native Windows QBE (`windows/qbe.exe`) beside Linux QBE and clarifies IR docs. Builds on **0.9.0** capability regions. Still no `v[i]=x`, no Soft-fx. macOS prebuilt binary still later.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

@@ -1,13 +1,13 @@
 # What’s next for fx
 
-**Last updated:** 7 August 2026
+**Last updated:** 8 August 2026
 
-fx **0.9.0** is the capability-region release: one dialect for apps, **scripting**,
-**embedded guests**, and **extensions** — host-minted `FsCap` / `OutCap`, `std/io_cap`,
-and `std/guest` sessions with teardown revoke. Same region and slot-mut physics;
-no Soft-fx. Ambient `std/io` remains for process-trust tools.
+fx **0.9.1** adds native Windows QBE packaging on top of **0.9.0** capability regions:
+one dialect for apps, **scripting**, **embedded guests**, and **extensions** — host-minted
+`FsCap` / `OutCap`, `std/io_cap`, and `std/guest` sessions with teardown revoke. Same region
+and slot-mut physics; no Soft-fx. Ambient `std/io` remains for process-trust tools.
 
-Builds on **0.8.5** (editor/`fx lsp`, SoA teaching, host I/O smoke) and **0.8.1** (shipped QBE).
+Builds on **0.9.0** (caps), **0.8.5** (editor/`fx lsp`, SoA teaching), and **0.8.1** (shipped QBE).
 
 **Product focus:** teachable composition and honest host boundaries — not mut sugar,
 not a package registry first, not a heavy debugger product as the bar for “tooling.”
@@ -61,4 +61,4 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 - [QUALITY.md](QUALITY.md) — public quality habits  
 - [LIBRARIES.md](LIBRARIES.md) — C wrap priorities  
 - [COMPOSITION.md](COMPOSITION.md) — how to build  
-- [releases/0.9.0.md](releases/0.9.0.md) — latest release notes  
+- [releases/0.9.1.md](releases/0.9.1.md) — latest release notes  
