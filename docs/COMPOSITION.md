@@ -161,6 +161,10 @@ fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
 # default prog.exe: begin → run → end → stale-handle deny
 ```
 
+**Fx host (no C driver):** `examples/cap_guest_fxhost/host_main.fx` calls `guest.begin` / `end` directly.
+
+**Language sugar:** `dynamic region g = guest(N);` lowers to `fx_guest_begin` / `fx_guest_end` on function exit (not `arena` / not Runtime `fx(...)`). See `examples/cap_guest_fxhost/host_sugar.fx`.
+
 Dogfood apps that still use ambient `io` are honest process-trust tools — see [DOGFOOD.md](DOGFOOD.md).
 
 ---

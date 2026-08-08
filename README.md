@@ -79,14 +79,16 @@ fx doctor                  # check gcc/clang/zig + zspec paths
 fx version                 # v0.9.0
 fx new hello
 cd hello
-fx run main.fx             # IR → native; exit 42
+fx run main.fx             # IR → native when QBE is present; exit 42
 fx run main.fx --emit-c    # optional: emit-C → native
 ```
 
-| OS      | Binary              |
-|---------|---------------------|
-| Windows | [`bin/fx.exe`](bin/fx.exe) |
-| Linux   | [`bin/fx`](bin/fx)  |
+| OS      | Binary              | IR backend (when staged) |
+|---------|---------------------|--------------------------|
+| Windows | [`bin/fx.exe`](bin/fx.exe) | `third_party/qbe/windows/qbe.exe` → PE |
+| Linux   | [`bin/fx`](bin/fx)  | `third_party/qbe/obj/qbe` |
+
+Without a QBE binary, use `--emit-c`. Details: [docs/CLI.md](docs/CLI.md).
 
 More: [docs/START_HERE.md](docs/START_HERE.md)
 
@@ -178,6 +180,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.9.0](docs/releases/0.9.0.md).
 
-**0.9.0** adds capability regions (`FsCap` / `OutCap` / `std/guest`) for scripting, embedded guests, and extensions — same region physics, host-minted authority. Builds on **0.8.5** polish and **0.8.1** shipped QBE. Still no `v[i]=x`, no Soft-fx. macOS prebuilt binary still later.
+**0.9.0** adds capability regions (`FsCap` / `OutCap` / `std/guest`) for scripting, embedded guests, and extensions — same region physics, host-minted authority. Builds on **0.8.5** polish and **0.8.1** shipped QBE. Staged packages may include Windows `qbe.exe` for native PE IR alongside Linux QBE. Still no `v[i]=x`, no Soft-fx. macOS prebuilt binary still later.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

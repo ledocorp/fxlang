@@ -1,0 +1,9 @@
+{
+  "meta": { "answer": 40, "label": "ok" },
+  "users": [
+    { "id": 1, "name": "Ada", "score": 10 },
+    { "id": 2, "name": "Grace", "score": 20 }
+  ],
+  "bonus": 2,
+  "tags": ["a", "b"]
+}

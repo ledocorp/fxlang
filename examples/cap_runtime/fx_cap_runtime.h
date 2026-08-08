@@ -1,7 +1,9 @@
-/* FX-DYN — host-side FsCap / OutCap + Phase B.1 guest session helpers.
+/* FX-DYN — host-side FsCap / OutCap / AllocCap / FuelCap + guest session helpers.
  *
- * Language ABI: fx_std_cap_FsCap / OutCap { int64_t handle } holds (intptr_t)cap*.
+ * Language ABI: fx_std_cap_* { int64_t handle } holds (intptr_t)cap*.
  * GuestCtx: fx_guest_begin / mint_* / end (std/guest.fx).
+ * AllocCap (FX-DYN-3): budgeted bump from session arena; over-budget / stale → deny.
+ * FuelCap (FX-DYN-11): unit/step budget; over-fuel / stale → deny.
  * Link with examples that import std/io_cap or std/guest.
  */
 #ifndef FX_CAP_RUNTIME_H
@@ -24,6 +26,23 @@ typedef struct FxOutCap {
     char root[512];
     int live;
 } FxOutCap;
+
+/* Forward decl — AllocCap points at owning session (check live before deref). */
+typedef struct FxGuestCtx FxGuestCtx;
+
+/* AllocCap: budgeted bump-alloc from guest arena (FX-DYN-3 Phase C). */
+typedef struct FxAllocCap {
+    FxGuestCtx *ctx;
+    int64_t budget_remaining;
+    int live; /* 0 after teardown — copies deny */
+} FxAllocCap;
+
+/* FuelCap: unit/step budget for guest loops (FX-DYN-11 Phase C). */
+typedef struct FxFuelCap {
+    FxGuestCtx *ctx;
+    int64_t units_remaining;
+    int live; /* 0 after teardown — copies deny */
+} FxFuelCap;
 
 /* Mint a rooted FsCap. Returns NULL on failure. Caller owns until fx_fscap_free. */
 FxFsCap *fx_fscap_mint(const char *root_dir);
@@ -67,7 +86,7 @@ int fx_io_cap_write_file(int64_t out_handle, const char *path, const char *data)
 #define FX_GUEST_MAX_CAPS 16
 #define FX_GUEST_DEFAULT_ARENA (64 * 1024)
 
-typedef struct FxGuestCtx {
+struct FxGuestCtx {
     char root[512]; /* default mint root (empty = mint must pass explicit root) */
     char *arena;
     size_t arena_size;
@@ -76,8 +95,12 @@ typedef struct FxGuestCtx {
     int fs_n;
     FxOutCap *out[FX_GUEST_MAX_CAPS];
     int out_n;
+    FxAllocCap *alloc[FX_GUEST_MAX_CAPS];
+    int alloc_n;
+    FxFuelCap *fuel[FX_GUEST_MAX_CAPS];
+    int fuel_n;
     int live;
-} FxGuestCtx;
+};
 
 /*
  * Begin a guest session: owns a bump arena + cap set.
@@ -95,7 +118,25 @@ int fx_guest_end(int64_t ctx_handle);
 int64_t fx_guest_mint_fscap(int64_t ctx_handle, const char *root);
 int64_t fx_guest_mint_outcap(int64_t ctx_handle, const char *root);
 
-/* Bump-alloc from the guest arena. 0 if dead / OOM. Pointer as i64. */
+/* Mint AllocCap with byte budget (revoked on fx_guest_end). 0 = fail. */
+int64_t fx_guest_mint_alloccap(int64_t ctx_handle, int64_t budget_bytes);
+
+/* Bump-alloc through AllocCap. 0 if dead / over-budget / OOM. Pointer as i64. */
+int64_t fx_alloccap_alloc(int64_t alloc_handle, int64_t nbytes);
+
+int64_t fx_alloccap_to_handle(FxAllocCap *cap);
+FxAllocCap *fx_alloccap_from_handle(int64_t handle);
+
+/* Mint FuelCap with unit budget (revoked on fx_guest_end). 0 = fail. */
+int64_t fx_guest_mint_fuelcap(int64_t ctx_handle, int64_t units);
+
+/* Burn units through FuelCap. 1 = ok; 0 = dead / over-fuel. */
+int fx_fuelcap_burn(int64_t fuel_handle, int64_t units);
+
+int64_t fx_fuelcap_to_handle(FxFuelCap *cap);
+FxFuelCap *fx_fuelcap_from_handle(int64_t handle);
+
+/* Bump-alloc from the guest arena (host scratch). 0 if dead / OOM. Pointer as i64. */
 int64_t fx_guest_alloc(int64_t ctx_handle, int64_t nbytes);
 
 int fx_guest_is_live(int64_t ctx_handle);

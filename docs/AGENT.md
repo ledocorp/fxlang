@@ -1,6 +1,6 @@
 # Agent loop — check, run, emit-C, locate
 
-**Last updated:** 7 August 2026
+**Last updated:** 8 August 2026
 
 fx treats **agents (LLMs) as first-class consumers** of the same contracts humans use:
 diagnostics with spans, path imports, readable emitted C, and a lean MCP server.
@@ -22,7 +22,7 @@ fx locate --c-file out_dbg/main.c --line 40
 | Step | Why |
 |------|-----|
 | `check` | Stable error codes + spans before edit thrash |
-| `run` | Default IR → native (QBE ships in the package) |
+| `run` | Default IR → native when QBE is discoverable; Windows prefers `qbe.exe` when staged, else emit-C fallback ([CLI.md](CLI.md)) |
 | `emit-c` | Readable C audit trail (`/* fx: … */` traces) |
 | `locate` | Map a **C** line back to fx via `.fxmap` ([TRACKING.md](TRACKING.md)) |
 

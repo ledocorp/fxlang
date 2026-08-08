@@ -54,6 +54,6 @@ fx mcp
 
 ## As of 0.9.0 — can / cannot (agents)
 
-**Can:** IR→native `fx run`; emit readable C; regions/effects; SoA + pools; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
+**Can:** IR→native `fx run` (Linux `obj/qbe`; Windows `windows/qbe.exe` when staged — same everyday differential set); emit readable C; regions/effects; SoA + pools; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
 
-**Cannot / not claimed:** growable `v[i]=x` sugar; Soft-fx / second mutation model; package registry; DAP debugger product; language-wide formal certification.
+**Cannot / not claimed:** growable `v[i]=x` sugar; Soft-fx / second mutation model; package registry; DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`).

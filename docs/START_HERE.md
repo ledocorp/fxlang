@@ -33,9 +33,11 @@ fx doctor
 
 fx new hello
 cd hello
-fx run main.fx                # IR → native; expect exit code 42
-fx run main.fx --emit-c       # optional: emit-C → native
+fx run main.fx                # IR → native when QBE is in the package; expect exit 42
+fx run main.fx --emit-c       # optional: readable C path (also the fallback if QBE is missing)
 ```
+
+**IR on Windows and Linux:** Linux uses `third_party/qbe/obj/qbe`. Windows uses `third_party/qbe/windows/qbe.exe` when that file is in the package (native PE, `amd64_win`). The same everyday programs run on both paths. If `qbe.exe` is absent, pass `--emit-c`. Emit-C stays first-class either way.
 
 Windows without PATH:
 

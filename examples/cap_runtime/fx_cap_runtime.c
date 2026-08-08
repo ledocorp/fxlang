@@ -305,6 +305,20 @@ int fx_guest_end(int64_t ctx_handle) {
             g->out[i]->live = 0;
         }
     }
+    for (i = 0; i < g->alloc_n; i++) {
+        if (g->alloc[i] != NULL) {
+            g->alloc[i]->live = 0;
+            g->alloc[i]->ctx = NULL; /* never deref after end */
+            g->alloc[i]->budget_remaining = 0;
+        }
+    }
+    for (i = 0; i < g->fuel_n; i++) {
+        if (g->fuel[i] != NULL) {
+            g->fuel[i]->live = 0;
+            g->fuel[i]->ctx = NULL;
+            g->fuel[i]->units_remaining = 0;
+        }
+    }
     if (g->arena != NULL) {
         free(g->arena);
         g->arena = NULL;
@@ -367,14 +381,12 @@ int64_t fx_guest_mint_outcap(int64_t ctx_handle, const char *root) {
     return fx_outcap_to_handle(cap);
 }
 
-int64_t fx_guest_alloc(int64_t ctx_handle, int64_t nbytes) {
-    FxGuestCtx *g;
+static int64_t guest_bump_alloc(FxGuestCtx *g, int64_t nbytes) {
     size_t n;
     size_t align;
     size_t padded;
     char *p;
 
-    g = fx_guest_from_handle(ctx_handle);
     if (g == NULL || !g->live || g->arena == NULL) {
         return 0;
     }
@@ -390,4 +402,108 @@ int64_t fx_guest_alloc(int64_t ctx_handle, int64_t nbytes) {
     p = g->arena + padded;
     g->arena_used = padded + n;
     return (int64_t)(intptr_t)p;
+}
+
+int64_t fx_guest_alloc(int64_t ctx_handle, int64_t nbytes) {
+    return guest_bump_alloc(fx_guest_from_handle(ctx_handle), nbytes);
+}
+
+int64_t fx_alloccap_to_handle(FxAllocCap *cap) {
+    return (int64_t)(intptr_t)cap;
+}
+
+FxAllocCap *fx_alloccap_from_handle(int64_t handle) {
+    return (FxAllocCap *)(intptr_t)handle;
+}
+
+int64_t fx_guest_mint_alloccap(int64_t ctx_handle, int64_t budget_bytes) {
+    FxGuestCtx *g;
+    FxAllocCap *cap;
+
+    g = fx_guest_from_handle(ctx_handle);
+    if (g == NULL || !g->live) {
+        return 0;
+    }
+    if (budget_bytes <= 0) {
+        return 0;
+    }
+    if (g->alloc_n >= FX_GUEST_MAX_CAPS) {
+        return 0;
+    }
+    cap = (FxAllocCap *)calloc(1, sizeof(FxAllocCap));
+    if (cap == NULL) {
+        return 0;
+    }
+    cap->ctx = g;
+    cap->budget_remaining = budget_bytes;
+    cap->live = 1;
+    g->alloc[g->alloc_n++] = cap;
+    return fx_alloccap_to_handle(cap);
+}
+
+int64_t fx_alloccap_alloc(int64_t alloc_handle, int64_t nbytes) {
+    FxAllocCap *cap;
+    int64_t p;
+
+    cap = fx_alloccap_from_handle(alloc_handle);
+    /* Check live before touching ctx (tombstones after guest_end). */
+    if (cap == NULL || !cap->live) {
+        return 0;
+    }
+    if (nbytes <= 0 || nbytes > cap->budget_remaining) {
+        return 0;
+    }
+    p = guest_bump_alloc(cap->ctx, nbytes);
+    if (p == 0) {
+        return 0;
+    }
+    cap->budget_remaining -= nbytes;
+    return p;
+}
+
+int64_t fx_fuelcap_to_handle(FxFuelCap *cap) {
+    return (int64_t)(intptr_t)cap;
+}
+
+FxFuelCap *fx_fuelcap_from_handle(int64_t handle) {
+    return (FxFuelCap *)(intptr_t)handle;
+}
+
+int64_t fx_guest_mint_fuelcap(int64_t ctx_handle, int64_t units) {
+    FxGuestCtx *g;
+    FxFuelCap *cap;
+
+    g = fx_guest_from_handle(ctx_handle);
+    if (g == NULL || !g->live) {
+        return 0;
+    }
+    if (units <= 0) {
+        return 0;
+    }
+    if (g->fuel_n >= FX_GUEST_MAX_CAPS) {
+        return 0;
+    }
+    cap = (FxFuelCap *)calloc(1, sizeof(FxFuelCap));
+    if (cap == NULL) {
+        return 0;
+    }
+    cap->ctx = g;
+    cap->units_remaining = units;
+    cap->live = 1;
+    g->fuel[g->fuel_n++] = cap;
+    return fx_fuelcap_to_handle(cap);
+}
+
+int fx_fuelcap_burn(int64_t fuel_handle, int64_t units) {
+    FxFuelCap *cap;
+
+    cap = fx_fuelcap_from_handle(fuel_handle);
+    if (cap == NULL || !cap->live) {
+        return 0;
+    }
+    if (units <= 0 || units > cap->units_remaining) {
+        return 0;
+    }
+    cap->units_remaining -= units;
+    return 1;
 }

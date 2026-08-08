@@ -7,7 +7,7 @@ If we ship additional third-party code later, it will be named here with its lic
 
 | Component | Role in this package | License | Where |
 |-----------|----------------------|---------|--------|
-| **QBE** | IR → native backend (`fx run` default path) | MIT | [`third_party/qbe/LICENSE`](../third_party/qbe/LICENSE) · binary `third_party/qbe/obj/qbe` |
+| **QBE** | IR → native backend (`fx run` default path) | MIT | [`third_party/qbe/LICENSE`](../third_party/qbe/LICENSE) · Linux `third_party/qbe/obj/qbe` · Windows `third_party/qbe/windows/qbe.exe` when staged |
 | **zspec** | C substrate headers + `libzspec.a` | Apache-2.0 (same as fx) | `zspec/`, `build/gcc*/` |
 
 ## Not in this package

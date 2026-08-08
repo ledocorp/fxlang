@@ -47,6 +47,8 @@ fx build main.fx -o out
 
 By default, `fx run` / `fx build` lower through the **IR → native** path. Pass **`--emit-c`** to use the readable C emission path instead (same checked program, different lowering). Advanced: `--backend auto|ir|c`.
 
+**Windows vs Linux IR:** Linux discovers `third_party/qbe/obj/qbe`. Windows discovers `third_party/qbe/windows/qbe.exe` when present and links native PE (`amd64_win`). On that path, the same differential set as Linux is supported (COVER **50** + **24** extras = **74**). Without `qbe.exe`, use `--emit-c`. Emit-C stays first-class on both OSes.
+
 Useful flags:
 
 | Flag | Meaning |
