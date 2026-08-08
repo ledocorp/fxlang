@@ -52,7 +52,7 @@ add tools only when a concrete agent workflow fails. See [CLI.md](CLI.md).
 ## Composition habits agents should copy
 
 - Parallel `Vec`s + typed ids (SoA), not nested growable structs — [COMPOSITION.md](COMPOSITION.md).  
-- Host mints file reads; guest fx takes **bytes** without ambient `io` when authority matters — `examples/cap_host_smoke/`.  
+- Host mints file authority when it matters: either pass **bytes** only (`examples/cap_host_smoke/`) or pass **`FsCap` / `OutCap`** and use `std/io_cap` (`examples/cap_regions_*`). Deny outside the root is exit **5**.  
 - Keep types and effects visible on purpose.
 
 ---

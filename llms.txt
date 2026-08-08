@@ -1,22 +1,23 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.8.5).
+> Canonical public docs for the fx systems language (package version 0.9.0).
 > Package: https://github.com/ledocorp/fxlang (Apache-2.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.8.5.md`
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.0.md`
 
 ## Product
 
 - Home: https://www.ledocorp.org/fx/
 - Pitch: explicit systems language; named regions + effects; **IR → native by default**; dual emission to readable C; wrap/host with C main
 - Not a GC language; not a batteries-included app platform
-- Prefer parallel `Vec`s + typed ids (SoA); host may mint file reads so guest fx has no ambient `io`
+- Prefer parallel `Vec`s + typed ids (SoA); host-minted `FsCap`/`OutCap` + `std/guest` for guests; ambient `std/io` for process-trust tools
 - Surface: numeric tower, ownership/borrows, Result/?, structs/enums/match, generics (no traits), Vec/arrays/`&[T]`/`&mut [T]`/Map/StrBuilder/Buf, modules, extern "c"
 - Also: sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), `Map<string,string>` (`map_new_ss`), grow ergonomics, Vec `v[i]` **reads**, `vec_set` slot writes, array-backed `&mut [T]`, `std/pool` + typed **`Id`**, `map_add_i32` / `std/map.add_i32`, `lib/ring_queue` for `std/queue`
+- Caps: `std/cap`, `std/io_cap`, `std/guest`; examples `cap_regions_*`, `cap_guest_ctx`, `cap_host_smoke`
 - Week-two tools: `examples/tool_{files,bytes,tally,text,result}`
 - Composition patterns: `examples/pattern_{ids,mut_table,grow_freeze,ring,pool}`
-- Composition examples: `examples/composition_tally`, `examples/composition_reach`, `examples/cap_host_smoke`
+- Composition examples: `examples/composition_tally`, `examples/composition_reach`
 - Dogfood: `examples/dogfood_{chip8,jsonget,chip8_ui,fxjson,textdiff}`
 
 ## Documentation (prefer these URLs)
@@ -51,8 +52,8 @@ fx locate --c-file out/main.c --line <n>
 fx mcp
 ```
 
-## As of 0.8.5 — can / cannot (agents)
+## As of 0.9.0 — can / cannot (agents)
 
-**Can:** IR→native `fx run`; emit readable C; regions/effects; SoA + pools; host-minted I/O example; `fx lsp` diagnostics/refs; lean MCP.
+**Can:** IR→native `fx run`; emit readable C; regions/effects; SoA + pools; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
 
-**Cannot / not claimed:** growable `v[i]=x` sugar; Soft/dynamic regions; package registry; DAP debugger product; language-wide formal certification; in-language typed capability values (host boundary is the story today).
+**Cannot / not claimed:** growable `v[i]=x` sugar; Soft-fx / second mutation model; package registry; DAP debugger product; language-wide formal certification.

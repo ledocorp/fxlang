@@ -13,7 +13,7 @@ fx promises **readable C** and a way to map failures back to `.fx` sources.
 |-------|------|------|
 | **1 — fx** | Parse / typecheck / borrows | `fx check` → `.fx:line:col` |
 | **2 — C / link** | After emit | `fx cc` remaps gcc/clang via `.fxmap` |
-| **3 — Runtime** | Running binary | ASan / asserts / gdb (use `#line` + `-g`) |
+| **3 — Runtime** | Running binary | asserts / gdb (use `#line` + `-g`) |
 
 Always prefer layer 1 first.
 

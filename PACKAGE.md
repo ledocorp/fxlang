@@ -1,6 +1,7 @@
 # Package contents
 
-**Version:** 0.8.5 (see [VERSION](VERSION))  
+**Version:** 0.9.0 (see [VERSION](VERSION))  
+
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
 This repository is the **fx language package**: everything you need to install the compiler and write programs.

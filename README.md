@@ -1,6 +1,7 @@
 # fx
 
-**Version:** [0.8.5](VERSION)  
+**Version:** [0.9.0](VERSION)  
+
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
 
@@ -75,7 +76,7 @@ It is **not** trying to be a batteries-included application platform, a GC scrip
 ```text
 # put bin/ on PATH, then:
 fx doctor                  # check gcc/clang/zig + zspec paths
-fx version                 # v0.8.5
+fx version                 # v0.9.0
 fx new hello
 cd hello
 fx run main.fx             # IR → native; exit 42
@@ -175,8 +176,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Release notes
 
-See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.8.5](docs/releases/0.8.5.md).
+See **[docs/releases/](docs/releases/)** (newest first). Latest: [0.9.0](docs/releases/0.9.0.md).
 
-**0.8.5** is a polish release: day-one editor/`fx lsp`, agent loop docs, SoA composition guidance, and host-minted I/O example — on top of **0.8.1** (shipped QBE) and **0.8.0** (IR by default, dogfood Apps 1–5). Still no `v[i]=x`, no unsafe dialect. macOS prebuilt binary still later.
+**0.9.0** adds capability regions (`FsCap` / `OutCap` / `std/guest`) for scripting, embedded guests, and extensions — same region physics, host-minted authority. Builds on **0.8.5** polish and **0.8.1** shipped QBE. Still no `v[i]=x`, no Soft-fx. macOS prebuilt binary still later.
 
 The thesis is not small: **explicit systems programming with dual emission to readable C.**

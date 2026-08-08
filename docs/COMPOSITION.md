@@ -1,6 +1,7 @@
 # Composition under regions
 
-**Package:** 0.8.5  
+**Package:** 0.9.0  
+
 **Site:** https://www.ledocorp.org/fx/docs/composition/  
 **What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)
 
@@ -118,7 +119,47 @@ fx run examples/cap_host_smoke/main.fx            # exit 42
 fx build examples/cap_host_smoke/guest_lib.fx -o build/cap_host_smoke --emit-c --host examples/cap_host_smoke/host.c
 ```
 
-Typed in-language capability values remain **later**. Same region / slot-mut physics — not a soft dialect.
+### 9. Capability regions (`FsCap` / `OutCap`)
+
+For scripting and embedded guests that **do** need file I/O in fx, pass **opaque caps** the host minted:
+
+- `import std/cap` — `FsCap` (read root) / `OutCap` (write root)
+- `import std/io_cap` — `read_file_cap(fs, path)` / `write_file_cap(out, path, data)`
+- Host links `examples/cap_runtime/` (`fx_fscap_mint` / `fx_outcap_mint`); deny outside the root is **`Err(5)`** / exit **5**
+- Ambient `std/io` stays for process-trust CLIs — caps are a **parallel** facade, not a silent rewrite
+
+```text
+fx run examples/cap_regions_ext/main.fx            # dual-path score → 42
+fx build examples/cap_regions_ext/guest_lib.fx -o build/cap_regions_ext --emit-c `
+  --host examples/cap_regions_ext/host.c `
+  --link examples/cap_runtime/fx_cap_runtime.c `
+  --link-include examples/cap_runtime
+```
+
+**Embedded pattern:** mint caps at the C boundary → call guest `run(fs, out, …)` → tear down.
+Pure algorithm modules stay IR-runnable without caps; the hosted path proves the allowlist.
+Same region / slot-mut physics — not a soft dialect.
+
+### 10. Guest context (session lifetime)
+
+For scripting / embed / extensions that need an **independent guest world**, the host owns a
+**guest session**: bump arena + minted caps. Ending the session frees the arena and **revokes**
+caps (stale handles deny). This is language power — same fx physics inside the guest, not a
+softer dialect.
+
+- `import std/guest` — `GuestCtx`; `begin(root, arena_bytes)` / `mint_fs` / `mint_out` / `end`
+- Host C: `fx_guest_begin` / `fx_guest_mint_fscap` / `fx_guest_end` in `examples/cap_runtime/`
+- Guest code uses `io_cap` only (no ambient `std/io` in that context)
+- After `end`, a second call with the old `FsCap` returns deny (**5**)
+
+```text
+fx run examples/cap_guest_ctx/main.fx            # dual-path score → 42
+fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
+  --host examples/cap_guest_ctx/host.c `
+  --link examples/cap_runtime/fx_cap_runtime.c `
+  --link-include examples/cap_runtime
+# default prog.exe: begin → run → end → stale-handle deny
+```
 
 Dogfood apps that still use ambient `io` are honest process-trust tools — see [DOGFOOD.md](DOGFOOD.md).
 

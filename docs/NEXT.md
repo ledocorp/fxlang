@@ -2,12 +2,14 @@
 
 **Last updated:** 7 August 2026
 
-fx **0.8.5** (builds on **0.8.1**) makes the adoptable story **visible in the language package**:
-IR → native (QBE shipped), readable C emission, dogfood Apps 1–5, day-one editor loop,
-SoA composition, host-minted I/O authority, and a lean agent loop.
-Capability-region *language* values remain **later**.
+fx **0.9.0** is the capability-region release: one dialect for apps, **scripting**,
+**embedded guests**, and **extensions** — host-minted `FsCap` / `OutCap`, `std/io_cap`,
+and `std/guest` sessions with teardown revoke. Same region and slot-mut physics;
+no Soft-fx. Ambient `std/io` remains for process-trust tools.
 
-**Product focus:** polish and honesty for small correctness-sensitive tools — not mut sugar,
+Builds on **0.8.5** (editor/`fx lsp`, SoA teaching, host I/O smoke) and **0.8.1** (shipped QBE).
+
+**Product focus:** teachable composition and honest host boundaries — not mut sugar,
 not a package registry first, not a heavy debugger product as the bar for “tooling.”
 
 ---
@@ -22,7 +24,7 @@ not a package registry first, not a heavy debugger product as the bar for “too
 | Structured graphs / tables | Prefer parallel `Vec`s + typed ids (SoA) — see [COMPOSITION.md](COMPOSITION.md) |
 | Explicit types (`i32`, effects, regions) | Stay visible on purpose — domain names reduce noise, not soft inference |
 | Package manager / registry | **Later** — path imports and `std/` for now |
-| Sandboxed / capability regions | Host-minted reads **today**; typed caps **later** |
+| Sandboxed / capability regions | Host-minted caps + guest session; ambient `std/io` stays for process-trust |
 | Native IR backend | Keep trustworthy for real apps — dual path with emit-C stays the product |
 | Language “tiers” | One everyday dialect; optional deeper assurance on selected modules |
 
@@ -37,7 +39,7 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 
 1. Keep composition teaching and dogfood apps green on both run paths.  
 2. Deepen C wraps when an app needs them — [LIBRARIES.md](LIBRARIES.md).  
-3. Host-boundary authority: C mints reads; guest takes bytes (`examples/cap_host_smoke/`).  
+3. Dogfood Apps under caps when an app needs a guest boundary.  
 4. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
 
 ---
@@ -59,4 +61,4 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 - [QUALITY.md](QUALITY.md) — public quality habits  
 - [LIBRARIES.md](LIBRARIES.md) — C wrap priorities  
 - [COMPOSITION.md](COMPOSITION.md) — how to build  
-- [releases/0.8.5.md](releases/0.8.5.md) — latest release notes  
+- [releases/0.9.0.md](releases/0.9.0.md) — latest release notes  
