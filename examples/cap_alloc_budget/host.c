@@ -1,4 +1,4 @@
-/* FX-DYN-3 — AllocCap budget dogfood.
+/* AllocCap budget dogfood.
  *
  * Flow: guest_begin → mint_alloccap(64) → try_alloc(32) ok
  *       → try_alloc(48) deny(5) → guest_end → stale try_alloc deny(5).

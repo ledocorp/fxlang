@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.1 (see [VERSION](VERSION))  
+**Version:** 0.9.2 (see [VERSION](VERSION))  
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
@@ -17,6 +17,8 @@ This repository is the **fx language package**: everything you need to install t
 | `zspec/include/zspec/` | C headers for linking emitted C |
 | `scaffolds/` | Templates used by `fx new` |
 | `std/` | Standard library (fx modules) |
+| `host/cap/` | Guest / capability session runtime (link with hosted guests) |
+| `host/cli/` | Shared argv / exit helpers for thin C hosts |
 | `docs/` | User documentation (incl. `docs/releases/`) |
 | `examples/` | Optional demos |
 | `compiler-source/` | Inspectable fx compiler modules (read-only; not how you run fx) |

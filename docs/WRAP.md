@@ -13,7 +13,7 @@ Canonical web copy: https://www.ledocorp.org/fx/docs/wrap/
 For argv CLIs, prefer the shared helpers in `examples/cli_host/fx_cli_host.h`
 (fx owns logic; C owns argv / usage / stderr / exit). See dogfood App 2/4/5 hosts.
 
-## Bundled demo
+## Bundled demos
 
 ```text
 fx run examples/showcase_wrap/compute.fx --host examples/showcase_wrap/host.c
@@ -25,6 +25,15 @@ Expected exit code **42**.
 |------|------|
 | `examples/showcase_wrap/compute.fx` | fx functions (`score`, `clamp01`) |
 | `examples/showcase_wrap/host.c` | C `main` that calls into fx |
+
+Larger WRAP footholds (dual-path → **42**):
+
+| Example | What it wraps |
+|---------|----------------|
+| `examples/wrap_sqlite/` | SQLite amalgamation — `:memory:` open / exec / query |
+| `examples/wrap_llhttp/` | llhttp — parse-only Content-Length (optional NetCap allow host) |
+
+Priorities and honesty bounds: [LIBRARIES.md](LIBRARIES.md).
 
 ## Declaring C functions from fx
 

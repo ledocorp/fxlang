@@ -1,10 +1,10 @@
-/* FX-DYN Phase B.1 — guest context host.
+/* Phase B.1 - guest context host.
  *
  * Flow: guest_begin(root) → mint FsCap → guest run → guest_end
  *       → second io_cap call with stale handle denies (exit 5).
  *
- * Usage: prog                 — full session + teardown deny probe
- *        prog fixtures/ok.txt — single run under live context (exit 0)
+ * Usage: prog                 - full session + teardown deny probe
+ *        prog fixtures/ok.txt - single run under live context (exit 0)
  * Exit: 0 success · 1 usage/internal · 2 io · 3 guest reject · 5 denied
  */
 #include "guest_lib.h"

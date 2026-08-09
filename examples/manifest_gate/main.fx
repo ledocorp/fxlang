@@ -1,4 +1,4 @@
-// FX-0.8-UX-4 — confidence app B: Result/`?` + io (different surface from route_desk).
+// confidence app B: Result/`?` + io (different surface from route_desk).
 // Write a tiny manifest, read it back with ?, validate via check helpers, exit Ok(42).
 // Dual-path: IR-default `fx run` and `--emit-c` (no silent fallback).
 using core;
@@ -23,7 +23,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, io } {
         return Ok(12);
     }
 
-    // Tag check then score — both Result/`?`.
+    // Tag check then score - both Result/`?`.
     let tag_ok = check.require_tag(body, "ok")?;
     if (tag_ok != 0) {
         return Ok(19);
@@ -41,7 +41,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, io } {
     if (string.len(again) != string.len(text) + 7) {
         return Ok(15);
     }
-    // Find "tag=fx" by requiring the tag on a suffix walk — use require on rebuilt tip.
+    // Find "tag=fx" by requiring the tag on a suffix walk - use require on rebuilt tip.
     // Simpler: nlines-style count of newlines == 2.
     let nl: i32 = 0;
     let i: i32 = 0;

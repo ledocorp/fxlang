@@ -1,4 +1,4 @@
-// Pure score — keeps IR dual-path free of host/cJSON externs.
+// Pure score - keeps IR dual-path free of host/cJSON externs.
 fn score(src: string) -> i32 {
     if (str_len(src) < 2) {
         return 3;

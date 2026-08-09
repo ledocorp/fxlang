@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
         return fx_cli_fail("cap_host_smoke", "io error", 2);
     }
 
-    /* Mint: guest receives bytes only — no path, no ambient io. */
+    /* Mint: guest receives bytes only - no path, no ambient io. */
     r = fx_guest_lib_run(bytes);
     free(bytes);
 

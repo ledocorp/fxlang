@@ -1,4 +1,4 @@
-// FX-DYN-4 — compose FsCap + AllocCap under one guest run.
+// compose FsCap + AllocCap under one guest run.
 // Read under FsCap; scratch under AllocCap; no session alloc_bytes (host scratch only).
 using core;
 import std/cap;

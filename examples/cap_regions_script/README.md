@@ -1,4 +1,4 @@
-# Capability regions — scripting smoke (FX-DYN-1)
+# Capability regions - scripting smoke
 
 Host mints an **`FsCap`** rooted at `fixtures/`, reads under that cap, and passes
 the **handle + bytes** into guest fx. Guest has **no ambient `io`**.
@@ -17,4 +17,4 @@ fx build examples/cap_regions_script/guest_lib.fx -o build/cap_regions_script --
 ../../build/cap_regions_script/prog.exe ../secret.txt       # exit 5 denied
 ```
 
-See `docs/specs/CAPABILITY_REGIONS_LITE.md`. Soft-fx refused — same region physics.
+See `docs/specs/CAPABILITY_REGIONS_LITE.md`. Soft-fx refused - same region physics.

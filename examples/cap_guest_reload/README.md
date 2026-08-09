@@ -1,4 +1,4 @@
-# cap_guest_reload — reload-shaped guest sessions (FX-DYN-2)
+# cap_guest_reload - reload-shaped guest sessions
 
 Two independent host sessions: **begin → mint → run → end → stale deny**, twice.
 

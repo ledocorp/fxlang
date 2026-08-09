@@ -1,4 +1,4 @@
-// FX-0.8-UX-3 — route desk confidence app (≥ ledger class, multi-module).
+// route desk confidence app (≥ ledger class, multi-module).
 // stock Map helpers (IR multi-module + UX-3b region thread) + Vec + slip + files → 42.
 // Dual-path: IR-default `fx run` and `--emit-c` (no silent fallback).
 import std/io;

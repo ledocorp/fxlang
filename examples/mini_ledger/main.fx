@@ -1,4 +1,4 @@
-// FX-0.8-DEMO-1 — mini ledger smoke app (~160 LOC).
+// mini ledger smoke app (~160 LOC).
 // Map books + Vec batch + StrBuilder receipt + file lifecycle → exit 42.
 // Dual-path: IR-default `fx run` and `--emit-c` (no emit-C fallback on IR run).
 //

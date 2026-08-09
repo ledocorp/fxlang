@@ -1,8 +1,8 @@
-// lib/id_pool.fx — region id-pool with typed Id (FX-0.7.5-A1).
+// lib/id_pool.fx - region id-pool with typed Id (FX-0.7.5-A1).
 // Grow: value-threaded alloc. Slot write: vec_set (D2). No escaping pointers.
 module id_pool;
 
-/// Typed pool index — not interchangeable with bare i32 at call sites.
+/// Typed pool index - not interchangeable with bare i32 at call sites.
 struct Id {
     raw: i32,
 }
@@ -44,6 +44,6 @@ fn get(p: Pool, id: Id) -> i32 {
 }
 
 fn set(p: Pool, id: Id, x: i32) -> Pool effects { alloc, mut } {
-    // D2: stable-slot write — identity/capacity unchanged (not growable-Vec v[i]=x).
+    // D2: stable-slot write - identity/capacity unchanged (not growable-Vec v[i]=x).
     return Pool { data: vec_set(p.data, id.raw, x) };
 }

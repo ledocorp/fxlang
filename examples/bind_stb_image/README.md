@@ -1,4 +1,4 @@
-# stb_image bind (STD-2)
+# stb_image bind
 
 Safe fx wrapper over vendored **stb_image** (public domain) via the in-tree FFI shim.
 

@@ -3,7 +3,7 @@
 using core;
 
 /// Pure score: 42 for "ok…", else 3 (guest reject code).
-/// No `effects { io }` — guest cannot open files.
+/// No `effects { io }` - guest cannot open files.
 fn score(src: string) -> i32 {
     if (str_len(src) < 2) {
         return 3;

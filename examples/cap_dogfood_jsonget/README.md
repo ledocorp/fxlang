@@ -1,6 +1,6 @@
-# cap_dogfood_jsonget (FX-DYN-6)
+# cap_dogfood_jsonget
 
-App 2 (JSON path) as a **guest under FsCap** — teachable sandbox on a real dogfood slice.
+App 2 (JSON path) as a **guest under FsCap** - teachable sandbox on a real dogfood slice.
 
 ## Truth
 
@@ -11,6 +11,10 @@ App 2 (JSON path) as a **guest under FsCap** — teachable sandbox on a real dog
 
 ## Run
 
-```powershell
-.\scripts\test-cap-regions-smoke.ps1
+```text
+fx build examples/cap_dogfood_jsonget/guest_lib.fx -o build/cap_dogfood_jsonget --emit-c \
+  --host examples/cap_dogfood_jsonget/host.c \
+  --link host/cap/fx_cap_runtime.c --link-include host/cap
 ```
+
+Host links the packageable spine (`host/cap` + `host/cli`). See [COMPOSITION.md](../../docs/COMPOSITION.md).

@@ -1,4 +1,4 @@
-// FX-DYN-1 scripting surface: guest takes FsCap + bytes (no ambient io).
+// scripting surface: guest takes FsCap + bytes (no ambient io).
 // Host minted the cap and performed the rooted read.
 using core;
 import std/cap;

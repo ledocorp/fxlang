@@ -1,11 +1,11 @@
-// FX-0.7.5-A3 — non-toy tally: multi-pass Map accumulate + adjust + dense walk → 42
+// non-toy tally: multi-pass Map accumulate + adjust + dense walk → 42
 // Uses map.add_i32 (A2). Regions + effects explicit; no unsafe.
 import std/map;
 
 fn main() -> i32 effects { alloc, mut } {
     region r = arena(16384);
 
-    // Pass 1 — ingest event categories (insert + accumulate).
+    // Pass 1 - ingest event categories (insert + accumulate).
     let m: Map<string, i32> = map.new();
     m = map.add_i32(m, "parse", 4);
     m = map.add_i32(m, "typeck", 6);
@@ -14,7 +14,7 @@ fn main() -> i32 effects { alloc, mut } {
     m = map.add_i32(m, "link", 5);
     m = map.add_i32(m, "typeck", 2);
 
-    // Pass 2 — budget adjustments (more accumulate; one overshoot then correct).
+    // Pass 2 - budget adjustments (more accumulate; one overshoot then correct).
     m = map.add_i32(m, "emit", 10);
     m = map.add_i32(m, "link", 7);
     m = map.add_i32(m, "parse", -1);
@@ -26,7 +26,7 @@ fn main() -> i32 effects { alloc, mut } {
         return 2;
     }
 
-    // Pass 3 — dense walk; expected: parse=6, typeck=8, emit=18, link=12 → 44, then trim.
+    // Pass 3 - dense walk; expected: parse=6, typeck=8, emit=18, link=12 → 44, then trim.
     let sum: i32 = 0;
     let i: i32 = 0;
     while (i < map.len(m)) {
@@ -37,7 +37,7 @@ fn main() -> i32 effects { alloc, mut } {
         return 3;
     }
 
-    // Pass 4 — remove overshoot category contribution via remove + re-accumulate.
+    // Pass 4 - remove overshoot category contribution via remove + re-accumulate.
     m = map.remove(m, "link");
     m = map.add_i32(m, "link", 10);
     // parse=6 + typeck=8 + emit=18 + link=10 = 42

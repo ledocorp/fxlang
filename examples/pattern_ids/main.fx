@@ -1,4 +1,4 @@
-// FX-0.7.4-D0 — composition pattern: graph as ids into parallel Vecs (SoA).
+// composition pattern: graph as ids into parallel Vecs (SoA).
 // No interior pointers; grow is value-threaded; reads via v[i].
 // Run: fx run examples/pattern_ids/main.fx  → exit 42
 import std/vec;

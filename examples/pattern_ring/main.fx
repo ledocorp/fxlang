@@ -1,4 +1,4 @@
-// FX-0.7.4-D0 — fixed-capacity ring via array + head/tail indices (no interior pointers).
+// fixed-capacity ring via array + head/tail indices (no interior pointers).
 // For a packaged FIFO see std/queue + lib/ring_queue.
 // Run: fx run examples/pattern_ring/main.fx  → exit 42
 fn main() -> i32 {

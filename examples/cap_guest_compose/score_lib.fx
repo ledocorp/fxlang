@@ -1,4 +1,4 @@
-// Pure score — no caps (keeps IR dual-path free of host externs).
+// Pure score - no caps (keeps IR dual-path free of host externs).
 fn score(src: string) -> i32 {
     if (str_len(src) < 2) {
         return 3;

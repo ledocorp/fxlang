@@ -39,7 +39,7 @@ fn path_exists(json: string, path: string) -> Result<i32, core_Err> {
     return Ok(1);
 }
 
-/// 1 if path resolves, 0 if missing (no Err — for negative checks).
+/// 1 if path resolves, 0 if missing (no Err - for negative checks).
 fn path_resolved(json: string, path: string) -> i32 {
     return cjson_ref_path_exists(json, path);
 }

@@ -1,4 +1,4 @@
-// FX-WF-3/5 — path-get helper over lib/cjson_safe.
+// /5 - path-get helper over lib/cjson_safe.
 module json_path;
 
 using core;

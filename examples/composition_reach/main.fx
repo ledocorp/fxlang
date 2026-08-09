@@ -1,4 +1,4 @@
-// FX-0.7.5-A3 — non-toy reachability: typed pool Ids + edge SoA + worklist → 42
+// non-toy reachability: typed pool Ids + edge SoA + worklist → 42
 // Nodes in std/pool (A1 Id); edges as parallel Vec raw ids; slot marks via vec.set.
 // No interior pointers; grow then walk; no unsafe.
 import std/pool;
@@ -20,7 +20,7 @@ fn main() -> i32 effects { alloc, mut } {
         return 1;
     }
 
-    // Edges (raw Id.raw): 0→1, 0→2, 1→3, 2→3, 3→4  — all reachable from 0
+    // Edges (raw Id.raw): 0→1, 0→2, 1→3, 2→3, 3→4  - all reachable from 0
     let from: Vec<i32> = vec.new(0);
     let to: Vec<i32> = vec.new(0);
     from = vec.push(from, 0);

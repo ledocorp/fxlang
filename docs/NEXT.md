@@ -2,12 +2,12 @@
 
 **Last updated:** 8 August 2026
 
-fx **0.9.1** adds native Windows QBE packaging on top of **0.9.0** capability regions:
-one dialect for apps, **scripting**, **embedded guests**, and **extensions** — host-minted
-`FsCap` / `OutCap`, `std/io_cap`, and `std/guest` sessions with teardown revoke. Same region
-and slot-mut physics; no Soft-fx. Ambient `std/io` remains for process-trust tools.
+fx **0.9.2** ships the packageable **host spine** (`host/cap` + `host/cli`), nested guest
+sessions, **NetCap** allowlist foothold (no dial), SQLite / llhttp WRAP demos, and
+`fx new --scaffold cli|guest`. Same region and slot-mut physics; no Soft-fx.
+Ambient `std/io` remains for process-trust tools.
 
-Builds on **0.9.0** (caps), **0.8.5** (editor/`fx lsp`, SoA teaching), and **0.8.1** (shipped QBE).
+Builds on **0.9.1** (Windows QBE), **0.9.0** (caps), **0.8.5** (editor/`fx lsp`, SoA teaching).
 
 **Product focus:** teachable composition and honest host boundaries — not mut sugar,
 not a package registry first, not a heavy debugger product as the bar for “tooling.”
@@ -25,6 +25,7 @@ not a package registry first, not a heavy debugger product as the bar for “too
 | Explicit types (`i32`, effects, regions) | Stay visible on purpose — domain names reduce noise, not soft inference |
 | Package manager / registry | **Later** — path imports and `std/` for now |
 | Sandboxed / capability regions | Host-minted caps + guest session; ambient `std/io` stays for process-trust |
+| Network authority | Host-minted **NetCap** allowlist first; dial / TLS only when an app demands |
 | Native IR backend | Keep trustworthy for real apps — dual path with emit-C stays the product |
 | Language “tiers” | One everyday dialect; optional deeper assurance on selected modules |
 
@@ -39,8 +40,7 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 
 1. Keep composition teaching and dogfood apps green on both run paths.  
 2. Deepen C wraps when an app needs them — [LIBRARIES.md](LIBRARIES.md).  
-3. Dogfood Apps under caps when an app needs a guest boundary.  
-4. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
+3. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
 
 ---
 
@@ -51,7 +51,8 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 - Wrapping every popular C library before anyone has a program that needs it  
 - Claiming certification or a full formal toolchain as part of the language package  
 - Heavy IDE / debugger product as the ongoing definition of “editor support”  
-- Softening types so code “looks more like Python/Rust”
+- Softening types so code “looks more like Python/Rust”  
+- Shipping private boards, harness scripts, or internal compiler sources as the public repo root  
 
 ---
 
@@ -61,4 +62,4 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 - [QUALITY.md](QUALITY.md) — public quality habits  
 - [LIBRARIES.md](LIBRARIES.md) — C wrap priorities  
 - [COMPOSITION.md](COMPOSITION.md) — how to build  
-- [releases/0.9.1.md](releases/0.9.1.md) — latest release notes  
+- [releases/0.9.2.md](releases/0.9.2.md) — latest release notes  

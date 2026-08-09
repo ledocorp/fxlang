@@ -1,4 +1,4 @@
-// FX-0.8-UX-4 — Result helpers for manifest validation (multi-module).
+// Result helpers for manifest validation (multi-module).
 using core;
 import std/string;
 

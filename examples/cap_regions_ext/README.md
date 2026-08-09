@@ -1,4 +1,4 @@
-# Capability regions — extension smoke (FX-DYN-1)
+# Capability regions - extension smoke
 
 Guest **extension** code takes `FsCap` / `OutCap` and calls `io_cap.read_file_cap` /
 `io_cap.write_file_cap`. Paths outside the minted root return **`Err(5)`** / process exit **5**.
@@ -20,4 +20,4 @@ fx build examples/cap_regions_ext/guest_lib.fx -o build/cap_regions_ext --emit-c
 ../../build/cap_regions_ext/prog.exe --write-deny        # exit 5 denied (write)
 ```
 
-Parallel to ambient `std/io` — see `docs/specs/CAPABILITY_REGIONS_LITE.md`.
+Parallel to ambient `std/io` - see `docs/specs/CAPABILITY_REGIONS_LITE.md`.

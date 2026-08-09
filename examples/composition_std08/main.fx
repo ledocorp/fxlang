@@ -1,4 +1,4 @@
-// FX-0.8-STD-3 — composition app: file_text + stb_image wrap; exit 42.
+// composition app: file_text + stb_image wrap; exit 42.
 // Dual-path: IR and emit-C. Link stb_image_ref.c + -lm.
 using core;
 import std/io;

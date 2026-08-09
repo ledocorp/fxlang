@@ -1,4 +1,4 @@
-// FX-DYN-2 — reload-shaped guest under a host GuestCtx.
+// reload-shaped guest under a host GuestCtx.
 // Session 1 and session 2 are independent: end revokes; begin mints fresh caps.
 // Authority = minted FsCap only (no ambient std/io). Same physics; no Soft-fx.
 using core;

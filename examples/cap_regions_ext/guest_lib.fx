@@ -1,4 +1,4 @@
-// FX-DYN-1 extension surface: guest calls io_cap read/write under host caps.
+// extension surface: guest calls io_cap read/write under host caps.
 // Deny outside root → Err(5). Same region physics; no Soft-fx.
 using core;
 import std/cap;

@@ -1,4 +1,4 @@
-# cap_alloc_budget (FX-DYN-3)
+# cap_alloc_budget
 
 Budgeted guest allocation via host-minted `AllocCap`.
 
@@ -7,7 +7,7 @@ Budgeted guest allocation via host-minted `AllocCap`.
 - Host: `fx_guest_begin` → `fx_guest_mint_alloccap(budget)` → guest `try_alloc`
 - Over-budget and post-`end` → deny **5**
 - Session `fx_guest_alloc` remains for host scratch; guest dogfood uses AllocCap only
-- Soft-fx refused — same bump arena physics
+- Soft-fx refused - same bump arena physics
 
 ## Run
 

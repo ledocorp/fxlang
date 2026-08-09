@@ -1,4 +1,4 @@
-// fx-only demo: named region + vec (Go-feel lifetimes, not a GC).
+// demo: named region + vec (Go-feel lifetimes, not a GC).
 // Run: fx run examples/showcase_core/main.fx
 
 import std/vec;

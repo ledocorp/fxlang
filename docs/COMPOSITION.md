@@ -125,15 +125,15 @@ For scripting and embedded guests that **do** need file I/O in fx, pass **opaque
 
 - `import std/cap` — `FsCap` (read root) / `OutCap` (write root)
 - `import std/io_cap` — `read_file_cap(fs, path)` / `write_file_cap(out, path, data)`
-- Host links `examples/cap_runtime/` (`fx_fscap_mint` / `fx_outcap_mint`); deny outside the root is **`Err(5)`** / exit **5**
+- **SoT host runtime:** `host/cap/fx_cap_runtime.c` (compat shims under `examples/cap_runtime/` still work)
+- Deny outside the root is **`Err(5)`** / exit **5**
 - Ambient `std/io` stays for process-trust CLIs — caps are a **parallel** facade, not a silent rewrite
 
 ```text
 fx run examples/cap_regions_ext/main.fx            # dual-path score → 42
 fx build examples/cap_regions_ext/guest_lib.fx -o build/cap_regions_ext --emit-c `
   --host examples/cap_regions_ext/host.c `
-  --link examples/cap_runtime/fx_cap_runtime.c `
-  --link-include examples/cap_runtime
+  --link host/cap/fx_cap_runtime.c --link-include host/cap
 ```
 
 **Embedded pattern:** mint caps at the C boundary → call guest `run(fs, out, …)` → tear down.
@@ -148,22 +148,29 @@ caps (stale handles deny). This is language power — same fx physics inside the
 softer dialect.
 
 - `import std/guest` — `GuestCtx`; `begin(root, arena_bytes)` / `mint_fs` / `mint_out` / `end`
-- Host C: `fx_guest_begin` / `fx_guest_mint_fscap` / `fx_guest_end` in `examples/cap_runtime/`
+- Host C: `fx_guest_begin` / `fx_guest_mint_fscap` / `fx_guest_end` in `host/cap/`
+- Nested sessions: a parent may begin a child; ending the parent ends children and revokes their caps
 - Guest code uses `io_cap` only (no ambient `std/io` in that context)
 - After `end`, a second call with the old `FsCap` returns deny (**5**)
+- Starter: `fx new sandbox --scaffold guest`
 
 ```text
 fx run examples/cap_guest_ctx/main.fx            # dual-path score → 42
 fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
   --host examples/cap_guest_ctx/host.c `
-  --link examples/cap_runtime/fx_cap_runtime.c `
-  --link-include examples/cap_runtime
-# default prog.exe: begin → run → end → stale-handle deny
+  --link host/cap/fx_cap_runtime.c --link-include host/cap
+# default prog: begin → run → end → stale-handle deny
 ```
 
-**Fx host (no C driver):** `examples/cap_guest_fxhost/host_main.fx` calls `guest.begin` / `end` directly.
+**NetCap (allowlist only):** host mints a network authority (`fx_guest_mint_netcap` /
+`fx_netcap_allows`) for host+port checks. **No dial / sockets** in the language package yet —
+see `examples/wrap_llhttp` host for a parse + allow demo.
 
-**Language sugar:** `dynamic region g = guest(N);` lowers to `fx_guest_begin` / `fx_guest_end` on function exit (not `arena` / not Runtime `fx(...)`). See `examples/cap_guest_fxhost/host_sugar.fx`.
+**CLI hosts:** shared argv / usage / exit helpers live in `host/cli/fx_cli_host.h`
+(compat: `examples/cli_host/`). Starter: `fx new mytool --scaffold cli`.
+
+**Fx host (no C driver):** when present in your tree, `examples/cap_guest_fxhost/` calls
+`guest.begin` / `end` from fx.
 
 Dogfood apps that still use ambient `io` are honest process-trust tools — see [DOGFOOD.md](DOGFOOD.md).
 

@@ -1,4 +1,4 @@
-/* FX-DYN-2 — reload-shaped guest sessions.
+/* reload-shaped guest sessions.
  *
  * Two independent sessions:
  *   begin → mint → run → end → stale deny
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     if (rc != 0) {
         return rc;
     }
-    /* Session B — fresh world after A was torn down (reload shape). */
+    /* Session B - fresh world after A was torn down (reload shape). */
     rc = one_session("session-b", "fixtures/ok.txt");
     if (rc != 0) {
         return rc;

@@ -1,4 +1,4 @@
-// FX-DYN-6 — App 2 (jsonget) under FsCap: no ambient std/io.
+// App 2 (jsonget) under FsCap: no ambient std/io.
 // Host mints session + FsCap; guest reads via io_cap and scores JSON paths.
 using core;
 import std/cap;

@@ -66,6 +66,8 @@ Try other shapes:
 ```text
 fx new tiny --scaffold minimal      # no default region
 fx new firmware --scaffold embedded # small arena, no staged std
+fx new mytool --scaffold cli        # Result library + thin C argv host
+fx new sandbox --scaffold guest     # caps-shaped guest + host session
 ```
 
 → [SCAFFOLDS.md](SCAFFOLDS.md)

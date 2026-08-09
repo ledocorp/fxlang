@@ -1,4 +1,4 @@
-// 0.7.2 showcase — Map iterate + Vec v[i] → exit 42
+// 0.7.2 showcase - Map iterate + Vec v[i] → exit 42
 import std/vec;
 import std/map;
 

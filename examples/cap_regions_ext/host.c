@@ -1,7 +1,7 @@
-/* FX-DYN-1 extension host: mint FsCap + OutCap; guest performs cap I/O.
+/* extension host: mint FsCap + OutCap; guest performs cap I/O.
  *
- * Usage: prog <file>         — read/score + write status under fixtures
- *        prog --write-deny   — write outside root → exit 5
+ * Usage: prog <file>         - read/score + write status under fixtures
+ *        prog --write-deny   - write outside root → exit 5
  * Exit: 0 success · 1 usage · 2 io · 3 guest reject · 5 denied
  */
 #include "guest_lib.h"

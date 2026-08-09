@@ -2,7 +2,7 @@
 
 Host owns a **guest session**: bump arena + minted caps. `fx_guest_end` frees the
 arena and **revokes** caps (stale handles → deny **5**). Guest uses `io_cap` only
-— no ambient `std/io`. Same region / slot-mut physics; Soft-fx refused.
+- no ambient `std/io`. Same region / slot-mut physics; Soft-fx refused.
 
 ```text
 fx run examples/cap_guest_ctx/main.fx            # exit 42

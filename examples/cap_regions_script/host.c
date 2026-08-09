@@ -1,4 +1,4 @@
-/* FX-DYN-1 scripting host: mint FsCap, rooted read, pass handle + bytes to guest.
+/* scripting host: mint FsCap, rooted read, pass handle + bytes to guest.
  *
  * Usage: prog <file>
  * Exit: 0 success · 1 usage · 2 io · 3 guest reject · 5 denied

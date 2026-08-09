@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.1`) |
+| `fx version` | Print version (expect `v0.9.2`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -26,6 +26,8 @@ Reports C toolchains on `PATH`, zspec include/library discovery, and whether `st
 fx new hello
 fx new tiny --scaffold minimal
 fx new firmware --scaffold embedded
+fx new mytool --scaffold cli
+fx new sandbox --scaffold guest
 ```
 
 | Scaffold | Intent |
@@ -33,6 +35,8 @@ fx new firmware --scaffold embedded
 | `simple` (default) | Named region + `import std/vec`; stages `std/` |
 | `minimal` | Bare `main` returning 42 |
 | `embedded` | Tiny arena footprint; builtin `vec_*`; no staged `std/` |
+| `cli` | Result library + thin C host for argv (see `host/cli`) |
+| `guest` | Caps-shaped guest + host `GuestCtx` mint (see `host/cap`) |
 
 → [SCAFFOLDS.md](SCAFFOLDS.md)
 

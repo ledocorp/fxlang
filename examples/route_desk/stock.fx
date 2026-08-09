@@ -1,4 +1,4 @@
-// FX-0.8-UX-3 / UX-3b — route desk stock helpers (Map-returning; IR multi-module).
+// / UX-3b - route desk stock helpers (Map-returning; IR multi-module).
 // Callers create the Map in entry; helpers transform/query (region threaded by UX-3b).
 import std/map;
 import std/string;

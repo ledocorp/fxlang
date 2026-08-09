@@ -1,6 +1,7 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.8.0  
+**Package version:** 0.9.2  
+
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
@@ -172,7 +173,7 @@ Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the pro
 | `fx doctor` | C toolchain + zspec paths |
 | `fx version` | package version |
 | `fx help` | help |
-| `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` |
+| `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` / `cli` / `guest` |
 | `fx check` | parse + typecheck |
 | `fx run` / `fx build` | IR → native (default); `--emit-c` for C path; `--release` / `--watch` |
 | `fx emit-c` | `.c` / `.h` only (no link) |
@@ -193,9 +194,10 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 | C owns `main` | `fx run lib.fx --host host.c` |
 | Extra link | `--link` / `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
-| Examples | `showcase_*` · `bind_*` · `wasm_smoke` · `composition_*` |
+| Host spine | `host/cap` (guest session + caps + NetCap allowlist) · `host/cli` (argv helpers) |
+| Examples | `showcase_*` · `bind_*` · `wrap_sqlite` · `wrap_llhttp` · `wasm_smoke` · `composition_*` · `cap_*` |
 
-Non-C FFI is **not** shipped.
+Non-C FFI is **not** shipped. NetCap is **allow/deny only** — no dial in this package.
 
 ---
 

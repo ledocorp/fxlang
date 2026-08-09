@@ -1,4 +1,4 @@
-// FX-DYN Phase B.1 — guest under a host GuestCtx.
+// Phase B.1 - guest under a host GuestCtx.
 // Authority = minted FsCap only (no ambient std/io). Same physics; no Soft-fx.
 using core;
 import std/cap;

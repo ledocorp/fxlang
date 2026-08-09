@@ -1,4 +1,4 @@
-/* FX-DYN-6 — App 2 (jsonget) under guest FsCap session.
+/* App 2 (jsonget) under guest FsCap session.
  *
  * Flow: begin → mint_fs(fixtures) → run(sample.json) → 42
  *       → escape path deny(5) → end → stale deny(5)
@@ -7,8 +7,8 @@
  * Exit: 0 success · 1 internal · 3 guest reject · 5 denied
  */
 #include "guest_lib.h"
-#include "../cli_host/fx_cli_host.h"
-#include "../cap_runtime/fx_cap_runtime.h"
+#include "../../host/cli/fx_cli_host.h"
+#include "../../host/cap/fx_cap_runtime.h"
 
 #include <stdio.h>
 
@@ -47,7 +47,7 @@ static int one_session(const char *label) {
         return fail_guest(r);
     }
 
-    /* Escape root — must deny before guest sees bytes. */
+    /* Escape root - must deny before guest sees bytes. */
     r = fx_guest_lib_run(fs, "../secret.json");
     if (r.tag == FX_RESULT_TAG_OK || r.err_val != FX_CAP_DENIED) {
         (void)fx_guest_end(ctx);

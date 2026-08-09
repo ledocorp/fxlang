@@ -1,4 +1,4 @@
-// FX-0.8-STD-1 consumer — same as programs/p2_ftxt.fx (local import).
+// consumer - same as programs/p2_ftxt.fx (local import).
 using core;
 import std/io;
 import std/string;

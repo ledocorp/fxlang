@@ -1,4 +1,4 @@
-/* FX-DYN-4 — compose FsCap + AllocCap; reload sessions under budget.
+/* compose FsCap + AllocCap; reload sessions under budget.
  *
  * Per session:
  *   begin → mint_fs + mint_alloc(64) → run(ok) → try_alloc(48) deny

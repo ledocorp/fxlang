@@ -1,4 +1,4 @@
-// FX-DYN-3 — guest allocates only through a minted AllocCap.
+// guest allocates only through a minted AllocCap.
 // Soft-fx refused: same bump arena; authority = budget token.
 using core;
 import std/cap;

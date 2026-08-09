@@ -1,4 +1,4 @@
-// FX-0.7.4-D0 — composition pattern: local mutation on a fixed array table.
+// composition pattern: local mutation on a fixed array table.
 // Uses shipped `&mut [T]` (array-backed). Not growable-Vec index assign.
 // Run: fx run examples/pattern_mut_table/main.fx  → exit 42
 fn main() -> i32 {
