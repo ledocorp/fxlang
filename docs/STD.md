@@ -128,7 +128,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 
 - `std/nursery`, `std/chan`, `std/select`, `std/mailbox`, `std/supervise` — structured nursery, i32/i64 channels, select timeout, mailboxes, supervision apply  
 - `nursery.spawn_i32` / `await_i32` — production API (keyword `nursery`/`spawn`/`await` later)  
-- Host substrate under facades; emit-C + IR dual-path for linked `concur_*`  
+- Host runtime under the std APIs; emit-C + IR dual-path for linked `concur_*`  
 - Not a Go/Erlang/BEAM runtime identity claim
 
 ## Path, encoding, fs, log, json, sqlite (0.9.x production)

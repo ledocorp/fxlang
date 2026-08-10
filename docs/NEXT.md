@@ -1,16 +1,16 @@
 # What’s next for fx
 
-**Last updated:** 8 August 2026
+**Last updated:** 10 August 2026
 
-fx **0.9.2** ships the packageable **host spine** (`host/cap` + `host/cli`), nested guest
-sessions, **NetCap** allowlist foothold (no dial), SQLite / llhttp WRAP demos, and
-`fx new --scaffold cli|guest`. Same region and slot-mut physics; no Soft-fx.
-Ambient `std/io` remains for process-trust tools.
-
-Builds on **0.9.1** (Windows QBE), **0.9.0** (caps), **0.8.5** (editor/`fx lsp`, SoA teaching).
+fx **0.9.5** is the current public package: production std packs, structured concurrency
+(nursery / channels / select / mailboxes / supervise),
+capability-region IR dual-path, NetCap TCP dial (TLS refused), native `fx test` /
+`fx fuzz`, and `fx mod` vendor/`fx.sum` foothold — on top of the **0.9.2** host spine.
 
 **Product focus:** teachable composition and honest host boundaries — not mut sugar,
-not a package registry first, not a heavy debugger product as the bar for “tooling.”
+not a package registry first, not a heavy debugger as the bar for “tooling.”
+
+There is **no** `v0.9.25` cut — that mid-lane was cancelled; its work shipped in **0.9.5**.
 
 ---
 
@@ -22,45 +22,40 @@ not a package registry first, not a heavy debugger product as the bar for “too
 | Growable vector index-assign (`v[i] = x`) | **Not** adding this sugar |
 | Shared “Cell-style” interior mutability | **Not** the fx method |
 | Structured graphs / tables | Prefer parallel `Vec`s + typed ids (SoA) — see [COMPOSITION.md](COMPOSITION.md) |
-| Explicit types (`i32`, effects, regions) | Stay visible on purpose — domain names reduce noise, not soft inference |
-| Package manager / registry | **Later** — path imports and `std/` for now |
-| Sandboxed / capability regions | Host-minted caps + guest session; ambient `std/io` stays for process-trust |
-| Network authority | Host-minted **NetCap** allowlist first; dial / TLS only when an app demands |
-| Native IR backend | Keep trustworthy for real apps — dual path with emit-C stays the product |
-| Language “tiers” | One everyday dialect; optional deeper assurance on selected modules |
+| Explicit types (`i32`, effects, regions) | Stay visible on purpose |
+| Package manager / registry | **Vendor + `fx.sum` for std now**; registry later (VCS modules — not an empty registry site) |
+| Sandboxed / capability regions | Host-minted caps + guest session; ambient `std/io` for process-trust |
+| Network authority | NetCap allowlist + TCP dial; **TLS** only when an app demands |
+| Native IR backend | Dual path with emit-C stays the product |
+| Language “tiers” | One everyday dialect; optional deeper assurance |
 
 Grow stays visible: `v = vec_push(v, x)`.
-Slot writes stay explicit and do not reallocate.
-
-See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 
 ---
 
-## Near-term product work
+## Near-term
 
-1. Keep composition teaching and dogfood apps green on both run paths.  
-2. Deepen C wraps when an app needs them — [LIBRARIES.md](LIBRARIES.md).  
-3. Host-side structured task nursery (`host/concur`) is available for join-before-teardown OS threads — not language `spawn` / channels.  
-4. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
+1. Keep teaching docs and dogfood green on both run paths.  
+2. Presentation / learn-path clarity (site + README) — Install → Language → Composition → …  
+3. Deepen C wraps when an app needs them — [LIBRARIES.md](LIBRARIES.md).  
+4. Selective editor deepen only if `#line`/gdb or thin LSP proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
+
+**Not next:** opening a package registry, DAP product, Soft-fx.
 
 ---
 
 ## What this is not
 
 - Dropping readable C emission  
-- Turning fx into Rust-with-regions via hidden mutation  
-- Wrapping every popular C library before anyone has a program that needs it  
-- Claiming certification or a full formal toolchain as part of the language package  
-- Heavy IDE / debugger product as the ongoing definition of “editor support”  
-- Softening types so code “looks more like Python/Rust”  
-- Shipping private boards, harness scripts, or internal compiler sources as the public repo root  
+- Hidden mutation / Soft-fx  
+- Wrapping every C library before a program needs it  
+- Claiming certification as part of the language package  
+- Heavy IDE / debugger as the definition of editor support  
+- Shipping private boards or harness as the public repo root  
 
 ---
 
 ## Related
 
-- [DOGFOOD.md](DOGFOOD.md) — the dogfood apps  
-- [QUALITY.md](QUALITY.md) — public quality habits  
-- [LIBRARIES.md](LIBRARIES.md) — C wrap priorities  
-- [COMPOSITION.md](COMPOSITION.md) — how to build  
-- [releases/0.9.2.md](releases/0.9.2.md) — latest release notes  
+- [DOGFOOD.md](DOGFOOD.md) · [QUALITY.md](QUALITY.md) · [LIBRARIES.md](LIBRARIES.md) · [COMPOSITION.md](COMPOSITION.md)  
+- [releases/0.9.5.md](releases/0.9.5.md) — latest release notes  

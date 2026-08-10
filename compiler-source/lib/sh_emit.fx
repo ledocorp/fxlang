@@ -72,10 +72,10 @@ fn fixture_ok_add_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     return Ok(42);
 }
 
-// SH-C-28 - bootstrap-emitted lex-family C markers (gates 392-397).
+// SH-C-28 — bootstrap-emitted lex-family C markers (gates 392–397).
 fn fixture_bootstrap_lexer_smoke_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_lexer_smoke()?;
-    if (str_contains(c_src, "/* SH-C-28 - bootstrap lex-family smoke */") != 1) {
+    if (str_contains(c_src, "/* SH-C-28 — bootstrap lex-family smoke */") != 1) {
         return Ok(392);
     }
     if (str_contains(c_src, "int32_t fx_bootstrap_lexer_smoke_slice_eq(int32_t a, int32_t b)") != 1) {
@@ -96,10 +96,10 @@ fn fixture_bootstrap_lexer_smoke_tests() -> Result<i32, core_Err> effects { allo
     return Ok(42);
 }
 
-// SH-C-42 - bootstrap-emitted real-lexer radius C markers (gates 420-426).
+// SH-C-42 — bootstrap-emitted real-lexer radius C markers (gates 420–426).
 fn fixture_bootstrap_real_lexer_radius_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_lexer_radius()?;
-    if (str_contains(c_src, "/* SH-C-42 - bootstrap real-lexer radius */") != 1) {
+    if (str_contains(c_src, "/* SH-C-42 — bootstrap real-lexer radius */") != 1) {
         return Ok(420);
     }
     if (str_contains(c_src, "fx_Vec_i32 kinds") != 1) {
@@ -123,10 +123,10 @@ fn fixture_bootstrap_real_lexer_radius_tests() -> Result<i32, core_Err> effects 
     return Ok(42);
 }
 
-// SH-C-44 - bootstrap-emitted real-lexer full C markers (gates 430-437; genuine AST emit).
+// SH-C-44 — bootstrap-emitted real-lexer full C markers (gates 430–437; genuine AST emit).
 fn fixture_bootstrap_real_lexer_full_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_lexer_full()?;
-    if (str_contains(c_src, "/* SH-C-44 - bootstrap real-lexer full (genuine emit) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-44 — bootstrap real-lexer full (genuine emit) */") != 1) {
         return Ok(430);
     }
     if (str_contains(c_src, "fx_sh_lexer_TokBuf") != 1) {
@@ -154,10 +154,10 @@ fn fixture_bootstrap_real_lexer_full_tests() -> Result<i32, core_Err> effects { 
 }
 
 
-// SH-C-45 - bootstrap-emitted real-parse radius markers (gates 450-461; genuine AST emit).
+// SH-C-45 — bootstrap-emitted real-parse radius markers (gates 450–461; genuine AST emit).
 fn fixture_bootstrap_real_parse_radius_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_radius()?;
-    if (str_contains(c_src, "/* SH-C-45 - bootstrap real-parse radius (genuine emit) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-45 — bootstrap real-parse radius (genuine emit) */") != 1) {
         return Ok(450);
     }
     if (str_contains(c_src, "fx_sh_parse_skip_module_preamble") != 1) {
@@ -207,10 +207,10 @@ fn fixture_bootstrap_real_parse_radius_tests() -> Result<i32, core_Err> effects 
     return Ok(42);
 }
 
-// SH-C-51 - bootstrap-emitted real-parse recursive markers (gates 490-503; genuine AST emit).
+// SH-C-51 — bootstrap-emitted real-parse recursive markers (gates 490–503; genuine AST emit).
 fn fixture_bootstrap_real_parse_recursive_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_recursive()?;
-    if (str_contains(c_src, "/* SH-C-51 - bootstrap real-parse recursive (genuine emit) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-51 — bootstrap real-parse recursive (genuine emit) */") != 1) {
         return Ok(490);
     }
     if (str_contains(c_src, "fx_sh_parse_skip_module_preamble") != 1) {
@@ -255,10 +255,10 @@ fn fixture_bootstrap_real_parse_recursive_tests() -> Result<i32, core_Err> effec
     return Ok(42);
 }
 
-// SH-C-53 - bootstrap-emitted real-parse expr-stmt markers (gates 510-523; genuine AST emit).
+// SH-C-53 — bootstrap-emitted real-parse expr-stmt markers (gates 510–523; genuine AST emit).
 fn fixture_bootstrap_real_parse_expr_stmt_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_expr_stmt()?;
-    if (str_contains(c_src, "/* SH-C-53 - bootstrap real-parse expr-stmt (genuine emit) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-53 — bootstrap real-parse expr-stmt (genuine emit) */") != 1) {
         return Ok(510);
     }
     if (str_contains(c_src, "fx_sh_parse_skip_module_preamble") != 1) {
@@ -303,7 +303,7 @@ fn fixture_bootstrap_real_parse_expr_stmt_tests() -> Result<i32, core_Err> effec
     return Ok(42);
 }
 
-// SH-C-73 - bootstrap-emitted real-parse boot smoke bodies (gates 526-603 + boot-body checks).
+// SH-C-73 — bootstrap-emitted real-parse boot smoke bodies (gates 526–603 + boot-body checks).
 fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_fn_def()?;
     if (str_contains(c_src, "/* SH-C-73 - bootstrap real-parse boot smoke bodies (genuine emit; extends SH-C-55/72) */") != 1) {
@@ -582,7 +582,7 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, "FX-SH-NAT-7") != 1) {
         return Ok(628);
     }
-    // FX-SH-NAT-8 - vec_set CallExpr lowering present in live emit.
+    // FX-SH-NAT-8 — vec_set CallExpr lowering present in live emit.
     if (str_contains(c_src, "vec_set") != 1) {
         return Ok(629);
     }
@@ -592,7 +592,7 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, ").data[") != 1) {
         return Ok(631);
     }
-    // FX-SH-NAT-9 - map_add_i32 CallExpr + helpers present in live emit.
+    // FX-SH-NAT-9 — map_add_i32 CallExpr + helpers present in live emit.
     if (str_contains(c_src, "map_add_i32") != 1) {
         return Ok(632);
     }
@@ -671,10 +671,10 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
 
 
 
-// SH-C-46 - bootstrap-emitted real-emit radius markers (gates 470-486; genuine AST emit).
+// SH-C-46 — bootstrap-emitted real-emit radius markers (gates 470–486; genuine AST emit).
 fn fixture_bootstrap_real_emit_radius_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_emit_radius()?;
-    if (str_contains(c_src, "/* SH-C-46 - bootstrap real-emit radius (genuine emit) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-46 — bootstrap real-emit radius (genuine emit) */") != 1) {
         return Ok(470);
     }
     if (str_contains(c_src, "fx_sh_emit_includes_stdint_stddef") != 1) {
@@ -722,10 +722,10 @@ fn fixture_bootstrap_real_emit_radius_tests() -> Result<i32, core_Err> effects {
     return Ok(42);
 }
 
-// SH-C-77/78/79/80 - bootstrap-emitted real-emit module markers (gates 610-624 + 628-639 + 640-657 + 658-675; genuine emit).
+// SH-C-77/78/79/80 — bootstrap-emitted real-emit module markers (gates 610–624 + 628–639 + 640–657 + 658–675; genuine emit).
 fn fixture_bootstrap_real_emit_module_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_emit_module()?;
-    if (str_contains(c_src, "/* SH-C-77 - bootstrap real-emit module (genuine emit; production ok/roundtrip band) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-77 — bootstrap real-emit module (genuine emit; production ok/roundtrip band) */") != 1) {
         return Ok(610);
     }
     if (str_contains(c_src, "fx_sh_emit_str_contains") != 1) {
@@ -770,7 +770,7 @@ fn fixture_bootstrap_real_emit_module_tests() -> Result<i32, core_Err> effects {
     if (str_contains(c_src, "SH-C-77") != 1) {
         return Ok(624);
     }
-    if (str_contains(c_src, "/* SH-C-78 - REAL-EMIT-EXPORT wave 2 (bootstrap fixture/roundtrip band) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-78 — REAL-EMIT-EXPORT wave 2 (bootstrap fixture/roundtrip band) */") != 1) {
         return Ok(628);
     }
     if (str_contains(c_src, "fx_sh_emit_fixture_bootstrap_lexer_smoke_tests") != 1) {
@@ -806,7 +806,7 @@ fn fixture_bootstrap_real_emit_module_tests() -> Result<i32, core_Err> effects {
     if (str_contains(c_src, "SH-C-78") != 1) {
         return Ok(639);
     }
-    if (str_contains(c_src, "/* SH-C-79 - REAL-EMIT-EXPORT wave 3 (roundtrip_write_*_main_template band) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-79 — REAL-EMIT-EXPORT wave 3 (roundtrip_write_*_main_template band) */") != 1) {
         return Ok(640);
     }
     if (str_contains(c_src, "fx_sh_emit_roundtrip_write_simple_main_template") != 1) {
@@ -860,7 +860,7 @@ fn fixture_bootstrap_real_emit_module_tests() -> Result<i32, core_Err> effects {
     if (str_contains(c_src, "SH-C-79") != 1) {
         return Ok(657);
     }
-    if (str_contains(c_src, "/* SH-C-80 - REAL-EMIT-EXPORT wave 4 (export closure: defer/arena+generic+import+fixtures) */") != 1) {
+    if (str_contains(c_src, "/* SH-C-80 — REAL-EMIT-EXPORT wave 4 (export closure: defer/arena+generic+import+fixtures) */") != 1) {
         return Ok(658);
     }
     if (str_contains(c_src, "fx_sh_emit_roundtrip_write_defertryarena_main_template") != 1) {
@@ -922,10 +922,10 @@ fn fixture_bootstrap_real_emit_module_tests() -> Result<i32, core_Err> effects {
 
 
 
-// SH-C-29 - bootstrap-emitted parse-family C markers (gates 400-406).
+// SH-C-29 — bootstrap-emitted parse-family C markers (gates 400–406).
 fn fixture_bootstrap_parse_smoke_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_parse_smoke()?;
-    if (str_contains(c_src, "/* SH-C-29 - bootstrap parse-family smoke */") != 1) {
+    if (str_contains(c_src, "/* SH-C-29 — bootstrap parse-family smoke */") != 1) {
         return Ok(400);
     }
     if (str_contains(c_src, "int32_t fx_bootstrap_parse_smoke_parse_expr(int32_t a, int32_t b)") != 1) {
@@ -949,10 +949,10 @@ fn fixture_bootstrap_parse_smoke_tests() -> Result<i32, core_Err> effects { allo
     return Ok(42);
 }
 
-// SH-C-30 - bootstrap-emitted emit-family C markers (gates 409-416).
+// SH-C-30 — bootstrap-emitted emit-family C markers (gates 409–416).
 fn fixture_bootstrap_emit_smoke_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_emit_smoke()?;
-    if (str_contains(c_src, "/* SH-C-30 - bootstrap emit-family smoke */") != 1) {
+    if (str_contains(c_src, "/* SH-C-30 — bootstrap emit-family smoke */") != 1) {
         return Ok(409);
     }
     if (str_contains(c_src, "int32_t fx_bootstrap_emit_smoke_emit_line(int32_t a, int32_t b)") != 1) {
@@ -3792,7 +3792,7 @@ fn roundtrip_write_ok_add() -> Result<i32, core_Err> effects { alloc, io, mut } 
     return Ok(42);
 }
 
-// SH-C-28 - write bootstrap-emitted lex-family C for gcc -Werror round-trip.
+// SH-C-28 — write bootstrap-emitted lex-family C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_lexer_smoke() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_lexer_smoke()?;
     let w1: i32 = fs_write_text("bootstrap_lexer_smoke.c", c_src);
@@ -3807,7 +3807,7 @@ fn roundtrip_write_bootstrap_lexer_smoke() -> Result<i32, core_Err> effects { al
     return Ok(42);
 }
 
-// SH-C-42 - write bootstrap-emitted real-lexer radius C for gcc -Werror round-trip.
+// SH-C-42 — write bootstrap-emitted real-lexer radius C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_lexer_radius() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_lexer_radius()?;
     let w1: i32 = fs_write_text("bootstrap_real_lexer_radius.c", c_src);
@@ -3822,7 +3822,7 @@ fn roundtrip_write_bootstrap_real_lexer_radius() -> Result<i32, core_Err> effect
     return Ok(42);
 }
 
-// SH-C-43 - write bootstrap-emitted real-lexer full C for gcc -Werror round-trip.
+// SH-C-43 — write bootstrap-emitted real-lexer full C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_lexer_full() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_lexer_full()?;
     let w1: i32 = fs_write_text("bootstrap_real_lexer_full.c", c_src);
@@ -3837,9 +3837,9 @@ fn roundtrip_write_bootstrap_real_lexer_full() -> Result<i32, core_Err> effects 
     return Ok(42);
 }
 
-// SH-C-29 - write bootstrap-emitted parse-family C for gcc -Werror round-trip.
+// SH-C-29 — write bootstrap-emitted parse-family C for gcc -Werror round-trip.
 
-// SH-C-45 - write bootstrap-emitted real-parse radius C for gcc -Werror round-trip.
+// SH-C-45 — write bootstrap-emitted real-parse radius C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_parse_radius() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_radius()?;
     let w1: i32 = fs_write_text("bootstrap_real_parse_radius.c", c_src);
@@ -3854,7 +3854,7 @@ fn roundtrip_write_bootstrap_real_parse_radius() -> Result<i32, core_Err> effect
     return Ok(42);
 }
 
-// SH-C-51 - write bootstrap-emitted real-parse recursive C for gcc -Werror round-trip.
+// SH-C-51 — write bootstrap-emitted real-parse recursive C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_parse_recursive() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_recursive()?;
     let w1: i32 = fs_write_text("bootstrap_real_parse_recursive.c", c_src);
@@ -3869,7 +3869,7 @@ fn roundtrip_write_bootstrap_real_parse_recursive() -> Result<i32, core_Err> eff
     return Ok(42);
 }
 
-// SH-C-53 - write bootstrap-emitted real-parse expr-stmt C for gcc -Werror round-trip.
+// SH-C-53 — write bootstrap-emitted real-parse expr-stmt C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_parse_expr_stmt() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_expr_stmt()?;
     let w1: i32 = fs_write_text("bootstrap_real_parse_expr_stmt.c", c_src);
@@ -3884,7 +3884,7 @@ fn roundtrip_write_bootstrap_real_parse_expr_stmt() -> Result<i32, core_Err> eff
     return Ok(42);
 }
 
-// SH-C-72 - write bootstrap-emitted real-parse map export C for gcc -Werror round-trip.
+// SH-C-72 — write bootstrap-emitted real-parse map export C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_parse_fn_def() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_parse_fn_def()?;
     let w1: i32 = fs_write_text("bootstrap_real_parse_fn_def.c", c_src);
@@ -3933,7 +3933,7 @@ fn roundtrip_write_bootstrap_real_parse_fn_def() -> Result<i32, core_Err> effect
 
 
 
-// SH-C-46 - write bootstrap-emitted real-emit radius C for gcc -Werror round-trip.
+// SH-C-46 — write bootstrap-emitted real-emit radius C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_emit_radius() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_emit_radius()?;
     let w1: i32 = fs_write_text("bootstrap_real_emit_radius.c", c_src);
@@ -3948,7 +3948,7 @@ fn roundtrip_write_bootstrap_real_emit_radius() -> Result<i32, core_Err> effects
     return Ok(42);
 }
 
-// SH-C-77/78/79/80 - write bootstrap-emitted real-emit module C for gcc -Werror round-trip.
+// SH-C-77/78/79/80 — write bootstrap-emitted real-emit module C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_real_emit_module() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_real_emit_module()?;
     let w1: i32 = fs_write_text("bootstrap_real_emit_module.c", c_src);
@@ -3978,7 +3978,7 @@ fn roundtrip_write_bootstrap_parse_smoke() -> Result<i32, core_Err> effects { al
     return Ok(42);
 }
 
-// SH-C-30 - write bootstrap-emitted emit-family C for gcc -Werror round-trip.
+// SH-C-30 — write bootstrap-emitted emit-family C for gcc -Werror round-trip.
 fn roundtrip_write_bootstrap_emit_smoke() -> Result<i32, core_Err> effects { alloc, io, mut } {
     let c_src: string = sh_parse.parse_and_emit_bootstrap_emit_smoke()?;
     let w1: i32 = fs_write_text("bootstrap_emit_smoke.c", c_src);
