@@ -1,10 +1,12 @@
 # Package contents
 
-**Version:** 0.9.5 (see [VERSION](VERSION))  
+**Version:** 0.9.6 (see [VERSION](VERSION))  
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
 This repository is the **fx language package**: everything you need to install the compiler and write programs.
+
+**Prebuilt platforms:** Windows + Linux **x86_64** only. There is **no** macOS `bin/fx` in this package.
 
 ## Layout
 
@@ -38,4 +40,4 @@ This repository is the **fx language package**: everything you need to install t
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md)
 
-Release notes: [docs/releases/0.9.5.md](docs/releases/0.9.5.md)
+Release notes: [docs/releases/0.9.6.md](docs/releases/0.9.6.md)

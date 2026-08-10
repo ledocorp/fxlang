@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.5 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.9.6 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -12,7 +12,7 @@ Welcome to **fx**: a systems language with visible memory and dual emission to r
 
 1. **This repository** (compiler in `bin/`, plus `std/`, scaffolds, headers).  
 2. A **C toolchain** on your `PATH` for linking. **gcc** is the default today.  
-3. **Windows** or **Linux x86_64** for the prebuilt compiler in this release.
+3. **Windows** or **Linux x86_64** for the prebuilt compiler in this release — **macOS is not shipped** as a prebuilt (build from source elsewhere if needed).
 
 No other language toolchain is required to write and run fx programs.
 
@@ -28,7 +28,7 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.9.5
+fx version                    # expect v0.9.6
 fx doctor
 
 fx new hello
@@ -36,6 +36,8 @@ cd hello
 fx run main.fx                # IR → native when QBE is in the package; expect exit 42
 fx run main.fx --emit-c       # optional: readable C path (also the fallback if QBE is missing)
 ```
+
+**Argv:** `fx run` does **not** pass program arguments into your fx `main`. For CLIs, use `fx new mytool --scaffold cli` (thin C host) or `fx run lib.fx --host host.c`. → [CLI.md](CLI.md) · [SCAFFOLDS.md](SCAFFOLDS.md)
 
 **IR on Windows and Linux:** Linux uses `third_party/qbe/obj/qbe`. Windows uses `third_party/qbe/windows/qbe.exe` when that file is in the package (native PE, `amd64_win`). The same everyday programs run on both paths. If `qbe.exe` is absent, pass `--emit-c`. Emit-C stays first-class either way.
 

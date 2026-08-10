@@ -7,13 +7,14 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.2`) |
+| `fx version` | Print version (expect `v0.9.6`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
-| `fx run <file.fx>` | IR → native (default); link and run |
+| `fx run <file.fx>` | IR → native (default); link and run (**does not forward program argv**) |
 | `fx build <file.fx>` | Same backends as run (link; do not run) |
 | `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link) |
+| `fx mod vendor\|tidy\|verify` | Offline `vendor/std` + `fx.sum` pin (checksum; see below) |
 | `fx bind <header.h> --out <file.fx>` | Cleaned C header → inspectable `extern "c"` stubs (`[--module name]`) |
 
 ### `fx doctor`
@@ -47,11 +48,14 @@ fx run main.fx                 # IR → native (default)
 fx run main.fx --emit-c        # emit-C → native
 fx run main.fx --release
 fx build main.fx -o out
+fx run lib.fx --host host.c    # C owns process main / argv
 ```
 
 By default, `fx run` / `fx build` lower through the **IR → native** path. Pass **`--emit-c`** to use the readable C emission path instead (same checked program, different lowering). Advanced: `--backend auto|ir|c`.
 
-**Windows vs Linux IR:** Linux discovers `third_party/qbe/obj/qbe`. Windows discovers `third_party/qbe/windows/qbe.exe` when present and links native PE (`amd64_win`). On that path, the same differential set as Linux is supported (COVER **50** + **24** extras = **74**). Without `qbe.exe`, use `--emit-c`. Emit-C stays first-class on both OSes.
+**Argv (frozen):** `fx run` does **not** forward program arguments into the fx program. The auto-shim is `main(void)`. Product CLIs use **`--scaffold cli`**, **`--host <file.c>`**, and shared helpers in `host/cli/` — C owns argc/argv at the process edge. → [SCAFFOLDS.md](SCAFFOLDS.md) · [WRAP.md](WRAP.md)
+
+**Windows vs Linux IR:** Linux discovers `third_party/qbe/obj/qbe`. Windows discovers `third_party/qbe/windows/qbe.exe` when present and links native PE (`amd64_win`). On that path, the same differential set as Linux is supported (COVER **50** + **24** extras = **74**). Without `qbe.exe`, use `--emit-c`. Emit-C stays first-class on both OSes. Prebuilt compilers in this package are **Windows + Linux x86_64 only** (no macOS binary).
 
 Useful flags:
 
@@ -92,6 +96,16 @@ Same family of flags as run/build, for hosts who want full control over emit + l
 | `fx lsp` | Language server (stdio) — see [EDITOR.md](EDITOR.md) |
 | `fx mcp` | Lean MCP server (`fx_check`, `fx_locate`, `fx_run`, …) |
 | `fx locate --c-file <f.c> --line <n>` | Map a C line back to fx via `.fxmap` |
+
+### `fx mod` (offline std pin)
+
+```text
+fx mod vendor    # copy std → vendor/std; write fx.sum
+fx mod verify    # check fx.sum against vendor/std
+fx mod tidy      # sync fx.mod require std with import scan
+```
+
+**Integrity (frozen):** `vendor/std` + `fx.sum` are a **checksum pin** for reproducibility. Compile still resolves `import std/…` via nearby `std/` or `FX_STD_ROOT` — **not** via `vendor/` yet. This is intentional: edit live `std/` while developing; vendor when you want a pinned tree you can verify. Not a download registry.
 
 ---
 

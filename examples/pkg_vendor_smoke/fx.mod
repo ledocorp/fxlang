@@ -1,7 +1,7 @@
 module example.com/pkg_vendor_smoke
 
-fx 0.9.5
+fx 0.9.6
 
 require (
-    std 0.9.5
+    std 0.9.6
 )

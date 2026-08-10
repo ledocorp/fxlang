@@ -126,6 +126,7 @@ fn main() -> i32 {
 - **Local reasoning**: open a function and see what it may do
 - **Batch free**: regions free as a unit when they end
 - **C-friendly**: honesty shows up in emitted C via zspec allocators and errors
-- **Not async**: “structured” here means lifetimes, not spawn/join
+- **Regions ≠ tasks**: “structured” here means lifetimes and batch free — not concurrency.
+  Task nursery / channels live under `std/nursery`, `std/chan`, … (see [STD.md](STD.md)).
 
 More: [LANGUAGE.md](LANGUAGE.md) · [REFERENCE.md](REFERENCE.md) · [STD.md](STD.md)

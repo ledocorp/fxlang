@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.9.5](VERSION) · [Release notes](docs/releases/0.9.5.md) · [GitHub Release](https://github.com/ledocorp/fxlang/releases/tag/v0.9.5)
+**Version:** [0.9.6](VERSION) · [Release notes](docs/releases/0.9.6.md) · [GitHub Release](https://github.com/ledocorp/fxlang/releases/tag/v0.9.6)
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
 **License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
@@ -19,12 +19,12 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 
 ## Install / try (2 minutes)
 
-**Needs:** this repo · `gcc` (or clang/zig) · Windows or Linux x86_64.
+**Needs:** this repo · `gcc` (or clang/zig) · **Windows or Linux x86_64** (no macOS prebuilt).
 
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version                 # v0.9.5
+fx version                 # v0.9.6
 fx new hello
 cd hello
 fx run main.fx             # expect exit 42
@@ -35,7 +35,9 @@ fx run main.fx             # expect exit 42
 | Windows | [`bin/fx.exe`](bin/fx.exe) | `third_party/qbe/windows/qbe.exe` |
 | Linux | [`bin/fx`](bin/fx) | `third_party/qbe/obj/qbe` |
 
-Without QBE, use `fx run main.fx --emit-c`. Layout: [PACKAGE.md](PACKAGE.md).
+Without QBE, use `fx run main.fx --emit-c`. Layout: [PACKAGE.md](PACKAGE.md).  
+**Argv:** `fx run` does not forward program args — use `--scaffold cli` / `--host`.  
+**Vendor:** `fx mod` pins checksums; compile still uses `std/` / `FX_STD_ROOT`.
 
 ---
 
@@ -81,15 +83,17 @@ What’s next (honest): [docs/NEXT.md](docs/NEXT.md).
 
 ---
 
-## What’s in 0.9.5
+## What’s in 0.9.6
 
-- Native `fx test` / `fx fuzz` + `std/testing`
-- Structured concurrency (nursery / chan / select / mailbox / supervise)
-- Stronger std packs (path, encoding, walk, time, env, http parse, json, sync, sqlite)
-- Capability regions + IR dual-path; `std/net` TCP dial (**TLS refused**)
-- `fx mod vendor` / `tidy` / `verify` + `fx.sum` (offline **std** pin — **not** a registry)
+Honesty freeze on top of **0.9.5** product surface:
 
-Full notes: [docs/releases/0.9.5.md](docs/releases/0.9.5.md).
+- **Argv** — C host / `--scaffold cli` owns argc/argv (`fx run` does not)
+- **Platforms** — Win + Linux x86_64 prebuilts only
+- **Vendor** — `fx.sum` checksum pin (not vendor-first compile resolve)
+
+Plus everything from 0.9.5: `fx test`/`fuzz`, structured concurrency, strong std, caps/guest IR, NetCap dial (**TLS refused**).
+
+Full notes: [docs/releases/0.9.6.md](docs/releases/0.9.6.md).
 
 ---
 
@@ -109,4 +113,4 @@ Stewarded by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.5](docs/releases/0.9.5.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.6](docs/releases/0.9.6.md).**

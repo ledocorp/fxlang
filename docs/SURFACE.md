@@ -183,7 +183,7 @@ Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the pro
 | `fx mcp` | lean MCP (`check` / `locate` / `run`, …) |
 | `fx locate` | C line → fx via `.fxmap` |
 
-Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: Windows + Linux x86_64 (macOS binary not in this package yet).
+Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only** (macOS prebuilt frozen out of this package). `fx run` does **not** forward program argv — use `--host` / `--scaffold cli`.
 
 ---
 
@@ -204,22 +204,26 @@ Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TL
 
 ## G. Honesty bounds & deferred
 
-### Not in 0.7.3
+### Not in the product dialect (as of 0.9.6)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
 - `Vec` index **assign sugar** `v[i]=x` (by design — use `vec_set`); `&mut Vec` as a mut slice; mut sub-slices
-- Package registry (vendor/`fx.sum` foothold exists); TLS / full net std
-- Advanced fx Runtime (device-aware regions, capabilities, migration)
+- Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
+- TLS / full network stack (TCP dial under NetCap exists; TLS refused)
+- Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
+- Advanced fx Runtime (device-aware migration / Soft-fx)
 - Neuton / OS product; Experimental horizon features
-- macOS prebuilt binary (Win/Linux only in-tree today)
+- macOS prebuilt binary (**frozen:** Win/Linux x86_64 package only)
+- `fx run` program-argv passthrough (**frozen:** C host / `--scaffold cli` owns argv)
 
 ### Intentionally deferred (architecture, not forgotten)
 
-- Advanced fx Runtime layer (spec Phase 2) — optional; **D-003**
-- Further zspec modules (hashmap, time, net, …) — **pull when `std/` needs C ABI**, not a checklist
-- Deeper agent/LSP product work — optional; basic `fx lsp` / `fx mcp` exist
+- Advanced fx Runtime layer (spec Phase 2) — optional  
+- Further zspec modules — **pull when `std/` needs C ABI**, not a checklist  
+- Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist  
+- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)
 
 ### Substrate (for linkers / embedders)
 

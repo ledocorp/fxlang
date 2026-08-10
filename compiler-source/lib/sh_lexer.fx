@@ -86,7 +86,7 @@ fn slice_eq(src: string, start: i32, len: i32, lit: string) -> i32 {
 
 fn ident_char_str(b: i32) -> string {
     if (b == 32) { return " "; }
-    // SH-C-45 — StrLit re-emit via slice_str needs punctuation beyond ident/path chars.
+    // SH-C-45 - StrLit re-emit via slice_str needs punctuation beyond ident/path chars.
     if (b == 34) { return "\""; }
     if (b == 35) { return "#"; }
     if (b == 38) { return "&"; }
@@ -97,9 +97,9 @@ fn ident_char_str(b: i32) -> string {
     if (b == 58) { return ":"; }
     if (b == 59) { return ";"; }
     if (b == 64) { return "@"; }
-    // SH-C-46 — StrLit re-emit for emit-radius tokens (=+<>{}).
+    // SH-C-46 - StrLit re-emit for emit-radius tokens (=+<>{}).
     if (b == 43) { return "+"; }
-    // SH-C-73 — StrLit re-emit for '-' (ASCII 45); required for smoke `->` / mut sigs.
+    // SH-C-73 - StrLit re-emit for '-' (ASCII 45); required for smoke `->` / mut sigs.
     if (b == 45) { return "-"; }
     if (b == 61) { return "="; }
     if (b == 60) { return "<"; }
@@ -348,7 +348,7 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                         pos = pos + 1;
                         while (pos < n) {
                             let c: i32 = str_byte_at(src, pos);
-                            // SH-C-45 — allow \" inside string lits (bootstrap string escape).
+                            // SH-C-45 - allow \" inside string lits (bootstrap string escape).
                             if (c == 92) {
                                 if (pos + 1 < n) {
                                     pos = pos + 2;
@@ -491,7 +491,7 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                                                                         if (b == '<') {
                                                                             if (pos + 1 < n) {
                                                                                 if (str_byte_at(src, pos + 1) == '=') {
-                                                                                    // CONV-3-r.25 — `<=` (kind 43; 42 is `continue`).
+                                                                                    // CONV-3-r.25 - `<=` (kind 43; 42 is `continue`).
                                                                                     buf = push_tok(buf, 43, b, 0);
                                                                                     pos = pos + 2;
                                                                                 } else {
@@ -533,7 +533,7 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                                                                                         buf = push_tok(buf, 17, b, 0);
                                                                                         pos = pos + 1;
                                                                                     } else {
-                                                                                        // FX-SH-NAT-3/4 — `[` / `]` (44/45); `..` DotDot (46).
+                                                                                        // FX-SH-NAT-3/4 - `[` / `]` (44/45); `..` DotDot (46).
                                                                                         if (b == '[') {
                                                                                             buf = push_tok(buf, 44, b, 0);
                                                                                             pos = pos + 1;
@@ -628,7 +628,7 @@ fn check_let_add() -> i32 effects { alloc, mut } {
     if (buf.kinds.len != 6) {
         return 1;
     }
-    // SH-ERG-4.2 — `std/vec.get` on arena-backed token stream (same region as lex).
+    // SH-ERG-4.2 - `std/vec.get` on arena-backed token stream (same region as lex).
     if (vec.get(buf.kinds, 0) != 20) {
         return 2;
     }
