@@ -4,7 +4,7 @@
 module vec;
 
 // STD-010: inside an active heap region with `effects { alloc }`, `new` lowers to arena storage
-// with zero-filled slots (FX-WF-7).
+// with zero-filled slots.
 fn new<T>(len: i32) -> Vec<T> {
     return vec_new(len);
 }

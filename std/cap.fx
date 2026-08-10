@@ -1,5 +1,5 @@
 // Opaque capability handles - minted only by host/C.
-// Teaching names: FsCap / OutCap (FX-DYN-1) · AllocCap (FX-DYN-3).
+// Teaching names: FsCap / OutCap · AllocCap.
 // ABI: `handle` is the bit-pattern of a host `void*` / `Fx*Cap*` (copyable; teardown invalidates).
 // Soft-fx refused: same region/slot-mut physics; dynamic = which caps exist at runtime.
 module cap;
@@ -27,6 +27,12 @@ struct FuelCap {
     handle: i64,
 }
 
+/// Network capability (copyable opaque handle).
+/// Host mints host+port range; `guest.net_allows` / `guest.net_dial` (TCP; no TLS).
+struct NetCap {
+    handle: i64,
+}
+
 fn fs_from_handle(h: i64) -> FsCap {
     return FsCap { handle: h };
 }
@@ -43,6 +49,10 @@ fn fuel_from_handle(h: i64) -> FuelCap {
     return FuelCap { handle: h };
 }
 
+fn net_from_handle(h: i64) -> NetCap {
+    return NetCap { handle: h };
+}
+
 fn fs_handle(c: FsCap) -> i64 {
     return c.handle;
 }
@@ -56,5 +66,9 @@ fn alloc_handle(c: AllocCap) -> i64 {
 }
 
 fn fuel_handle(c: FuelCap) -> i64 {
+    return c.handle;
+}
+
+fn net_handle(c: NetCap) -> i64 {
     return c.handle;
 }

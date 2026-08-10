@@ -16,7 +16,7 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 |---------|------|
 | **cJSON** | Path-get facade + App 2 dogfood CLI |
 | **xxHash** | Integrity helper wrap (`examples/wrap_xxhash`) |
-| **SQLite** | Amalgamation WRAP foothold (`examples/wrap_sqlite` — `:memory:` dual-path) |
+| **SQLite** | Amalgamation WRAP (`examples/wrap_sqlite` — `:memory:` + file under `FsCap`) |
 | **llhttp** | HTTP parse WRAP foothold (`examples/wrap_llhttp` — Content-Length dual-path) |
 | **stb_sprintf** / **stb_image** | Format and image decode wraps |
 | **raylib-class hosts** | GUI / panel examples (host owns `main`) |
@@ -32,7 +32,7 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 |----------|----------------|-----|
 | 1 | **cJSON deepen** | **Landed** — path API + wrap + App 2 |
 | 2 | **xxHash** | **Landed** — dual-path smoke for integrity helpers |
-| 3 | **SQLite / llhttp footholds** | **Landed** — amalgamation + parse-only WRAP demos |
+| 3 | **SQLite / llhttp footholds** | **Landed** — amalgamation (`:memory:` + file/`FsCap`) + parse-only WRAP |
 | 4 | **Paths + richer file I/O** | `io.read_file` / `write_file`; ROM load |
 | 5 | **CLI args / exit codes** | Thin C hosts + `fx new --scaffold cli` |
 
@@ -52,7 +52,7 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 | Library | Why wait |
 |---------|----------|
 | **lz4**, then **zstd** | Compression CLIs; lz4 first (simpler) |
-| **SQLite deepen** | File-path DBs + FsCap; foothold already `:memory:` |
+| **SQLite deepen** | Pooling / WAL / multi-connection — file+`FsCap` already landed |
 | **llhttp dial / TLS** | Parse foothold landed; dial under NetCap when an app demands |
 
 ---

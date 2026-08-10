@@ -1,4 +1,4 @@
-/* thin argv host (ADOPT-2 + host/cli spine).
+/* thin argv host.
  * Usage: prog <arg>
  * Exit: 0 ok · 1 usage / Err
  *

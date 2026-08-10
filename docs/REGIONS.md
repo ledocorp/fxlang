@@ -29,6 +29,7 @@ Omit effects you do not need. Absence of `alloc` is a feature callers can rely o
 | `region r = temp(n);` | Short-lived heap batch for a tighter scope |
 | `region r = scope;` | Stack borrow region · no heap allocation |
 | `region r = fx(n);` | Hierarchical fx region (advanced nesting) |
+| `dynamic region g = guest(n);` | Guest session handle (`i64`); function exit → `fx_guest_end` |
 
 ### Everyday arena
 
@@ -84,6 +85,25 @@ fn bump(a: &mut Acc, v: i32) -> i32 {
     return a.total;
 }
 ```
+
+### Guest session (`dynamic region`)
+
+```fx
+import std/guest;
+import std/cap;
+
+fn host() -> Result<i32, core_Err> effects { alloc } {
+    dynamic region g = guest(4096);
+    let ctx = guest.from_handle(g);
+    let fs = guest.mint_fs(ctx, "")?;
+    // … guest work with FsCap …
+    return Ok(0);
+} // g ends: caps revoked, arena freed
+```
+
+Or call `guest.begin` / `guest.end` explicitly (no sugar). Build session paths with
+`--emit-c --link host/cap/fx_cap_runtime.c --link-include host/cap`.
+Score-only guest algorithms still run under IR. See [COMPOSITION.md](COMPOSITION.md).
 
 ## Effects paired with std
 

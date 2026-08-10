@@ -224,7 +224,7 @@ fn parse_type_span_inner(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: s
     if (*pos >= n) {
         return Err(1);
     }
-    // FX-SH-NAT-7 - `[T; N]` array type or `[T]` slice type span.
+    // FX-SH-NAT-7 — `[T; N]` array type or `[T]` slice type span.
     if (vec_get(kinds, *pos) == 44) {
         let start_off: i32 = vec_get(vals, *pos);
         *pos = *pos + 1;
@@ -268,7 +268,7 @@ fn parse_type_span_inner(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: s
     let start_off: i32 = vec_get(vals, *pos);
     let start_ln: i32 = vec_get(lens, *pos);
     *pos = *pos + 1;
-    // SH-C-72 - two-parameter `Map<K, V>` span (LV5 env maps); `Vec<T>` stays single-parameter.
+    // SH-C-72 — two-parameter `Map<K, V>` span (LV5 env maps); `Vec<T>` stays single-parameter.
     if (sh_lexer.slice_eq(src, start_off, start_ln, "Map") == 1) {
         if (*pos >= n) {
             return Err(1);
@@ -473,7 +473,7 @@ fn parse_effects_clause(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &m
     return Err(1);
 }
 
-// CONV-2-g.5 / MAP/G9 - closed C keyword set via Map<string, i32> (LV5), not linear slice_eq chain.
+// CONV-2-g.5 / MAP/G9 — closed C keyword set via Map<string, i32> (LV5), not linear slice_eq chain.
 fn c_keyword_map() -> Map<string, i32> effects { alloc, mut } {
     let m: Map<string, i32> = map_new();
     m = map_insert(m, "auto", 1);
@@ -807,7 +807,7 @@ fn parse_match_arm_body(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &m
     return Ok(ParseOut { idx: idx, nodes: nodes2 });
 }
 
-// SH-C-13 / CONV-2-g.16 - match arm bodies as Num(body_idx) slots (not base-100 pack;
+// SH-C-13 / CONV-2-g.16 — match arm bodies as Num(body_idx) slots (not base-100 pack;
 // pack overflowed at ≥7 arms / body_idx≥100).
 fn unpack_match_body(nodes: Vec<Expr>, bodies_start: i32, arm_i: i32, arm_count: i32) -> i32 {
     if (arm_i < 0) {
@@ -1002,7 +1002,7 @@ fn parse_struct_lit_fields_rest(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>,
     return Ok(acc);
 }
 
-// FX-SH-NAT-7 - array literal `[e0, e1, …]` accumulator (max 8 elems).
+// FX-SH-NAT-7 — array literal `[e0, e1, …]` accumulator (max 8 elems).
 struct ArrayLitAcc {
     count: i32,
     f0: i32,
@@ -1065,7 +1065,7 @@ fn parse_factor(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, 
     return apply_index_postfix(kinds, vals, lens, pos, primary);
 }
 
-// FX-SH-NAT-3/4 - postfix `base[index]` or `base[lo..hi]` (DotDot kind 46).
+// FX-SH-NAT-3/4 — postfix `base[index]` or `base[lo..hi]` (DotDot kind 46).
 fn apply_index_postfix(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, primary: ParseOut) -> Result<ParseOut, core_Err> effects { alloc, mut } {
     let n: i32 = kinds.len;
     let cur_idx: i32 = primary.idx;
@@ -1177,7 +1177,7 @@ fn parse_factor_atom(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut 
         let nodes2: Vec<Expr> = vec_push(nodes, Num(v));
         return Ok(ParseOut { idx: idx, nodes: nodes2 });
     }
-    // FX-SH-NAT-7 - array literal `[e0, e1, …]`.
+    // FX-SH-NAT-7 — array literal `[e0, e1, …]`.
     if (k == 44) {
         *pos = *pos + 1;
         if (*pos >= n) {
@@ -1343,7 +1343,7 @@ fn parse_cond(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, no
             let nodes2: Vec<Expr> = vec_push(right.nodes, CmpGe(left.idx, right.idx));
             return Ok(ParseOut { idx: idx, nodes: nodes2 });
         }
-        // SH-C-43 - `a > b` lowers to `b < a` (kind 16 bare `>`).
+        // SH-C-43 — `a > b` lowers to `b < a` (kind 16 bare `>`).
         if (k == 16) {
             *pos = *pos + 1;
             let right: ParseOut = parse_expr(kinds, vals, lens, pos, left.nodes)?;
@@ -1351,7 +1351,7 @@ fn parse_cond(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, no
             let nodes2: Vec<Expr> = vec_push(right.nodes, CmpLt(right.idx, left.idx));
             return Ok(ParseOut { idx: idx, nodes: nodes2 });
         }
-        // CONV-3-r.25 - `a <= b` lowers to `b >= a` for bootstrap CmpGe emit (kind 43).
+        // CONV-3-r.25 — `a <= b` lowers to `b >= a` for bootstrap CmpGe emit (kind 43).
         if (k == 43) {
             *pos = *pos + 1;
             let right: ParseOut = parse_expr(kinds, vals, lens, pos, left.nodes)?;
@@ -1583,7 +1583,7 @@ fn parse_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, pos:
     if (k == 22) {
         *pos = *pos + 1;
         let mut_pos: i32 = *pos;
-        // CONV-3-r.19 - return expr accepts comparisons (`a < b`) via parse_cond.
+        // CONV-3-r.19 — return expr accepts comparisons (`a < b`) via parse_cond.
         let parsed: ParseOut = parse_cond(kinds, vals, lens, &mut mut_pos, nodes)?;
         if (mut_pos >= n) {
             return Err(1);
@@ -1663,7 +1663,7 @@ fn parse_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, pos:
         let stmts2: Vec<Stmt> = vec_push(body_blk.stmts, While(cond.idx, body_start, body_blk.count));
         return Ok(StmtStep { nodes: body_blk.nodes, stmts: stmts2 });
     }
-    // CONV-3-r.17 - C-style `for (let i=0; cond; step) { body }` desugars to let+while.
+    // CONV-3-r.17 — C-style `for (let i=0; cond; step) { body }` desugars to let+while.
     if (k == 41) {
         *pos = *pos + 1;
         if (*pos >= n) {
@@ -1802,7 +1802,7 @@ fn parse_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, pos:
             let stmts2: Vec<Stmt> = vec_push(stmts, Assign(name_off, name_len, parsed.idx));
             return Ok(StmtStep { nodes: parsed.nodes, stmts: stmts2 });
         }
-        // FX-SH-NAT-7 - `ident[index] = expr` index assignment.
+        // FX-SH-NAT-7 — `ident[index] = expr` index assignment.
         if (k2 == 44) {
             *pos = *pos + 1;
             let base_idx: i32 = nodes.len;
@@ -1876,7 +1876,7 @@ fn type_span_is_mut_ref(src: string, off: i32, ln: i32) -> i32 {
     return 1;
 }
 
-// FX-SH-NAT-7 - `&mut [T]` mut slice type span.
+// FX-SH-NAT-7 — `&mut [T]` mut slice type span.
 fn type_span_is_mut_slice(src: string, off: i32, ln: i32) -> i32 {
     if (type_span_is_mut_ref(src, off, ln) != 1) {
         return 0;
@@ -1895,7 +1895,7 @@ fn type_span_is_mut_slice(src: string, off: i32, ln: i32) -> i32 {
     return 1;
 }
 
-// FX-SH-NAT-7 - `[T; N]` fixed array type span.
+// FX-SH-NAT-7 — `[T; N]` fixed array type span.
 fn type_span_is_array(src: string, off: i32, ln: i32) -> i32 {
     if (ln < 5) {
         return 0;
@@ -2028,7 +2028,7 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
     if (type_span_is_vec(src, off, ln) == 1) {
         return map_vec_type_c(src, off, ln);
     }
-    // SH-C-72 - Map spans lower to the LV5 std map ABI, not to a module-prefixed struct name.
+    // SH-C-72 — Map spans lower to the LV5 std map ABI, not to a module-prefixed struct name.
     if (type_span_is_map(src, off, ln) == 1) {
         return map_map_type_c(src, off, ln);
     }
@@ -2048,7 +2048,7 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
         let b3: StrBuilder = strbuf_push(b2, "_StrBuilder");
         return Ok(strbuf_finish(b3));
     }
-    // FX-SH-NAT-5 - Buf / Bytes are monomorphic global C types (foundry parity).
+    // FX-SH-NAT-5 — Buf / Bytes are monomorphic global C types (foundry parity).
     if (sh_lexer.slice_eq(src, off, ln, "Buf") == 1) {
         return Ok("fx_Buf");
     }
@@ -2124,7 +2124,7 @@ fn append_struct_env_name_map(m: &mut Map<string, i32>, env: string, name: strin
     return append_struct_env_name(env, name);
 }
 
-// SH-C-19 - string-annotated lets share let_struct_m with value tag 2 (struct = 1).
+// SH-C-19 — string-annotated lets share let_struct_m with value tag 2 (struct = 1).
 fn append_str_env_name_map(m: &mut Map<string, i32>, env: string, name: string) -> Result<string, core_Err> effects { alloc, mut } {
     *m = map_insert(*m, name, 2);
     return append_struct_env_name(env, name);
@@ -2134,7 +2134,7 @@ fn env_map_get_i32(m: Map<string, i32>, name: string) -> Result<i32, core_Err> {
     return map_get(m, name);
 }
 
-// CONV-2-g.5 / MAP/G9 slice 7 - map-only env lookups (incremental insert keys; no pipe-fill fallback).
+// CONV-2-g.5 / MAP/G9 slice 7 — map-only env lookups (incremental insert keys; no pipe-fill fallback).
 fn env_lookup_i32(param_m: Map<string, i32>, let_i32_m: Map<string, i32>, name: string) -> i32 {
     if (env_map_has_i32(param_m, name) == 1) {
         return 1;
@@ -2334,7 +2334,7 @@ fn fill_param_m_tok_rec(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: st
     return fill_param_m_tok_rec(kinds, vals, lens, src, pos, param_m);
 }
 
-// CONV-2-g.5 / MAP/G9 slice 6 - rebuild param Map from source tokens (slice_str keys at parse sites).
+// CONV-2-g.5 / MAP/G9 slice 6 — rebuild param Map from source tokens (slice_str keys at parse sites).
 fn fill_param_m_from_fn_out(fn_out: FnOut, src: string, param_m: &mut Map<string, i32>) -> Result<i32, core_Err> effects { alloc, mut } {
     let buf = sh_lexer.lex(src);
     let pos: i32 = fn_out.param_tok_pos;
@@ -2394,7 +2394,7 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
     });
 }
 
-/// FX-IR-SH-4 - `parse_fn_def` → return `i32` only (AST stays inside `sh_parse`; `sh_ir` never sees `Vec<Expr>`).
+/// FX-IR-SH-4 — `parse_fn_def` → return `i32` only (AST stays inside `sh_parse`; `sh_ir` never sees `Vec<Expr>`).
 fn parse_ir1_main_return_num() -> Result<i32, core_Err> effects { alloc, mut } {
     let src: string = "fn main() -> i32 {\n    return 0;\n}\n";
     let buf = sh_lexer.lex(src);
@@ -3113,7 +3113,7 @@ fn struct_field_c_type(fname: string) -> Result<string, core_Err> effects { allo
     if (sh_lexer.slice_eq(fname, 0, string.len(fname), "stmts") == 1) {
         return Ok("fx_Vec_Stmt");
     }
-    // SH-C-42 - real lexer TokBuf fields (kinds/vals/lens).
+    // SH-C-42 — real lexer TokBuf fields (kinds/vals/lens).
     if (sh_lexer.slice_eq(fname, 0, string.len(fname), "kinds") == 1) {
         return Ok("fx_Vec_i32");
     }
@@ -3741,7 +3741,7 @@ fn self_subset_tests() -> Result<i32, core_Err> effects { alloc, mut } {
 }
 
 fn includes_zspec_stdio_stdlib() -> Result<string, core_Err> effects { alloc, mut } {
-    // FX_CORE_ERR_DEFINED - skip duplicate core_Err typedefs in emit/helpers.
+    // FX_CORE_ERR_DEFINED — skip duplicate core_Err typedefs in emit/helpers.
     return Ok("#include <stdint.h>\n#include <stddef.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include \"zspec/core.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
 }
 
@@ -6686,7 +6686,7 @@ fn fixture_profile_ok_add() -> Result<FixtureProfile, core_Err> effects { alloc,
     });
 }
 
-// SH-C-28 - lex-family smoke (slice_eq + lex + main → 42).
+// SH-C-28 — lex-family smoke (slice_eq + lex + main → 42).
 fn fixture_profile_bootstrap_lexer_smoke() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_only()?;
     return Ok(FixtureProfile {
@@ -6697,7 +6697,7 @@ fn fixture_profile_bootstrap_lexer_smoke() -> Result<FixtureProfile, core_Err> e
     });
 }
 
-// SH-C-42 - real-lexer radius (TokBuf / push_tok / is_space → 42).
+// SH-C-42 — real-lexer radius (TokBuf / push_tok / is_space → 42).
 fn fixture_profile_bootstrap_real_lexer_radius() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -6708,7 +6708,7 @@ fn fixture_profile_bootstrap_real_lexer_radius() -> Result<FixtureProfile, core_
     });
 }
 
-// SH-C-43 - full real lexer (TokBuf + 21 fns → smoke_tests).
+// SH-C-43 — full real lexer (TokBuf + 21 fns → smoke_tests).
 fn fixture_profile_bootstrap_real_lexer_full() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -6719,7 +6719,7 @@ fn fixture_profile_bootstrap_real_lexer_full() -> Result<FixtureProfile, core_Er
     });
 }
 
-// SH-C-29 - parse-family smoke (parse_expr + parse_stmt + parse + main → 42).
+// SH-C-29 — parse-family smoke (parse_expr + parse_stmt + parse + main → 42).
 fn fixture_profile_bootstrap_parse_smoke() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_only()?;
     return Ok(FixtureProfile {
@@ -6730,7 +6730,7 @@ fn fixture_profile_bootstrap_parse_smoke() -> Result<FixtureProfile, core_Err> e
     });
 }
 
-// SH-C-30 - emit-family smoke (emit_line + emit_fn + emit_file + emit + main → 42).
+// SH-C-30 — emit-family smoke (emit_line + emit_fn + emit_file + emit + main → 42).
 fn fixture_profile_bootstrap_emit_smoke() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_only()?;
     return Ok(FixtureProfile {
@@ -6855,7 +6855,7 @@ fn payload_spec_multi_count(spec: string) -> i32 {
     if (string.len(spec) < 2) {
         return 1;
     }
-    // Spec prefix `M<digit>` - digit is ASCII '1'..'9' (was hard-coded to 2 only).
+    // Spec prefix `M<digit>` — digit is ASCII '1'..'9' (was hard-coded to 2 only).
     let d: i32 = string.byte_at(spec, 1);
     if (d >= 49) {
         if (d <= 57) {
@@ -7177,7 +7177,7 @@ fn emit_match_switch_cases(src: string, prof: FixtureProfile, en_out: EnumOut, n
     }
     if (payload_spec_is_multi(spec) == 1) {
         let union_field: string = payload_spec_union_field(spec)?;
-        // SH-C-16 - multi-payload arm with call0 body (e.g. CallExpr(_, _) => stop_code()).
+        // SH-C-16 — multi-payload arm with call0 body (e.g. CallExpr(_, _) => stop_code()).
         if (expr_is_call0(nodes, body_idx) == 1) {
             let callee_pfx: string = profile_callee_prefix(prof)?;
             let callee: string = emit_mangled_callee(callee_pfx, src, nodes, body_idx)?;
@@ -7939,7 +7939,7 @@ fn emit_parsed_self_subset_module(prof: FixtureProfile, mod_inc: string, src: st
     let parse_cond_blk: string = emit_fn_parser_helper_block(prof, prof.mod_slug, src, parse_out_st, parse_cond_fn)?;
     let b5i9pc2: StrBuilder = strbuf_push(b5i9pc, parse_cond_blk);
 
-    // Forward decls - parse_stmt ↔ parse_block are mutually recursive.
+    // Forward decls — parse_stmt ↔ parse_block are mutually recursive.
     let fwd: string = "fx_bootstrap_self_subset_Result_StmtStep fx_bootstrap_self_subset_parse_stmt(fx_Vec_i32 kinds, fx_Vec_i32 vals, fx_Vec_i32 lens, int32_t* pos, fx_Vec_Expr nodes, fx_Vec_Stmt stmts);\nfx_bootstrap_self_subset_Result_BlockParseOut fx_bootstrap_self_subset_parse_block_rest(fx_Vec_i32 kinds, fx_Vec_i32 vals, fx_Vec_i32 lens, int32_t* pos, fx_Vec_Expr nodes, fx_Vec_Stmt stmts, int32_t start);\nfx_bootstrap_self_subset_Result_BlockParseOut fx_bootstrap_self_subset_parse_block(fx_Vec_i32 kinds, fx_Vec_i32 vals, fx_Vec_i32 lens, int32_t* pos, fx_Vec_Expr nodes, fx_Vec_Stmt stmts);\n\n";
     let b5i9fwd: StrBuilder = strbuf_push(b5i9pc2, fwd);
     let meta_parse_stmt: string = emit_meta_line("bootstrap_self_subset_parse_stmt", parse_stmt_fn.body_len)?;
@@ -8766,7 +8766,7 @@ fn emit_parser_ident_c(src: string, nodes: Vec<Expr>, idx: i32) -> Result<string
 }
 
 fn emit_parser_callee_c(mod_slug: string, src: string, coff: i32, cln: i32) -> Result<string, core_Err> effects { alloc, mut } {
-    // SH-C-73 - boot smoke/self_subset call sh_lexer.lex (TokBuf entry).
+    // SH-C-73 — boot smoke/self_subset call sh_lexer.lex (TokBuf entry).
     if (sh_lexer.slice_eq(src, coff, cln, "sh_lexer.lex") == 1) {
         return Ok("fx_lib_sh_lexer_lex");
     }
@@ -8779,7 +8779,7 @@ fn emit_parser_callee_c(mod_slug: string, src: string, coff: i32, cln: i32) -> R
     if (sh_lexer.slice_eq(src, coff, cln, "string.len") == 1) {
         return Ok("fx_std_string_len");
     }
-    // SH-C-77 - production emit-module bodies call sh_parse.* / fs_write_text.
+    // SH-C-77 — production emit-module bodies call sh_parse.* / fs_write_text.
     if (sh_lexer.slice_eq(src, coff, cln, "fs_write_text") == 1) {
         return Ok("core_fs_write_text");
     }
@@ -9102,7 +9102,7 @@ fn emit_let_bind_type_c_name(mod_slug: string, src: string, fn_out: FnOut, ty_of
         if (sh_lexer.slice_eq(src, ty_off, ty_ln, "string") == 1) {
             return Ok("const char*");
         }
-        // SH-C-73 - TokBuf is the lexer import type, not fx_sh_parse_TokBuf.
+        // SH-C-73 — TokBuf is the lexer import type, not fx_sh_parse_TokBuf.
         if (sh_lexer.slice_eq(src, ty_off, ty_ln, "TokBuf") == 1) {
             return Ok("fx_lib_sh_lexer_TokBuf");
         }
@@ -9325,7 +9325,7 @@ fn expr_ok_return_ident_name(nodes: Vec<Expr>, idx: i32, src: string) -> Result<
     return sh_lexer.slice_str(src, off, ln);
 }
 
-// FX-SH-NAT-2 - call shape `fx_{mod}_map_nth_key/value(m, i)` (foundry parity).
+// FX-SH-NAT-2 — call shape `fx_{mod}_map_nth_key/value(m, i)` (foundry parity).
 fn emit_map_nth_call_c(mod_slug: string, suffix: string, map_c: string, idx_c: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
     let b1: StrBuilder = strbuf_push(b0, "fx_");
@@ -9340,10 +9340,10 @@ fn emit_map_nth_call_c(mod_slug: string, suffix: string, map_c: string, idx_c: s
     return Ok(strbuf_finish(b9));
 }
 
-// FX-SH-NAT-2 - dense nth walk helpers (foundry map_helpers.c.in shape; mod_slug = sh_parse for fn-def preamble).
+// FX-SH-NAT-2 — dense nth walk helpers (foundry map_helpers.c.in shape; mod_slug = sh_parse for fn-def preamble).
 fn emit_map_nth_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-2 - map_nth_* helpers */\nstatic inline const char* fx_");
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-2 — map_nth_* helpers */\nstatic inline const char* fx_");
     let b2: StrBuilder = strbuf_push(b1, mod_slug);
     let b3: StrBuilder = strbuf_push(b2, "_map_nth_key(fx_Map_string_i32 map, int32_t n) {\n    if (n < 0 || map.keys == NULL || map.cap == 0) { return \"\"; }\n    int32_t seen = 0;\n    for (size_t i = 0; i < map.cap; i++) {\n        if (map.keys[i] != NULL) {\n            if (seen == n) { return map.keys[i]; }\n            seen = seen + 1;\n        }\n    }\n    return \"\";\n}\n\nstatic inline int32_t fx_");
     let b4: StrBuilder = strbuf_push(b3, mod_slug);
@@ -9351,15 +9351,15 @@ fn emit_map_nth_helpers_c(mod_slug: string) -> Result<string, core_Err> effects 
     return Ok(strbuf_finish(b5));
 }
 
-// FX-SH-NAT-5 - Buf / Bytes typedefs (foundry emit_c uses_buf_bytes shape).
+// FX-SH-NAT-5 — Buf / Bytes typedefs (foundry emit_c uses_buf_bytes shape).
 fn emit_buf_bytes_typedefs_c() -> Result<string, core_Err> effects { alloc, mut } {
-    return Ok("\n/* FX-SH-NAT-5 - Buf / Bytes */\ntypedef struct {\n    uint8_t* data;\n    size_t len;\n    size_t cap;\n} fx_Buf;\n\ntypedef struct {\n    const uint8_t* data;\n    size_t len;\n} fx_Bytes;\n");
+    return Ok("\n/* FX-SH-NAT-5 — Buf / Bytes */\ntypedef struct {\n    uint8_t* data;\n    size_t len;\n    size_t cap;\n} fx_Buf;\n\ntypedef struct {\n    const uint8_t* data;\n    size_t len;\n} fx_Bytes;\n");
 }
 
-// FX-SH-NAT-7 - MutSlice + array typedefs for ok_mut_slice shape (foundry parity).
+// FX-SH-NAT-7 — MutSlice + array typedefs for ok_mut_slice shape (foundry parity).
 fn emit_mut_slice_typedefs_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-7 - MutSlice / Array */\ntypedef struct {\n    int32_t* data;\n    size_t len;\n} fx_MutSlice_i32;\n\ntypedef struct {\n    int32_t data[2];\n} fx_");
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-7 — MutSlice / Array */\ntypedef struct {\n    int32_t* data;\n    size_t len;\n} fx_MutSlice_i32;\n\ntypedef struct {\n    int32_t data[2];\n} fx_");
     let b2: StrBuilder = strbuf_push(b1, mod_slug);
     let b3: StrBuilder = strbuf_push(b2, "_Array_i32_2;\n\ntypedef struct {\n    int32_t data[3];\n} fx_");
     let b4: StrBuilder = strbuf_push(b3, mod_slug);
@@ -9367,10 +9367,10 @@ fn emit_mut_slice_typedefs_c(mod_slug: string) -> Result<string, core_Err> effec
     return Ok(strbuf_finish(b5));
 }
 
-// FX-SH-NAT-5 - buf_new / buf_push helpers (foundry buf_helpers.c.in).
+// FX-SH-NAT-5 — buf_new / buf_push helpers (foundry buf_helpers.c.in).
 fn emit_buf_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-5 - buf_* helpers */\nstatic fx_Buf fx_");
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-5 — buf_* helpers */\nstatic fx_Buf fx_");
     let b2: StrBuilder = strbuf_push(b1, mod_slug);
     let b3: StrBuilder = strbuf_push(b2, "_buf_new(core_Allocator* a) {\n    size_t cap = 16;\n    uint8_t* data = (uint8_t*)core_mem_alloc(a, cap);\n    return (fx_Buf){ .data = data, .len = 0, .cap = cap };\n}\n\nstatic fx_Buf fx_");
     let b4: StrBuilder = strbuf_push(b3, mod_slug);
@@ -9378,10 +9378,10 @@ fn emit_buf_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { al
     return Ok(strbuf_finish(b5));
 }
 
-// FX-SH-NAT-6 - Map<string,string> helpers (foundry map_helpers_ss.c.in; reuses map_slot).
+// FX-SH-NAT-6 — Map<string,string> helpers (foundry map_helpers_ss.c.in; reuses map_slot).
 fn emit_map_ss_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-6 - map_*_ss helpers (shared map_slot) */\nstatic inline size_t fx_");
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-6 — map_*_ss helpers (shared map_slot) */\nstatic inline size_t fx_");
     let b2: StrBuilder = strbuf_push(b1, mod_slug);
     let b3: StrBuilder = strbuf_push(b2, "_map_hash(const char* s) {\n    size_t h = (size_t)1469598103934665603ULL;\n    while (*s) { h ^= (size_t)(unsigned char)(*s); h *= (size_t)1099511628211ULL; s++; }\n    return h;\n}\n\nstatic inline size_t fx_");
     let b4: StrBuilder = strbuf_push(b3, mod_slug);
@@ -9423,10 +9423,10 @@ fn emit_map_ss_helpers_c(mod_slug: string) -> Result<string, core_Err> effects {
     return Ok(strbuf_finish(b39));
 }
 
-// FX-SH-NAT-9 - map_insert (si) + map_add_i32; reuses map_slot from NAT-6 preamble.
+// FX-SH-NAT-9 — map_insert (si) + map_add_i32; reuses map_slot from NAT-6 preamble.
 fn emit_map_add_i32_helpers_c(mod_slug: string) -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-9 - map_add_i32 (si insert + accumulate) */\nstatic inline fx_Map_string_i32 fx_");
+    let b1: StrBuilder = strbuf_push(b0, "\n/* FX-SH-NAT-9 — map_add_i32 (si insert + accumulate) */\nstatic inline fx_Map_string_i32 fx_");
     let b2: StrBuilder = strbuf_push(b1, mod_slug);
     let b3: StrBuilder = strbuf_push(b2, "_map_insert(core_Allocator* a, fx_Map_string_i32 map, const char* key, int32_t value) {\n    if ((map.len + 1) * 4 >= map.cap * 3) {\n        size_t ncap = map.cap ? map.cap * 2 : 16;\n        const char** nk = (const char**)core_mem_alloc(a, ncap * sizeof(const char*));\n        int32_t* nv = (int32_t*)core_mem_alloc(a, ncap * sizeof(int32_t));\n        if (nk == NULL || nv == NULL) { return map; }\n        for (size_t i = 0; i < ncap; i++) { nk[i] = NULL; }\n        for (size_t i = 0; i < map.cap; i++) {\n            if (map.keys[i] != NULL) {\n                size_t j = fx_");
     let b4: StrBuilder = strbuf_push(b3, mod_slug);
@@ -9541,7 +9541,7 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b4: StrBuilder = strbuf_push(b3, "]");
         return Ok(strbuf_finish(b4));
     }
-    // FX-SH-NAT-8 - vec_set(v, i, x) → ((v).data[i] = (x), (v))  (stable slot; no grow)
+    // FX-SH-NAT-8 — vec_set(v, i, x) → ((v).data[i] = (x), (v))  (stable slot; no grow)
     if (sh_lexer.slice_eq(src, coff, cln, "vec_set") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -9561,7 +9561,7 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b9: StrBuilder = strbuf_push(b8, "))");
         return Ok(strbuf_finish(b9));
     }
-    // FX-SH-NAT-9 - map_add_i32(m, key, delta) → fx_{mod}_map_add_i32(alloc, m, key, delta)
+    // FX-SH-NAT-9 — map_add_i32(m, key, delta) → fx_{mod}_map_add_i32(alloc, m, key, delta)
     if (sh_lexer.slice_eq(src, coff, cln, "map_add_i32") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -9598,7 +9598,7 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         }
         return emit_map_nth_call_c(mod_slug, "map_nth_value", map, ix);
     }
-    // FX-SH-NAT-6 - Map<string,string> builtins (foundry emit_c_helpers shape).
+    // FX-SH-NAT-6 — Map<string,string> builtins (foundry emit_c_helpers shape).
     if (sh_lexer.slice_eq(src, coff, cln, "map_new_ss") == 1) {
         return emit_map_mod_call_c(mod_slug, "map_new_ss", "core_default_allocator()");
     }
@@ -9671,7 +9671,7 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
             return Ok(strbuf_finish(b3));
         }
     }
-    // FX-SH-NAT-5 - Buf / Bytes builtins (foundry emit_c_helpers shape).
+    // FX-SH-NAT-5 — Buf / Bytes builtins (foundry emit_c_helpers shape).
     if (sh_lexer.slice_eq(src, coff, cln, "buf_new") == 1) {
         let b0: StrBuilder = strbuf_new();
         let b1: StrBuilder = strbuf_push(b0, "fx_");
@@ -10266,7 +10266,7 @@ fn emit_parser_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
         let b3: StrBuilder = strbuf_push(b2, ")");
         return Ok(strbuf_finish(b3));
     }
-    // FX-SH-NAT-3 - Vec/array index sugar → `.data[i]` (same as vec_get).
+    // FX-SH-NAT-3 — Vec/array index sugar → `.data[i]` (same as vec_get).
     if (tag == 17) {
         let base_i: i32 = expr_index_base_idx(nodes, idx);
         let ix_i: i32 = expr_index_ix_idx(nodes, idx);
@@ -10279,7 +10279,7 @@ fn emit_parser_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
         let b4: StrBuilder = strbuf_push(b3, "]");
         return Ok(strbuf_finish(b4));
     }
-    // FX-SH-NAT-4 - `a[lo..hi]` → fx_Slice_i32 view (foundry ok_subslice shape).
+    // FX-SH-NAT-4 — `a[lo..hi]` → fx_Slice_i32 view (foundry ok_subslice shape).
     if (tag == 18) {
         let base_i: i32 = expr_slice_base_idx(nodes, idx);
         let lo_i: i32 = expr_slice_lo_idx(nodes, idx);
@@ -10299,7 +10299,7 @@ fn emit_parser_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
         let b9: StrBuilder = strbuf_push(b8, ")) }");
         return Ok(strbuf_finish(b9));
     }
-    // FX-SH-NAT-7 - ArrayLit → compound literal `{ .data = { … } }`.
+    // FX-SH-NAT-7 — ArrayLit → compound literal `{ .data = { … } }`.
     if (tag == 19) {
         return emit_parser_array_lit_c(mod_slug, src, nodes, idx);
     }
@@ -10787,7 +10787,7 @@ fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfil
             let n: i32 = eval_expr(fn_out.nodes, e);
             return emit_return_num_line(n);
         }
-        // SH-C-71 - bare `return "<strlit>";` for `-> string` (const char*).
+        // SH-C-71 — bare `return "<strlit>";` for `-> string` (const char*).
         if (expr_ty_tag(fn_out.nodes, e) == 2) {
             let lit_off: i32 = expr_strlit_off(fn_out.nodes, e);
             let lit_ln: i32 = expr_strlit_ln(fn_out.nodes, e);
@@ -10802,7 +10802,7 @@ fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfil
             return emit_return_ident_line(src, fn_out.nodes, e);
         }
         // CONV-3-r.23 - return add/binop chains (ok_char_lit).
-        // SH-C-45 - also Sub (return 0 - 1) and other binops emit_parser_expr_c already maps.
+        // SH-C-45 — also Sub (return 0 - 1) and other binops emit_parser_expr_c already maps.
         if (expr_ty_tag(fn_out.nodes, e) == 4) {
             let expr: string = emit_parser_expr_c(mod_slug, src, fn_out.nodes, e)?;
             let b0: StrBuilder = strbuf_new();
@@ -10835,7 +10835,7 @@ fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfil
             let b3: StrBuilder = strbuf_push(b2, ";\n");
             return Ok(strbuf_finish(b3));
         }
-        // SH-C-53 - direct struct-literal return (e.g. struct_lit_acc_init_first).
+        // SH-C-53 — direct struct-literal return (e.g. struct_lit_acc_init_first).
         if (expr_ty_tag(fn_out.nodes, e) == 11) {
             return emit_return_struct_lit_exprs_line(prof, src, st_out, fn_out.nodes, e);
         }
@@ -10877,7 +10877,7 @@ fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfil
     if (tag == 10) {
         return emit_parser_continue_line();
     }
-    // FX-SH-NAT-7 - IndexAssign → `.data[i] = val`.
+    // FX-SH-NAT-7 — IndexAssign → `.data[i] = val`.
     if (tag == 11) {
         let base_i: i32 = stmt_index_assign_base_idx(fn_out.stmts, stmt_idx);
         let ix_i: i32 = stmt_index_assign_ix_idx(fn_out.stmts, stmt_idx);
@@ -11445,37 +11445,37 @@ fn emit_return_num_line(n: i32) -> Result<string, core_Err> effects { alloc, mut
     return Ok(strbuf_finish(b3));
 }
 
-// CONV-3-r.14 - `while (false) { return 42; }` lowers to `while (0)` like production.
+// CONV-3-r.14 — `while (false) { return 42; }` lowers to `while (0)` like production.
 fn emit_while_false_return42_block() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    while (0) {\n        return 42;\n    }\n");
 }
 
-// CONV-3-r.17 - `for (let i = 0; i < 5; i = i + 1) { sum = sum + i; }`
+// CONV-3-r.17 — `for (let i = 0; i < 5; i = i + 1) { sum = sum + i; }`
 fn emit_for_sum_i0_to5_block() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    for (int32_t i = 0; (i < 5); i = (i + 1)) {\n        sum = (sum + i);\n    }\n");
 }
 
-// CONV-3-r.18 - `for (...) { if (i == 2) continue; sum = sum + i; }`
+// CONV-3-r.18 — `for (...) { if (i == 2) continue; sum = sum + i; }`
 fn emit_for_continue_i0_to5_block() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    for (int32_t i = 0; (i < 5); i = (i + 1)) {\n        if ((i == 2)) {\n            continue;\n        }\n        sum = (sum + i);\n    }\n");
 }
 
-// CONV-3-r.15 - `if (b) { return 1; } else { return 0; }` (bool param as int32_t).
+// CONV-3-r.15 — `if (b) { return 1; } else { return 0; }` (bool param as int32_t).
 fn emit_if_b_return10_block() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    if (b) {\n        return 1;\n    } else {\n        return 0;\n    }\n");
 }
 
-// CONV-3-r.15 - `return pick(true);` lowers to `pick(1)` like production.
+// CONV-3-r.15 — `return pick(true);` lowers to `pick(1)` like production.
 fn emit_return_pick_true_line() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    return fx_ok_if_else_pick(1);\n");
 }
 
-// CONV-3-r.19 - `return a < b;`
+// CONV-3-r.19 — `return a < b;`
 fn emit_return_cmp_lt_idents_line() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    return (a < b);\n");
 }
 
-// CONV-3-r.19 - `if (lt(1, 2)) { return 10; } return 0;`
+// CONV-3-r.19 — `if (lt(1, 2)) { return 10; } return 0;`
 fn emit_if_lt_12_return10_block() -> Result<string, core_Err> effects { alloc, mut } {
     return Ok("    if (fx_ok_cmp_lt_lt(1, 2)) {\n        return 10;\n    }\n    return 0;\n");
 }
@@ -11864,7 +11864,7 @@ fn ret_ty_kind(src: string, fn_out: FnOut) -> i32 {
     if (sh_lexer.slice_eq(src, fn_out.ret_off, fn_out.ret_len, "i32") == 1) {
         return ty_kind_i32();
     }
-    // CONV-3-r.19 - bool lowers to int32_t; CmpLt/etc. already infer as i32.
+    // CONV-3-r.19 — bool lowers to int32_t; CmpLt/etc. already infer as i32.
     if (sh_lexer.slice_eq(src, fn_out.ret_off, fn_out.ret_len, "bool") == 1) {
         return ty_kind_i32();
     }
@@ -11876,7 +11876,7 @@ fn infer_call_ty(nodes: Vec<Expr>, idx: i32, src: string, ret_m: Map<string, i32
     let cln: i32 = expr_call2_callee_ln(nodes, idx);
     let name: string = sh_lexer.slice_str(src, coff, cln)?;
     if (env_map_has_i32(ret_m, name) == 1) {
-        // SH-C-20 - ret_m value tags: 1=struct Result payload, 2=string, 3=i32.
+        // SH-C-20 — ret_m value tags: 1=struct Result payload, 2=string, 3=i32.
         let k: i32 = env_map_get_i32(ret_m, name)?;
         if (k == 2) {
             return Ok(ty_kind_str());
@@ -11900,7 +11900,7 @@ fn infer_ident_ty(src: string, off: i32, ln: i32, param_m: Map<string, i32>, let
         }
         let in_struct_let: i32 = env_lookup_struct(let_struct_m, base_name);
         if (in_struct_let == 1) {
-            // SH-C-19 - only struct-tagged lets (value 1) expose i32 fields.
+            // SH-C-19 — only struct-tagged lets (value 1) expose i32 fields.
             let k: i32 = env_map_get_i32(let_struct_m, base_name)?;
             if (k == 1) {
                 return Ok(ty_kind_i32());
@@ -11912,7 +11912,7 @@ fn infer_ident_ty(src: string, off: i32, ln: i32, param_m: Map<string, i32>, let
     let name: string = sh_lexer.slice_str(src, off, ln)?;
     let in_struct_let: i32 = env_lookup_struct(let_struct_m, name);
     if (in_struct_let == 1) {
-        // SH-C-19 - value 2 = string-annotated let; value 1 = struct.
+        // SH-C-19 — value 2 = string-annotated let; value 1 = struct.
         let k: i32 = env_map_get_i32(let_struct_m, name)?;
         if (k == 2) {
             return Ok(ty_kind_str());
@@ -12182,20 +12182,20 @@ fn infer_expr_ty_kind(nodes: Vec<Expr>, idx: i32, src: string, param_env: string
         let inner: i32 = expr_deref_inner_idx(nodes, idx);
         return infer_expr_ty_kind(nodes, inner, src, param_env, let_env, struct_ret_env, param_m, let_i32_m, let_struct_m, ret_m);
     }
-    // SH-C-18 - TryExpr (`e?`) forwards the inner expression type.
+    // SH-C-18 — TryExpr (`e?`) forwards the inner expression type.
     if (tag == 12) {
         let inner: i32 = expr_try_inner_idx(nodes, idx);
         return infer_expr_ty_kind(nodes, inner, src, param_env, let_env, struct_ret_env, param_m, let_i32_m, let_struct_m, ret_m);
     }
-    // FX-SH-NAT-3 - Index sugar: element type treated as i32 in self-host subset (Vec i32 / arrays).
+    // FX-SH-NAT-3 — Index sugar: element type treated as i32 in self-host subset (Vec i32 / arrays).
     if (tag == 17) {
         return Ok(ty_kind_i32());
     }
-    // FX-SH-NAT-4 - SliceRange → slice view (struct-ish in self-host subset).
+    // FX-SH-NAT-4 — SliceRange → slice view (struct-ish in self-host subset).
     if (tag == 18) {
         return Ok(ty_kind_struct());
     }
-    // FX-SH-NAT-7 - ArrayLit → array struct binding.
+    // FX-SH-NAT-7 — ArrayLit → array struct binding.
     if (tag == 19) {
         return Ok(ty_kind_struct());
     }
@@ -12212,7 +12212,7 @@ fn let_rhs_bind_kind(nodes: Vec<Expr>, idx: i32, src: string, param_env: string,
     if (ty == ty_kind_struct()) {
         return Ok(2);
     }
-    // SH-C-19 - string RHS binds into let_struct_m with tag 2.
+    // SH-C-19 — string RHS binds into let_struct_m with tag 2.
     if (ty == ty_kind_str()) {
         return Ok(3);
     }
@@ -12228,7 +12228,7 @@ fn let_rhs_is_i32(nodes: Vec<Expr>, idx: i32, src: string, param_env: string, le
 }
 
 fn build_let_env_on_let(stmts: Vec<Stmt>, idx: i32, stop: i32, nodes: Vec<Expr>, src: string, param_env: string, param_m: Map<string, i32>, env: string, off: i32, ln: i32, e: i32, struct_ret_env: string, ret_m: Map<string, i32>, let_i32_m: &mut Map<string, i32>, let_struct_m: &mut Map<string, i32>) -> Result<string, core_Err> effects { alloc, mut } {
-    // SH-C-19 - typed let annotations win over RHS infer (CallExpr/`?` often defaults to i32).
+    // SH-C-19 — typed let annotations win over RHS infer (CallExpr/`?` often defaults to i32).
     let ty_ln: i32 = stmt_let_ty_ln(stmts, idx);
     if (ty_ln > 0) {
         let ty_off: i32 = stmt_let_ty_off(stmts, idx);
@@ -12600,11 +12600,11 @@ fn check_return_ty_core(stmts: Vec<Stmt>, idx: i32, nodes: Vec<Expr>, src: strin
 }
 
 fn check_return_expr_ty(nodes: Vec<Expr>, e: i32, src: string, param_env: string, let_env: string, struct_ret_env: string, param_m: Map<string, i32>, let_i32_m: Map<string, i32>, let_struct_m: Map<string, i32>, ret_m: Map<string, i32>, ret_kind: i32, diag: &mut TypeDiag) -> Result<i32, core_Err> effects { alloc, mut } {
-    // SH-C-18 - Result Err is valid for any Result<T, core_Err> return.
+    // SH-C-18 — Result Err is valid for any Result<T, core_Err> return.
     if (expr_call_callee_is(nodes, e, src, "Err") == 1) {
         return Ok(0);
     }
-    // SH-C-18 - Result Ok(payload): check payload against unwrapped T kind.
+    // SH-C-18 — Result Ok(payload): check payload against unwrapped T kind.
     let check_idx: i32 = e;
     if (expr_call_callee_is(nodes, e, src, "Ok") == 1) {
         check_idx = expr_call_arg0_idx(nodes, e);
@@ -12651,7 +12651,7 @@ fn check_fn_body_returns_rec(stmts: Vec<Stmt>, body_start: i32, off: i32, count:
     let idx: i32 = body_start + off;
     let tag: i32 = stmt_ty_tag(stmts, idx);
     if (tag == 2) {
-        // SH-C-18 - check every return (Err early + Ok success paths).
+        // SH-C-18 — check every return (Err early + Ok success paths).
         let _ok: i32 = check_return_ty(stmts, idx, nodes, src, param_env, param_m, body_start, ret_kind, struct_ret_env, ret_m, diag)?;
         return check_fn_body_returns_rec(stmts, body_start, off + 1, count, nodes, src, param_env, param_m, ret_kind, struct_ret_env, ret_m, diag);
     }
@@ -12706,7 +12706,7 @@ fn typecheck_rejects_str_return() -> Result<i32, core_Err> effects { alloc, mut 
     return Ok(42);
 }
 
-// SH-C-18 - Ok("bad") must not typecheck as Result<i32, core_Err>.
+// SH-C-18 — Ok("bad") must not typecheck as Result<i32, core_Err>.
 fn typecheck_rejects_ok_str_on_result_i32() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<i32, core_Err> {\n    return Ok(\"bad\");\n}\n";
@@ -12731,7 +12731,7 @@ fn typecheck_rejects_ok_str_on_result_i32() -> Result<i32, core_Err> effects { a
     return Ok(42);
 }
 
-// SH-C-18 - Ok(42) must typecheck as Result<i32, core_Err>.
+// SH-C-18 — Ok(42) must typecheck as Result<i32, core_Err>.
 fn typecheck_accepts_ok_num_result_i32() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<i32, core_Err> {\n    return Ok(42);\n}\n";
@@ -12747,7 +12747,7 @@ fn typecheck_accepts_ok_num_result_i32() -> Result<i32, core_Err> effects { allo
     return Ok(42);
 }
 
-// SH-C-19 - typed let ImpOut wins over CallExpr/`?` defaulting to i32.
+// SH-C-19 — typed let ImpOut wins over CallExpr/`?` defaulting to i32.
 fn typecheck_accepts_typed_let_impout_try() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ImpOut, core_Err> {\n    let path: ImpOut = fake()?;\n    return Ok(path);\n}\n";
@@ -12763,7 +12763,7 @@ fn typecheck_accepts_typed_let_impout_try() -> Result<i32, core_Err> effects { a
     return Ok(42);
 }
 
-// SH-C-19 - typed let string wins over CallExpr/`?` defaulting to i32.
+// SH-C-19 — typed let string wins over CallExpr/`?` defaulting to i32.
 fn typecheck_accepts_typed_let_str_try() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<string, core_Err> {\n    let one: string = fake()?;\n    return Ok(one);\n}\n";
@@ -12779,7 +12779,7 @@ fn typecheck_accepts_typed_let_str_try() -> Result<i32, core_Err> effects { allo
     return Ok(42);
 }
 
-// SH-C-19 - string-annotated let must not satisfy Result<i32>.
+// SH-C-19 — string-annotated let must not satisfy Result<i32>.
 fn typecheck_rejects_typed_let_str_on_result_i32() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<i32, core_Err> {\n    let one: string = fake()?;\n    return Ok(one);\n}\n";
@@ -12800,7 +12800,7 @@ fn typecheck_rejects_typed_let_str_on_result_i32() -> Result<i32, core_Err> effe
     return Ok(42);
 }
 
-// SH-C-20 - bare CallExpr Result-forward when callee is in ret_m (struct payload).
+// SH-C-20 — bare CallExpr Result-forward when callee is in ret_m (struct payload).
 fn typecheck_accepts_result_forward_struct() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ImpOut, core_Err> {\n    return other();\n}\n";
@@ -12818,7 +12818,7 @@ fn typecheck_accepts_result_forward_struct() -> Result<i32, core_Err> effects { 
     return Ok(42);
 }
 
-// SH-C-20 - unknown callee still defaults to i32 and must not satisfy Result<ImpOut>.
+// SH-C-20 — unknown callee still defaults to i32 and must not satisfy Result<ImpOut>.
 fn typecheck_rejects_result_forward_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ImpOut, core_Err> {\n    return other();\n}\n";
@@ -12839,7 +12839,7 @@ fn typecheck_rejects_result_forward_unknown() -> Result<i32, core_Err> effects {
     return Ok(42);
 }
 
-// SH-C-21 - Ok(strbuf_finish(...)) when strbuf_finish is ret_m tag 2.
+// SH-C-21 — Ok(strbuf_finish(...)) when strbuf_finish is ret_m tag 2.
 fn typecheck_accepts_ok_strbuf_finish() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<string, core_Err> {\n    return Ok(strbuf_finish(b));\n}\n";
@@ -12857,7 +12857,7 @@ fn typecheck_accepts_ok_strbuf_finish() -> Result<i32, core_Err> effects { alloc
     return Ok(42);
 }
 
-// SH-C-21 - Ok(strbuf_finish(...)) without ret_m seed must not typecheck as Result<string>.
+// SH-C-21 — Ok(strbuf_finish(...)) without ret_m seed must not typecheck as Result<string>.
 fn typecheck_rejects_ok_strbuf_finish_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<string, core_Err> {\n    return Ok(strbuf_finish(b));\n}\n";
@@ -12878,7 +12878,7 @@ fn typecheck_rejects_ok_strbuf_finish_unknown() -> Result<i32, core_Err> effects
     return Ok(42);
 }
 
-// SH-C-22 - bare return fs_read_text(...) when fs_read_text is ret_m tag 2 (Result<string> forward).
+// SH-C-22 — bare return fs_read_text(...) when fs_read_text is ret_m tag 2 (Result<string> forward).
 fn typecheck_accepts_result_forward_fs_read_text() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<string, core_Err> {\n    return fs_read_text(path);\n}\n";
@@ -12896,7 +12896,7 @@ fn typecheck_accepts_result_forward_fs_read_text() -> Result<i32, core_Err> effe
     return Ok(42);
 }
 
-// SH-C-22 - bare return fs_read_text(...) without ret_m seed must not typecheck as Result<string>.
+// SH-C-22 — bare return fs_read_text(...) without ret_m seed must not typecheck as Result<string>.
 fn typecheck_rejects_result_forward_fs_read_text_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<string, core_Err> {\n    return fs_read_text(path);\n}\n";
@@ -12917,7 +12917,7 @@ fn typecheck_rejects_result_forward_fs_read_text_unknown() -> Result<i32, core_E
     return Ok(42);
 }
 
-// SH-C-23 - bare return parse_struct_fields_rest(...) when callee is ret_m tag 1 (StructOut).
+// SH-C-23 — bare return parse_struct_fields_rest(...) when callee is ret_m tag 1 (StructOut).
 fn typecheck_accepts_result_forward_struct_fields_rest() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<StructOut, core_Err> {\n    return parse_struct_fields_rest();\n}\n";
@@ -12935,7 +12935,7 @@ fn typecheck_accepts_result_forward_struct_fields_rest() -> Result<i32, core_Err
     return Ok(42);
 }
 
-// SH-C-23 - bare return parse_struct_fields_rest(...) without ret_m seed must not typecheck as Result<StructOut>.
+// SH-C-23 — bare return parse_struct_fields_rest(...) without ret_m seed must not typecheck as Result<StructOut>.
 fn typecheck_rejects_result_forward_struct_fields_rest_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<StructOut, core_Err> {\n    return parse_struct_fields_rest();\n}\n";
@@ -12956,7 +12956,7 @@ fn typecheck_rejects_result_forward_struct_fields_rest_unknown() -> Result<i32, 
     return Ok(42);
 }
 
-// SH-C-24 - bare return parse_fn_params_nonempty(...) when callee is ret_m tag 1 (ParamParseOut).
+// SH-C-24 — bare return parse_fn_params_nonempty(...) when callee is ret_m tag 1 (ParamParseOut).
 fn typecheck_accepts_result_forward_fn_params_nonempty() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ParamParseOut, core_Err> {\n    return parse_fn_params_nonempty();\n}\n";
@@ -12974,7 +12974,7 @@ fn typecheck_accepts_result_forward_fn_params_nonempty() -> Result<i32, core_Err
     return Ok(42);
 }
 
-// SH-C-24 - bare return parse_fn_params_nonempty(...) without ret_m seed must not typecheck as Result<ParamParseOut>.
+// SH-C-24 — bare return parse_fn_params_nonempty(...) without ret_m seed must not typecheck as Result<ParamParseOut>.
 fn typecheck_rejects_result_forward_fn_params_nonempty_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ParamParseOut, core_Err> {\n    return parse_fn_params_nonempty();\n}\n";
@@ -12995,7 +12995,7 @@ fn typecheck_rejects_result_forward_fn_params_nonempty_unknown() -> Result<i32, 
     return Ok(42);
 }
 
-// SH-C-25 - bare return parse_block_rest(...) when callee is ret_m tag 1 (BlockParseOut).
+// SH-C-25 — bare return parse_block_rest(...) when callee is ret_m tag 1 (BlockParseOut).
 fn typecheck_accepts_result_forward_block_rest() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<BlockParseOut, core_Err> {\n    return parse_block_rest();\n}\n";
@@ -13013,7 +13013,7 @@ fn typecheck_accepts_result_forward_block_rest() -> Result<i32, core_Err> effect
     return Ok(42);
 }
 
-// SH-C-25 - bare return parse_block_rest(...) without ret_m seed must not typecheck as Result<BlockParseOut>.
+// SH-C-25 — bare return parse_block_rest(...) without ret_m seed must not typecheck as Result<BlockParseOut>.
 fn typecheck_rejects_result_forward_block_rest_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<BlockParseOut, core_Err> {\n    return parse_block_rest();\n}\n";
@@ -13034,7 +13034,7 @@ fn typecheck_rejects_result_forward_block_rest_unknown() -> Result<i32, core_Err
     return Ok(42);
 }
 
-// SH-C-26 - bare return parse_term_tail(...) when callee is ret_m tag 1 (ParseOut).
+// SH-C-26 — bare return parse_term_tail(...) when callee is ret_m tag 1 (ParseOut).
 fn typecheck_accepts_result_forward_term_tail() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ParseOut, core_Err> {\n    return parse_term_tail();\n}\n";
@@ -13052,7 +13052,7 @@ fn typecheck_accepts_result_forward_term_tail() -> Result<i32, core_Err> effects
     return Ok(42);
 }
 
-// SH-C-26 - bare return parse_term_tail(...) without ret_m seed must not typecheck as Result<ParseOut>.
+// SH-C-26 — bare return parse_term_tail(...) without ret_m seed must not typecheck as Result<ParseOut>.
 fn typecheck_rejects_result_forward_term_tail_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<ParseOut, core_Err> {\n    return parse_term_tail();\n}\n";
@@ -13073,7 +13073,7 @@ fn typecheck_rejects_result_forward_term_tail_unknown() -> Result<i32, core_Err>
     return Ok(42);
 }
 
-// SH-C-27 - bare return parse_stmt(...) when callee is ret_m tag 1 (StmtStep).
+// SH-C-27 — bare return parse_stmt(...) when callee is ret_m tag 1 (StmtStep).
 fn typecheck_accepts_result_forward_parse_stmt() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<StmtStep, core_Err> {\n    return parse_stmt();\n}\n";
@@ -13091,7 +13091,7 @@ fn typecheck_accepts_result_forward_parse_stmt() -> Result<i32, core_Err> effect
     return Ok(42);
 }
 
-// SH-C-27 - bare return parse_stmt(...) without ret_m seed must not typecheck as Result<StmtStep>.
+// SH-C-27 — bare return parse_stmt(...) without ret_m seed must not typecheck as Result<StmtStep>.
 fn typecheck_rejects_result_forward_parse_stmt_unknown() -> Result<i32, core_Err> effects { alloc, mut } {
     region r = arena(fx_defaults.arena_parse());
     let src: string = "fn main() -> Result<StmtStep, core_Err> {\n    return parse_stmt();\n}\n";
@@ -13240,7 +13240,7 @@ fn golden_load_tests() -> Result<i32, core_Err> effects { alloc, io, mut } {
 }
 
 fn sh_ast_module_tests() -> Result<i32, core_Err> effects { alloc, mut } {
-    // SH-ERG-4.1 - cross-module Expr constructor + tag from lib/sh_ast.
+    // SH-ERG-4.1 — cross-module Expr constructor + tag from lib/sh_ast.
     let t: i32 = sh_ast.tag(Num(7));
     if (t != 1) {
         return Ok(345);
@@ -15660,10 +15660,10 @@ fn emit_importstdandlocal_main_template() -> Result<string, core_Err> effects { 
     return Ok(strbuf_finish(b11));
 }
 
-// SH-C-2 - fx-owned programs l4_result_pipeline Result/? pipeline template.
+// SH-C-2 — fx-owned programs l4_result_pipeline Result/? pipeline template.
 fn emit_l4_result_pipeline_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-2 - fx-owned programs Result/? pipeline */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/string.h\"\n#include \"lib/calc.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-2 — fx-owned programs Result/? pipeline */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/string.h\"\n#include \"lib/calc.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "typedef struct {\n    int32_t tag;\n    const char* ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_string;\n\n");
@@ -15688,10 +15688,10 @@ fn emit_l4_result_pipeline_main_template() -> Result<string, core_Err> effects {
     return Ok(strbuf_finish(b22));
 }
 
-// SH-C-3 - fx-owned programs l3_multi_module Result/? multi-module template.
+// SH-C-3 — fx-owned programs l3_multi_module Result/? multi-module template.
 fn emit_l3_multi_module_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-3 - fx-owned programs Result/? multi-module */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/string.h\"\n#include \"lib/util.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-3 — fx-owned programs Result/? multi-module */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/string.h\"\n#include \"lib/util.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=3 */\n");
@@ -15705,10 +15705,10 @@ fn emit_l3_multi_module_main_template() -> Result<string, core_Err> effects { al
     return Ok(strbuf_finish(b11));
 }
 
-// SH-C-4 - fx-owned programs p2_fraction_checked Result/? fraction-checked template.
+// SH-C-4 — fx-owned programs p2_fraction_checked Result/? fraction-checked template.
 fn emit_p2_fraction_checked_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 - fx-owned programs Result/? fraction-checked */\n#include <stdint.h>\n#include \"zspec/core.h\"\n#include \"lib/fraction.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 — fx-owned programs Result/? fraction-checked */\n#include <stdint.h>\n#include \"zspec/core.h\"\n#include \"lib/fraction.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=5 */\n");
@@ -15726,10 +15726,10 @@ fn emit_p2_fraction_checked_main_template() -> Result<string, core_Err> effects 
     return Ok(strbuf_finish(b15));
 }
 
-// SH-C-4 - fx-owned programs l5_fmt_demo Result/? fmt demo template.
+// SH-C-4 — fx-owned programs l5_fmt_demo Result/? fmt demo template.
 fn emit_l5_fmt_demo_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 - fx-owned programs Result/? fmt demo */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 — fx-owned programs Result/? fmt demo */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=4 */\n");
@@ -15744,10 +15744,10 @@ fn emit_l5_fmt_demo_main_template() -> Result<string, core_Err> effects { alloc,
     return Ok(strbuf_finish(b12));
 }
 
-// SH-C-4 - fx-owned programs p2_fmt_tag Result/? fmt tag template.
+// SH-C-4 — fx-owned programs p2_fmt_tag Result/? fmt tag template.
 fn emit_p2_fmt_tag_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 - fx-owned programs Result/? fmt tag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-4 — fx-owned programs Result/? fmt tag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=4 */\n");
@@ -15762,10 +15762,10 @@ fn emit_p2_fmt_tag_main_template() -> Result<string, core_Err> effects { alloc, 
     return Ok(strbuf_finish(b12));
 }
 
-// SH-C-5 - fx-owned programs p2_fmt_i64 Result/? fmt i64 template.
+// SH-C-5 — fx-owned programs p2_fmt_i64 Result/? fmt i64 template.
 fn emit_p2_fmt_i64_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 - fx-owned programs Result/? fmt i64 */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 — fx-owned programs Result/? fmt i64 */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=5 */\n");
@@ -15781,10 +15781,10 @@ fn emit_p2_fmt_i64_main_template() -> Result<string, core_Err> effects { alloc, 
     return Ok(strbuf_finish(b13));
 }
 
-// SH-C-5 - fx-owned programs p2_string_diag Result/? string diagnostic template.
+// SH-C-5 — fx-owned programs p2_string_diag Result/? string diagnostic template.
 fn emit_p2_string_diag_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 - fx-owned programs Result/? string diag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 — fx-owned programs Result/? string diag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=5 */\n");
@@ -15803,10 +15803,10 @@ fn emit_p2_string_diag_main_template() -> Result<string, core_Err> effects { all
     return Ok(strbuf_finish(b16));
 }
 
-// SH-C-5 - fx-owned programs p2_io_diag Result/? defer/io diagnostic template.
+// SH-C-5 — fx-owned programs p2_io_diag Result/? defer/io diagnostic template.
 fn emit_p2_io_diag_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 - fx-owned programs Result/? io diag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 — fx-owned programs Result/? io diag */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "/* fx bootstrap emit: {{MODULE}} body_len=6 */\n");
@@ -15823,10 +15823,10 @@ fn emit_p2_io_diag_main_template() -> Result<string, core_Err> effects { alloc, 
     return Ok(strbuf_finish(b14));
 }
 
-// SH-C-5 - fx-owned programs p2_enum_io Result/? enum io template.
+// SH-C-5 — fx-owned programs p2_enum_io Result/? enum io template.
 fn emit_p2_enum_io_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 - fx-owned programs Result/? enum io */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 — fx-owned programs Result/? enum io */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/fmt.h\"\n#include \"std/io.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "typedef enum {\n    FX_{{MODULE_UPPER}}_PHASE_TAG_RUN,\n    FX_{{MODULE_UPPER}}_PHASE_TAG_STOP,\n} fx_{{MODULE}}_PhaseTag;\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    fx_{{MODULE}}_PhaseTag tag;\n    union {\n        int32_t run;\n    } u;\n} fx_{{MODULE}}_Phase;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
@@ -15846,10 +15846,10 @@ fn emit_p2_enum_io_main_template() -> Result<string, core_Err> effects { alloc, 
     return Ok(strbuf_finish(b17));
 }
 
-// SH-C-5 - fx-owned programs p2_file_io Result/? file io template.
+// SH-C-5 — fx-owned programs p2_file_io Result/? file io template.
 fn emit_p2_file_io_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 - fx-owned programs Result/? file io */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-5 — fx-owned programs Result/? file io */\n#include <stdint.h>\n#include <stddef.h>\n#include \"zspec/core.h\"\n#include \"std/io.h\"\n#include \"std/string.h\"\n#define FX_CORE_ERR_DEFINED\n\n");
     let b2: StrBuilder = strbuf_push(b1, "#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\n");
     let b3: StrBuilder = strbuf_push(b2, "typedef struct {\n    int32_t tag;\n    int32_t ok_val;\n    core_Err err_val;\n} fx_{{MODULE}}_Result_i32;\n\n");
     let b4: StrBuilder = strbuf_push(b3, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
@@ -15866,10 +15866,10 @@ fn emit_p2_file_io_main_template() -> Result<string, core_Err> effects { alloc, 
     return Ok(strbuf_finish(b14));
 }
 
-// SH-C-6 - fx-owned programs p2_file_exists Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_exists Result/? file template.
 fn emit_p2_file_exists_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file exists */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file exists */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -15903,10 +15903,10 @@ fn emit_p2_file_exists_main_template() -> Result<string, core_Err> effects { all
     return Ok(strbuf_finish(b31));
 }
 
-// SH-C-6 - fx-owned programs p2_file_delete Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_delete Result/? file template.
 fn emit_p2_file_delete_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file delete */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file delete */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -15944,10 +15944,10 @@ fn emit_p2_file_delete_main_template() -> Result<string, core_Err> effects { all
     return Ok(strbuf_finish(b35));
 }
 
-// SH-C-6 - fx-owned programs p2_file_io_roundtrip Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_io_roundtrip Result/? file template.
 fn emit_p2_file_io_roundtrip_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file io roundtrip */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file io roundtrip */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -16002,10 +16002,10 @@ fn emit_p2_file_io_roundtrip_main_template() -> Result<string, core_Err> effects
     return Ok(strbuf_finish(b52));
 }
 
-// SH-C-6 - fx-owned programs p2_file_append Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_append Result/? file template.
 fn emit_p2_file_append_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file append */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file append */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -16052,10 +16052,10 @@ fn emit_p2_file_append_main_template() -> Result<string, core_Err> effects { all
     return Ok(strbuf_finish(b44));
 }
 
-// SH-C-6 - fx-owned programs p2_file_io_full Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_io_full Result/? file template.
 fn emit_p2_file_io_full_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file io full */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file io full */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -16115,10 +16115,10 @@ fn emit_p2_file_io_full_main_template() -> Result<string, core_Err> effects { al
     return Ok(strbuf_finish(b57));
 }
 
-// SH-C-6 - fx-owned programs p2_file_rename Result/? file template.
+// SH-C-6 — fx-owned programs p2_file_rename Result/? file template.
 fn emit_p2_file_rename_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 - fx-owned programs Result/? file rename */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-6 — fx-owned programs Result/? file rename */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include <stdint.h>\n");
     let b3: StrBuilder = strbuf_push(b2, "#include <stddef.h>\n");
     let b4: StrBuilder = strbuf_push(b3, "#include \"zspec/core.h\"\n");
@@ -16187,10 +16187,10 @@ fn emit_p2_file_rename_main_template() -> Result<string, core_Err> effects { all
     return Ok(strbuf_finish(b66));
 }
 
-// SH-C-7 - fx-owned programs l10_io_trace Result/? io trace template.
+// SH-C-7 — fx-owned programs l10_io_trace Result/? io trace template.
 fn emit_l10_io_trace_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 - fx-owned programs Result/? io trace */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 — fx-owned programs Result/? io trace */\n");
     let b2: StrBuilder = strbuf_push(b1, "#include \"fx_vec.h\"\n#include \"zspec/core.h\"\n#include \"std/vec.h\"\n#include \"std/fmt.h\"\n#include \"std/string.h\"\n#include \"std/io.h\"\n");
     let b3: StrBuilder = strbuf_push(b2, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n    core_Allocator* r = core_arena_new(core_default_allocator(), (size_t)({{ARENA}}));\n");
     let b4: StrBuilder = strbuf_push(b3, "    fx_Vec_i32 v3 = fx_std_vec_push_i32(r, fx_std_vec_push_i32(r, fx_std_vec_new_i32(r, 0), {{VAL1}}), {{VAL2}});\n");
@@ -16202,89 +16202,89 @@ fn emit_l10_io_trace_main_template() -> Result<string, core_Err> effects { alloc
     return Ok(strbuf_finish(b9));
 }
 
-// SH-C-7 - fx-owned programs phase1_integrated Result/? integrated template.
+// SH-C-7 — fx-owned programs phase1_integrated Result/? integrated template.
 fn emit_phase1_integrated_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 - fx-owned programs Result/? phase1 integrated */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 — fx-owned programs Result/? phase1 integrated */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    fx_Vec_i32 v2 = fx_std_vec_push_i32(r, fx_std_vec_push_i32(r, fx_std_vec_new_i32(r, 0), {{VAL1}}), {{VAL2}});\n");
     let b4: StrBuilder = strbuf_push(b3, "    return fx_lib_calc_div(fx_std_vec_get_i32(v2, 0) + fx_std_vec_get_i32(v2, 1), {{DIVISOR}});\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-7 - fx-owned programs phase2_kickoff Result/? kickoff template.
+// SH-C-7 — fx-owned programs phase2_kickoff Result/? kickoff template.
 fn emit_phase2_kickoff_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 - fx-owned programs Result/? phase2 kickoff */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 — fx-owned programs Result/? phase2 kickoff */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* temp {{TEMP}} vec/pair/box/fmt/io defer {{DEFER_TEXT}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = {{VAL1}} + {{VAL2}}, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-7 - fx-owned programs p2_phase1b_capstone Result/? capstone template.
+// SH-C-7 — fx-owned programs p2_phase1b_capstone Result/? capstone template.
 fn emit_p2_phase1b_capstone_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 - fx-owned programs Result/? phase1b capstone */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 — fx-owned programs Result/? phase1b capstone */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* math {{FLAGS_A}}|{{FLAGS_B}} fmt {{TAG_PREFIX}} io {{PATH}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = {{OK_RET}}, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-7 - fx-owned programs phase1_capstone Result/? capstone template.
+// SH-C-7 — fx-owned programs phase1_capstone Result/? capstone template.
 fn emit_phase1_capstone_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 - fx-owned programs Result/? phase1 capstone */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-7 — fx-owned programs Result/? phase1 capstone */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_string fx_{{MODULE}}_banner(int32_t sum) { /* fmt+concat {{BANNER_PREFIX}} */ }\n");
     let b3: StrBuilder = strbuf_push(b2, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) { /* defer {{DEFER_TEXT}} compare {{COMPARE}} */ return Ok({{VAL1}}+{{VAL2}}); }\n");
     return Ok(strbuf_finish(b3));
 }
 
-// SH-C-8 - fx-owned programs phase2_capstone Result/? capstone template.
+// SH-C-8 — fx-owned programs phase2_capstone Result/? capstone template.
 fn emit_phase2_capstone_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 - fx-owned programs Result/? phase2 capstone */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 — fx-owned programs Result/? phase2 capstone */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* temp {{TEMP}} vec {{VAL1}}/{{VAL2}} box bump {{BUMP}} defer {{DEFER_TEXT}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = 100, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-8 - fx-owned programs p2_integrated Result/? integrated template.
+// SH-C-8 — fx-owned programs p2_integrated Result/? integrated template.
 fn emit_p2_integrated_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 - fx-owned programs Result/? p2 integrated */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 — fx-owned programs Result/? p2 integrated */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* while {{WHILE_LIMIT}} concat {{CONCAT_A}}{{CONCAT_B}} tag {{TAG_PREFIX}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = {{RUN_VAL}}, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-8 - fx-owned programs lv5_map Result/? map template.
+// SH-C-8 — fx-owned programs lv5_map Result/? map template.
 fn emit_lv5_map_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 - fx-owned programs Result/? lv5 map */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 — fx-owned programs Result/? lv5 map */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* arena {{ARENA}} while {{WHILE_LIMIT}} keys {{GET_KEY_A}}/{{GET_KEY_B}}/{{GET_KEY_C}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = 42, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-8 - fx-owned programs lv5_map_facade Result/? map facade template.
+// SH-C-8 — fx-owned programs lv5_map_facade Result/? map facade template.
 fn emit_lv5_map_facade_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 - fx-owned programs Result/? lv5 map facade */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 — fx-owned programs Result/? lv5 map facade */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* map {{KEY1}}={{VAL1}} {{KEY2}}={{VAL2}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = 42, .err_val = CORE_OK };\n}\n");
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-8 - fx-owned programs p2_str_builder Result/? str builder template.
+// SH-C-8 — fx-owned programs p2_str_builder Result/? str builder template.
 fn emit_p2_str_builder_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 - fx-owned programs Result/? p2 str builder */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-8 — fx-owned programs Result/? p2 str builder */\n");
     let b2: StrBuilder = strbuf_push(b1, "fx_{{MODULE}}_Result_i32 fx_{{MODULE}}_main(void) {\n");
     let b3: StrBuilder = strbuf_push(b2, "    /* while {{WHILE_LIMIT}} fragment {{FRAGMENT}} len {{ACC_LEN}} */\n");
     let b4: StrBuilder = strbuf_push(b3, "    return (fx_{{MODULE}}_Result_i32){ .tag = FX_RESULT_TAG_OK, .ok_val = {{OK_RET}}, .err_val = CORE_OK };\n}\n");
@@ -16718,7 +16718,7 @@ fn parse_and_emit_ok_while_zero() -> Result<string, core_Err> effects { alloc, i
     return Ok(strbuf_finish(b6));
 }
 
-// CONV-3-r.15 - parse+emit `ok_if_else` (if/else on bool; main calls pick(true) → exit 1).
+// CONV-3-r.15 — parse+emit `ok_if_else` (if/else on bool; main calls pick(true) → exit 1).
 fn parse_and_emit_ok_if_else() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_if_else()?;
@@ -16806,7 +16806,7 @@ fn parse_and_emit_ok_if_else() -> Result<string, core_Err> effects { alloc, io, 
     return Ok(strbuf_finish(b9));
 }
 
-// CONV-3-r.16 - parse+emit `ok_break` (while true + if n==3 break; exit 3).
+// CONV-3-r.16 — parse+emit `ok_break` (while true + if n==3 break; exit 3).
 fn parse_and_emit_ok_break() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_break()?;
@@ -16891,7 +16891,7 @@ fn parse_and_emit_ok_break() -> Result<string, core_Err> effects { alloc, io, mu
     return Ok(strbuf_finish(b5));
 }
 
-// CONV-3-r.17 - parse+emit `ok_for_sum` (for desugars to while; emit C for; exit 10).
+// CONV-3-r.17 — parse+emit `ok_for_sum` (for desugars to while; emit C for; exit 10).
 fn parse_and_emit_ok_for_sum() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_for_sum()?;
@@ -16971,7 +16971,7 @@ fn parse_and_emit_ok_for_sum() -> Result<string, core_Err> effects { alloc, io, 
     return Ok(strbuf_finish(b7));
 }
 
-// CONV-3-r.18 - parse+emit `ok_continue` (for+if+continue; emit C for; exit 8).
+// CONV-3-r.18 — parse+emit `ok_continue` (for+if+continue; emit C for; exit 8).
 fn parse_and_emit_ok_continue() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_continue()?;
@@ -17070,7 +17070,7 @@ fn parse_and_emit_ok_continue() -> Result<string, core_Err> effects { alloc, io,
     return Ok(strbuf_finish(b7));
 }
 
-// CONV-3-r.19 - parse+emit `ok_cmp_lt` (lt a<b → bool/i32; main if lt(1,2) → exit 10).
+// CONV-3-r.19 — parse+emit `ok_cmp_lt` (lt a<b → bool/i32; main if lt(1,2) → exit 10).
 fn parse_and_emit_ok_cmp_lt() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_cmp_lt()?;
@@ -17155,7 +17155,7 @@ fn parse_and_emit_ok_cmp_lt() -> Result<string, core_Err> effects { alloc, io, m
     return Ok(strbuf_finish(b9));
 }
 
-// CONV-3-r.20 - parse+emit `ok_effect_pure_call` (add + return add(3,4); exit 7).
+// CONV-3-r.20 — parse+emit `ok_effect_pure_call` (add + return add(3,4); exit 7).
 fn parse_and_emit_ok_effect_pure_call() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_emit());
     let prof: FixtureProfile = fixture_profile_ok_effect_pure_call()?;
@@ -17381,7 +17381,7 @@ fn parse_and_emit_ok_add() -> Result<string, core_Err> effects { alloc, io, mut 
     return Ok(strbuf_finish(b10));
 }
 
-// SH-C-28 - parse+emit lex-family smoke (slice_eq + lex + main → exit 42).
+// SH-C-28 — parse+emit lex-family smoke (slice_eq + lex + main → exit 42).
 fn parse_and_emit_bootstrap_lexer_smoke() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_parse());
     let prof: FixtureProfile = fixture_profile_bootstrap_lexer_smoke()?;
@@ -17478,7 +17478,7 @@ fn parse_and_emit_bootstrap_lexer_smoke() -> Result<string, core_Err> effects { 
     let b13: StrBuilder = strbuf_push(b12, ret_line);
     let b14: StrBuilder = strbuf_push(b13, "}\n");
     // SH-C-28 provenance marker in emitted C.
-    let b15: StrBuilder = strbuf_push(b14, "/* SH-C-28 - bootstrap lex-family smoke */\n");
+    let b15: StrBuilder = strbuf_push(b14, "/* SH-C-28 — bootstrap lex-family smoke */\n");
     return Ok(strbuf_finish(b15));
 }
 
@@ -17521,7 +17521,7 @@ fn stmt_is_let_call1_num(stmts: Vec<Stmt>, idx: i32, nodes: Vec<Expr>, src: stri
     };
 }
 
-// SH-C-42 - parse+emit real-lexer radius (TokBuf + push_tok + is_space + main → exit 42).
+// SH-C-42 — parse+emit real-lexer radius (TokBuf + push_tok + is_space + main → exit 42).
 fn parse_and_emit_bootstrap_real_lexer_radius() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_parse());
     let prof: FixtureProfile = fixture_profile_bootstrap_real_lexer_radius()?;
@@ -17653,11 +17653,11 @@ fn parse_and_emit_bootstrap_real_lexer_radius() -> Result<string, core_Err> effe
     let b15: StrBuilder = strbuf_push(b14, main_sig);
     let b16: StrBuilder = strbuf_push(b15, main_body);
     let b17: StrBuilder = strbuf_push(b16, "}\n");
-    let b18: StrBuilder = strbuf_push(b17, "/* SH-C-42 - bootstrap real-lexer radius */\n");
+    let b18: StrBuilder = strbuf_push(b17, "/* SH-C-42 — bootstrap real-lexer radius */\n");
     return Ok(strbuf_finish(b18));
 }
 
-// SH-C-29 - parse+emit parse-family smoke (parse_expr + parse_stmt + parse + main → exit 42).
+// SH-C-29 — parse+emit parse-family smoke (parse_expr + parse_stmt + parse + main → exit 42).
 fn parse_and_emit_bootstrap_parse_smoke() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_parse());
     let prof: FixtureProfile = fixture_profile_bootstrap_parse_smoke()?;
@@ -17778,11 +17778,11 @@ fn parse_and_emit_bootstrap_parse_smoke() -> Result<string, core_Err> effects { 
     let b17: StrBuilder = strbuf_push(b16, ret_line);
     let b18: StrBuilder = strbuf_push(b17, "}\n");
     // SH-C-29 provenance marker in emitted C.
-    let b19: StrBuilder = strbuf_push(b18, "/* SH-C-29 - bootstrap parse-family smoke */\n");
+    let b19: StrBuilder = strbuf_push(b18, "/* SH-C-29 — bootstrap parse-family smoke */\n");
     return Ok(strbuf_finish(b19));
 }
 
-// SH-C-30 - parse+emit emit-family smoke (emit_line + emit_fn + emit_file + emit + main → exit 42).
+// SH-C-30 — parse+emit emit-family smoke (emit_line + emit_fn + emit_file + emit + main → exit 42).
 fn parse_and_emit_bootstrap_emit_smoke() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(fx_defaults.arena_parse());
     let prof: FixtureProfile = fixture_profile_bootstrap_emit_smoke()?;
@@ -17927,7 +17927,7 @@ fn parse_and_emit_bootstrap_emit_smoke() -> Result<string, core_Err> effects { a
     let b21: StrBuilder = strbuf_push(b20, ret_line);
     let b22: StrBuilder = strbuf_push(b21, "}\n");
     // SH-C-30 provenance marker in emitted C.
-    let b23: StrBuilder = strbuf_push(b22, "/* SH-C-30 - bootstrap emit-family smoke */\n");
+    let b23: StrBuilder = strbuf_push(b22, "/* SH-C-30 — bootstrap emit-family smoke */\n");
     return Ok(strbuf_finish(b23));
 }
 
@@ -18324,7 +18324,7 @@ fn emit_return_call1_strlit_line(callee_pfx: string, src: string, nodes: Vec<Exp
     return Ok(strbuf_finish(b5));
 }
 
-// CONV-3-r.20 - `return add(3, 4);` with module-mangled callee.
+// CONV-3-r.20 — `return add(3, 4);` with module-mangled callee.
 fn emit_return_call2_nums_line(callee_pfx: string, src: string, nodes: Vec<Expr>, call_idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let callee: string = emit_mangled_callee(callee_pfx, src, nodes, call_idx)?;
     let a0: i32 = call2_num_at(nodes, call_idx, 0);
@@ -19032,7 +19032,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (import_decl_fn.body_len != 13) {
         return Err(1);
     }
-    // SH-C-19 - typed let ImpOut + TryExpr; return Ok(path).
+    // SH-C-19 — typed let ImpOut + TryExpr; return Ok(path).
     let tc_import_decl: i32 = check_fn_returns(import_decl_fn, src)?;
     if (tc_import_decl != 0) {
         return Err(1);
@@ -19073,7 +19073,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (type_span_fn.body_len != 17) {
         return Err(1);
     }
-    // SH-C-20 - Result-forward CallExpr via ret_m (parse_type_span_inner → ImpOut).
+    // SH-C-20 — Result-forward CallExpr via ret_m (parse_type_span_inner → ImpOut).
     let type_span_ret_m: Map<string, i32> = map_new();
     let _ts_env: string = append_env_name_map_i32(&mut type_span_ret_m, "|", "parse_type_span_inner")?;
     let tc_type_span: i32 = check_fn_returns_with_struct_ret(type_span_fn, src, "|", type_span_ret_m)?;
@@ -19098,7 +19098,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (try_imp_fn.body_len != 2) {
         return Err(1);
     }
-    // SH-C-20 - typed ImpOut let + Ok(RetTypeOut struct lit).
+    // SH-C-20 — typed ImpOut let + Ok(RetTypeOut struct lit).
     let tc_try_imp: i32 = check_fn_returns(try_imp_fn, src)?;
     if (tc_try_imp != 0) {
         return Err(1);
@@ -19176,7 +19176,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_enum_def_fn.body_len != 15) {
         return Err(1);
     }
-    // SH-C-20 - Result-forward CallExpr via ret_m (parse_enum_variants_rest → EnumOut).
+    // SH-C-20 — Result-forward CallExpr via ret_m (parse_enum_variants_rest → EnumOut).
     let enum_def_ret_m: Map<string, i32> = map_new();
     let _ed_env: string = append_env_name_map_i32(&mut enum_def_ret_m, "|", "parse_enum_variants_rest")?;
     let tc_enum_def: i32 = check_fn_returns_with_struct_ret(parse_enum_def_fn, src, "|", enum_def_ret_m)?;
@@ -19198,7 +19198,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_enum_variants_rest_fn.body_len != 25) {
         return Err(1);
     }
-    // SH-C-20 - recursive Result-forward + Ok(EnumOut) / typed string lets.
+    // SH-C-20 — recursive Result-forward + Ok(EnumOut) / typed string lets.
     let enum_rest_ret_m: Map<string, i32> = map_new();
     let _er_env: string = append_env_name_map_i32(&mut enum_rest_ret_m, "|", "parse_enum_variants_rest")?;
     let tc_enum_rest: i32 = check_fn_returns_with_struct_ret(parse_enum_variants_rest_fn, src, "|", enum_rest_ret_m)?;
@@ -19220,7 +19220,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_struct_fields_rest_fn.body_len != 24) {
         return Err(1);
     }
-    // SH-C-23 - recursive Result-forward StructOut + Ok(StructLit).
+    // SH-C-23 — recursive Result-forward StructOut + Ok(StructLit).
     let struct_rest_ret_m: Map<string, i32> = map_new();
     let _sr_env: string = append_env_name_map_i32(&mut struct_rest_ret_m, "|", "parse_struct_fields_rest")?;
     let _sr_sbf: string = append_str_env_name_map(&mut struct_rest_ret_m, "|", "strbuf_finish")?;
@@ -19243,7 +19243,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_struct_def_fn.body_len != 15) {
         return Err(1);
     }
-    // SH-C-23 - annotated let rest: StructOut + Ok(StructOut lit).
+    // SH-C-23 — annotated let rest: StructOut + Ok(StructOut lit).
     let struct_def_ret_m: Map<string, i32> = map_new();
     let _sd_env: string = append_env_name_map_i32(&mut struct_def_ret_m, "|", "parse_struct_fields_rest")?;
     let tc_struct_def: i32 = check_fn_returns_with_struct_ret(parse_struct_def_fn, src, "|", struct_def_ret_m)?;
@@ -19274,7 +19274,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_term_tail_fn.ret_ok_off, parse_term_tail_fn.ret_ok_len, "ParseOut") != 1) {
         return Err(1);
     }
-    // SH-C-26 - recursive Result-forward ParseOut (Mul/Div tail).
+    // SH-C-26 — recursive Result-forward ParseOut (Mul/Div tail).
     let term_tail_ret_m: Map<string, i32> = map_new();
     let _tt_env: string = append_env_name_map_i32(&mut term_tail_ret_m, "|", "parse_term_tail")?;
     let _tt_fac: string = append_env_name_map_i32(&mut term_tail_ret_m, "|", "parse_factor")?;
@@ -19294,7 +19294,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_term_fn.ret_ok_off, parse_term_fn.ret_ok_len, "ParseOut") != 1) {
         return Err(1);
     }
-    // SH-C-26 - bare forward parse_term_tail.
+    // SH-C-26 — bare forward parse_term_tail.
     let term_ret_m: Map<string, i32> = map_new();
     let _t_env: string = append_env_name_map_i32(&mut term_ret_m, "|", "parse_term_tail")?;
     let _t_fac: string = append_env_name_map_i32(&mut term_ret_m, "|", "parse_factor")?;
@@ -19314,7 +19314,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_expr_tail_fn.ret_ok_off, parse_expr_tail_fn.ret_ok_len, "ParseOut") != 1) {
         return Err(1);
     }
-    // SH-C-26 - recursive Result-forward ParseOut (Add/Sub tail).
+    // SH-C-26 — recursive Result-forward ParseOut (Add/Sub tail).
     let expr_tail_ret_m: Map<string, i32> = map_new();
     let _et_env: string = append_env_name_map_i32(&mut expr_tail_ret_m, "|", "parse_expr_tail")?;
     let _et_term: string = append_env_name_map_i32(&mut expr_tail_ret_m, "|", "parse_term")?;
@@ -19337,7 +19337,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_expr_fn.body_len != 2) {
         return Err(1);
     }
-    // SH-C-26 - bare forward parse_expr_tail.
+    // SH-C-26 — bare forward parse_expr_tail.
     let expr_ret_m: Map<string, i32> = map_new();
     let _e_env: string = append_env_name_map_i32(&mut expr_ret_m, "|", "parse_expr_tail")?;
     let _e_term: string = append_env_name_map_i32(&mut expr_ret_m, "|", "parse_term")?;
@@ -19360,7 +19360,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_cond_fn.body_len != 11) {
         return Err(1);
     }
-    // SH-C-26 - consumer; seed parse_expr.
+    // SH-C-26 — consumer; seed parse_expr.
     let cond_ret_m: Map<string, i32> = map_new();
     let _c_env: string = append_env_name_map_i32(&mut cond_ret_m, "|", "parse_expr")?;
     let tc_cond: i32 = check_fn_returns_with_struct_ret(parse_cond_fn, src, "|", cond_ret_m)?;
@@ -19383,7 +19383,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_stmt_fn.body_len != 183) {
         return Err(1);
     }
-    // SH-C-27 - Result-forward StmtStep consumer (expr/cond/block callees).
+    // SH-C-27 — Result-forward StmtStep consumer (expr/cond/block callees).
     let stmt_ret_m: Map<string, i32> = map_new();
     let _s_expr: string = append_env_name_map_i32(&mut stmt_ret_m, "|", "parse_expr")?;
     let _s_cond: string = append_env_name_map_i32(&mut stmt_ret_m, "|", "parse_cond")?;
@@ -19407,7 +19407,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_block_rest_fn.body_len != 9) {
         return Err(1);
     }
-    // SH-C-25 - recursive Result-forward BlockParseOut.
+    // SH-C-25 — recursive Result-forward BlockParseOut.
     let block_rest_ret_m: Map<string, i32> = map_new();
     let _br_env: string = append_env_name_map_i32(&mut block_rest_ret_m, "|", "parse_block_rest")?;
     let _br_stmt: string = append_env_name_map_i32(&mut block_rest_ret_m, "|", "parse_stmt")?;
@@ -19430,7 +19430,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (parse_block_fn.body_len != 8) {
         return Err(1);
     }
-    // SH-C-25 - bare forward parse_block_rest.
+    // SH-C-25 — bare forward parse_block_rest.
     let block_ret_m: Map<string, i32> = map_new();
     let _b_env: string = append_env_name_map_i32(&mut block_ret_m, "|", "parse_block_rest")?;
     let tc_block: i32 = check_fn_returns_with_struct_ret(parse_block_fn, src, "|", block_ret_m)?;
@@ -19447,7 +19447,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, map_vec_type_c_fn.name_off, map_vec_type_c_fn.name_len, "map_vec_type_c") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish(...)) via ret_m tag 2.
+    // SH-C-21 — Ok(strbuf_finish(...)) via ret_m tag 2.
     let map_vec_ret_m: Map<string, i32> = map_new();
     let _mv_env: string = append_str_env_name_map(&mut map_vec_ret_m, "|", "strbuf_finish")?;
     let tc_map_vec: i32 = check_fn_returns_with_struct_ret(map_vec_type_c_fn, src, "|", map_vec_ret_m)?;
@@ -19470,7 +19470,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, map_type_span_to_c_mod_fn.ret_ok_off, map_type_span_to_c_mod_fn.ret_ok_len, "string") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish) + bare return map_vec_type_c (tag 2).
+    // SH-C-21 — Ok(strbuf_finish) + bare return map_vec_type_c (tag 2).
     let mod_ret_m: Map<string, i32> = map_new();
     let _mod_sbf: string = append_str_env_name_map(&mut mod_ret_m, "|", "strbuf_finish")?;
     let _mod_mvc: string = append_str_env_name_map(&mut mod_ret_m, "|", "map_vec_type_c")?;
@@ -19490,7 +19490,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, concat_param_acc_fn.ret_ok_off, concat_param_acc_fn.ret_ok_len, "string") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish(...)).
+    // SH-C-21 — Ok(strbuf_finish(...)).
     let concat_ret_m: Map<string, i32> = map_new();
     let _ca_env: string = append_str_env_name_map(&mut concat_ret_m, "|", "strbuf_finish")?;
     let tc_concat: i32 = check_fn_returns_with_struct_ret(concat_param_acc_fn, src, "|", concat_ret_m)?;
@@ -19507,7 +19507,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, append_env_name_fn.ret_ok_off, append_env_name_fn.ret_ok_len, "string") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish(...)).
+    // SH-C-21 — Ok(strbuf_finish(...)).
     let append_ret_m: Map<string, i32> = map_new();
     let _ae_env: string = append_str_env_name_map(&mut append_ret_m, "|", "strbuf_finish")?;
     let tc_append: i32 = check_fn_returns_with_struct_ret(append_env_name_fn, src, "|", append_ret_m)?;
@@ -19524,7 +19524,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, void_param_sig_fn.ret_ok_off, void_param_sig_fn.ret_ok_len, "string") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish(...)).
+    // SH-C-21 — Ok(strbuf_finish(...)).
     let void_ret_m: Map<string, i32> = map_new();
     let _vp_env: string = append_str_env_name_map(&mut void_ret_m, "|", "strbuf_finish")?;
     let tc_void: i32 = check_fn_returns_with_struct_ret(void_param_sig_fn, src, "|", void_ret_m)?;
@@ -19541,7 +19541,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, close_param_sig_fn.ret_ok_off, close_param_sig_fn.ret_ok_len, "string") != 1) {
         return Err(1);
     }
-    // SH-C-21 - Ok(strbuf_finish(...)).
+    // SH-C-21 — Ok(strbuf_finish(...)).
     let close_ret_m: Map<string, i32> = map_new();
     let _cp_env: string = append_str_env_name_map(&mut close_ret_m, "|", "strbuf_finish")?;
     let tc_close: i32 = check_fn_returns_with_struct_ret(close_param_sig_fn, src, "|", close_ret_m)?;
@@ -19558,7 +19558,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_fn_params_nonempty_fn.ret_ok_off, parse_fn_params_nonempty_fn.ret_ok_len, "ParamParseOut") != 1) {
         return Err(1);
     }
-    // SH-C-24 - recursive Result-forward ParamParseOut + string helper catalog.
+    // SH-C-24 — recursive Result-forward ParamParseOut + string helper catalog.
     let params_ne_ret_m: Map<string, i32> = map_new();
     let _pn_env: string = append_env_name_map_i32(&mut params_ne_ret_m, "|", "parse_fn_params_nonempty")?;
     let _pn_mts: string = append_str_env_name_map(&mut params_ne_ret_m, "|", "map_type_span_to_c_mod")?;
@@ -19585,7 +19585,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (param_sig_is_parser_toks_src_mod(parse_fn_params_fn.param_sig) != 1) {
         return Err(1);
     }
-    // SH-C-24 - void_param_sig / bare forward parse_fn_params_nonempty.
+    // SH-C-24 — void_param_sig / bare forward parse_fn_params_nonempty.
     let params_ret_m: Map<string, i32> = map_new();
     let _pp_env: string = append_env_name_map_i32(&mut params_ret_m, "|", "parse_fn_params_nonempty")?;
     let _pp_void: string = append_str_env_name_map(&mut params_ret_m, "|", "void_param_sig")?;
@@ -19605,7 +19605,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_fn_def_fn.ret_ok_off, parse_fn_def_fn.ret_ok_len, "FnOut") != 1) {
         return Err(1);
     }
-    // SH-C-25 - annotated lets + Ok(FnOut lit); catalog seeds for callees.
+    // SH-C-25 — annotated lets + Ok(FnOut lit); catalog seeds for callees.
     let fn_def_ret_m: Map<string, i32> = map_new();
     let _fd_params: string = append_env_name_map_i32(&mut fn_def_ret_m, "|", "parse_fn_params")?;
     let _fd_ret: string = append_env_name_map_i32(&mut fn_def_ret_m, "|", "parse_ret_type")?;
@@ -19726,7 +19726,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (return_is_ok_strlit(golden_path_fn.stmts, golden_path_fn.body_start, golden_path_fn.nodes, src, "bootstrap_self_subset.fx") != 1) {
         return Err(1);
     }
-    // SH-C-22 - Result<string> Ok(str lit).
+    // SH-C-22 — Result<string> Ok(str lit).
     let tc_golden_path: i32 = check_fn_returns(golden_path_fn, src)?;
     if (tc_golden_path != 0) {
         return Err(1);
@@ -19755,7 +19755,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (return_is_call1_ident(load_src_fn.stmts, load_src_fn.body_start + 1, load_src_fn.nodes, src, "fs_read_text", "path") != 1) {
         return Err(1);
     }
-    // SH-C-22 - annotated let path: string + bare return fs_read_text (ret_m tag 2).
+    // SH-C-22 — annotated let path: string + bare return fs_read_text (ret_m tag 2).
     let load_ret_m: Map<string, i32> = map_new();
     let _load_fs: string = append_str_env_name_map(&mut load_ret_m, "|", "fs_read_text")?;
     let tc_load_src: i32 = check_fn_returns_with_struct_ret(load_src_fn, src, "|", load_ret_m)?;
@@ -19786,7 +19786,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (return_is_ok_ident(check_tag_ok_fn.stmts, check_tag_ok_fn.body_start + 1, check_tag_ok_fn.nodes, src, "v") != 1) {
         return Err(1);
     }
-    // SH-C-22 - annotated let v: i32 + Ok(v).
+    // SH-C-22 — annotated let v: i32 + Ok(v).
     let tc_check_tag_ok: i32 = check_fn_returns(check_tag_ok_fn, src)?;
     if (tc_check_tag_ok != 0) {
         return Err(1);
@@ -19818,7 +19818,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (return_is_ok_ident(parse_smoke_fn.stmts, parse_smoke_fn.body_start + 2, parse_smoke_fn.nodes, src, "v") != 1) {
         return Err(1);
     }
-    // SH-C-22 - region + annotated let v: i32 + Ok(v).
+    // SH-C-22 — region + annotated let v: i32 + Ok(v).
     let tc_parse_smoke: i32 = check_fn_returns(parse_smoke_fn, src)?;
     if (tc_parse_smoke != 0) {
         return Err(1);
@@ -19897,7 +19897,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, map_type_span_to_c_fn.name_off, map_type_span_to_c_fn.name_len, "map_type_span_to_c") != 1) {
         return Err(1);
     }
-    // SH-C-22 - Result<string> Ok(str lit) / Err.
+    // SH-C-22 — Result<string> Ok(str lit) / Err.
     let tc_map_type_span_to_c: i32 = check_fn_returns(map_type_span_to_c_fn, src)?;
     if (tc_map_type_span_to_c != 0) {
         return Err(1);
@@ -19908,7 +19908,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, variant_union_field_name_fn.name_off, variant_union_field_name_fn.name_len, "variant_union_field_name") != 1) {
         return Err(1);
     }
-    // SH-C-19 - Result<string> Ok(str lit) / Err returns (≥2 typeck helpers with import_decl).
+    // SH-C-19 — Result<string> Ok(str lit) / Err returns (≥2 typeck helpers with import_decl).
     let tc_variant_union_field_name: i32 = check_fn_returns(variant_union_field_name_fn, src)?;
     if (tc_variant_union_field_name != 0) {
         return Err(1);
@@ -20703,10 +20703,10 @@ fn parse_and_emit_ok_mut_slice() -> Result<string, core_Err> effects { alloc, io
     return mut_slice_emit_inner();
 }
 
-// SH-C-44 - fixed C substrate only. Every sh_lexer function body is emitted
+// SH-C-44 — fixed C substrate only. Every sh_lexer function body is emitted
 // separately from its parsed FnOut below.
 fn emit_sh_lexer_runtime_preamble() -> Result<string, core_Err> effects { alloc, mut } {
-    return Ok("/* SH-C-44 - bootstrap real-lexer full (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef int core_Err;\n#define CORE_OK ((core_Err)0)\n#define CORE_ERR_OVERFLOW ((core_Err)1)\n#define CORE_ERR_OUT_OF_MEMORY ((core_Err)2)\n#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    core_Err err_val;\n} fx_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_bump_mem[1 << 20];\nstatic size_t fx_sh_bump_off;\n\nstatic void fx_sh_bump_reset(void) {\n    fx_sh_bump_off = 0;\n}\n\nstatic void* fx_sh_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_bump_off + align > sizeof(fx_sh_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_bump_mem[fx_sh_bump_off];\n    fx_sh_bump_off += align;\n    return p;\n}\n\nstatic fx_Vec_i32 fx_vec_i32_new(void) {\n    return (fx_Vec_i32){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_Vec_i32 fx_vec_i32_push(fx_Vec_i32 v, int32_t x) {\n    size_t len = v.len;\n    size_t cap = v.cap;\n    int32_t* data = v.data;\n    if (len >= cap) {\n        size_t new_cap = (cap == 0) ? 8 : (cap * 2);\n        int32_t* nd = (int32_t*)fx_sh_bump_alloc(new_cap * sizeof(int32_t));\n        if (nd == NULL) {\n            return v;\n        }\n        for (size_t i = 0; i < len; i++) {\n            nd[i] = data[i];\n        }\n        data = nd;\n        cap = new_cap;\n    }\n    data[len] = x;\n    return (fx_Vec_i32){ .data = data, .len = len + 1, .cap = cap };\n}\n\nstatic int32_t fx_vec_i32_get(fx_Vec_i32 v, int32_t idx) {\n    return v.data[idx];\n}\n\nstatic fx_sh_lexer_Result_string fx_sh_lexer_str_concat(const char* left, const char* right) {\n    size_t la = strlen(left);\n    size_t lb = strlen(right);\n    size_t total = la + lb + 1;\n    if (total < la || total < lb) {\n        return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_ERR, .ok_val = NULL, .err_val = CORE_ERR_OVERFLOW };\n    }\n    char* out = (char*)fx_sh_bump_alloc(total);\n    if (out == NULL) {\n        return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_ERR, .ok_val = NULL, .err_val = CORE_ERR_OUT_OF_MEMORY };\n    }\n    if (la > 0) {\n        memcpy(out, left, la);\n    }\n    if (lb > 0) {\n        memcpy(out + la, right, lb);\n    }\n    out[la + lb] = '\\0';\n    return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_OK, .ok_val = out, .err_val = CORE_OK };\n}\n\n");
+    return Ok("/* SH-C-44 — bootstrap real-lexer full (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef int core_Err;\n#define CORE_OK ((core_Err)0)\n#define CORE_ERR_OVERFLOW ((core_Err)1)\n#define CORE_ERR_OUT_OF_MEMORY ((core_Err)2)\n#define FX_RESULT_TAG_OK 0\n#define FX_RESULT_TAG_ERR 1\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    core_Err err_val;\n} fx_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_bump_mem[1 << 20];\nstatic size_t fx_sh_bump_off;\n\nstatic void fx_sh_bump_reset(void) {\n    fx_sh_bump_off = 0;\n}\n\nstatic void* fx_sh_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_bump_off + align > sizeof(fx_sh_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_bump_mem[fx_sh_bump_off];\n    fx_sh_bump_off += align;\n    return p;\n}\n\nstatic fx_Vec_i32 fx_vec_i32_new(void) {\n    return (fx_Vec_i32){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_Vec_i32 fx_vec_i32_push(fx_Vec_i32 v, int32_t x) {\n    size_t len = v.len;\n    size_t cap = v.cap;\n    int32_t* data = v.data;\n    if (len >= cap) {\n        size_t new_cap = (cap == 0) ? 8 : (cap * 2);\n        int32_t* nd = (int32_t*)fx_sh_bump_alloc(new_cap * sizeof(int32_t));\n        if (nd == NULL) {\n            return v;\n        }\n        for (size_t i = 0; i < len; i++) {\n            nd[i] = data[i];\n        }\n        data = nd;\n        cap = new_cap;\n    }\n    data[len] = x;\n    return (fx_Vec_i32){ .data = data, .len = len + 1, .cap = cap };\n}\n\nstatic int32_t fx_vec_i32_get(fx_Vec_i32 v, int32_t idx) {\n    return v.data[idx];\n}\n\nstatic fx_sh_lexer_Result_string fx_sh_lexer_str_concat(const char* left, const char* right) {\n    size_t la = strlen(left);\n    size_t lb = strlen(right);\n    size_t total = la + lb + 1;\n    if (total < la || total < lb) {\n        return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_ERR, .ok_val = NULL, .err_val = CORE_ERR_OVERFLOW };\n    }\n    char* out = (char*)fx_sh_bump_alloc(total);\n    if (out == NULL) {\n        return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_ERR, .ok_val = NULL, .err_val = CORE_ERR_OUT_OF_MEMORY };\n    }\n    if (la > 0) {\n        memcpy(out, left, la);\n    }\n    if (lb > 0) {\n        memcpy(out + la, right, lb);\n    }\n    out[la + lb] = '\\0';\n    return (fx_sh_lexer_Result_string){ .tag = FX_RESULT_TAG_OK, .ok_val = out, .err_val = CORE_OK };\n}\n\n");
 }
 
 fn emit_sh_lexer_binop_c(callee_pfx: string, src: string, nodes: Vec<Expr>, idx: i32, op: string) -> Result<string, core_Err> effects { alloc, mut } {
@@ -21093,7 +21093,7 @@ fn fn_name_is(src: string, fn_out: FnOut, want: string) -> i32 {
     return sh_lexer.slice_eq(src, fn_out.name_off, fn_out.name_len, want);
 }
 
-// SH-C-44 - parse the full real lexer and genuinely emit all 21 FnOut bodies.
+// SH-C-44 — parse the full real lexer and genuinely emit all 21 FnOut bodies.
 fn parse_and_emit_bootstrap_real_lexer_full() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(1 << 22);
     let prof: FixtureProfile = fixture_profile_bootstrap_real_lexer_full()?;
@@ -21211,7 +21211,7 @@ fn parse_and_emit_bootstrap_real_lexer_full() -> Result<string, core_Err> effect
     return Ok(strbuf_finish(b5));
 }
 
-// SH-C-45 - REAL-PARSE-RADIUS profile.
+// SH-C-45 — REAL-PARSE-RADIUS profile.
 fn fixture_profile_bootstrap_real_parse_radius() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -21222,9 +21222,9 @@ fn fixture_profile_bootstrap_real_parse_radius() -> Result<FixtureProfile, core_
     });
 }
 
-// SH-C-45 - real StrBuilder + lexer/string substrate (NOT stub emit_strbuf_typedef_and_helpers).
+// SH-C-45 — real StrBuilder + lexer/string substrate (NOT stub emit_strbuf_typedef_and_helpers).
 fn emit_sh_parse_runtime_preamble() -> Result<string, core_Err> effects { alloc, mut } {
-    return Ok("/* SH-C-45 - bootstrap real-parse radius (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    char* data;\n    size_t len;\n    size_t cap;\n} fx_sh_parse_StrBuilder;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    int err_val;\n} fx_lib_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_parse_bump_mem[1 << 20];\nstatic size_t fx_sh_parse_bump_off;\n\nstatic void fx_sh_parse_bump_reset(void) {\n    fx_sh_parse_bump_off = 0;\n}\n\nstatic void* fx_sh_parse_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_parse_bump_off + align > sizeof(fx_sh_parse_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_parse_bump_mem[fx_sh_parse_bump_off];\n    fx_sh_parse_bump_off += align;\n    return p;\n}\n\nstatic fx_sh_parse_StrBuilder fx_sh_parse_strbuf_new(void) {\n    return (fx_sh_parse_StrBuilder){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_sh_parse_StrBuilder fx_sh_parse_strbuf_push(fx_sh_parse_StrBuilder b, const char* s) {\n    size_t add = strlen(s);\n    size_t need = b.len + add + 1;\n    if (need > b.cap) {\n        size_t new_cap = (b.cap == 0) ? 64 : (b.cap * 2);\n        while (new_cap < need) {\n            new_cap = new_cap * 2;\n        }\n        char* nd = (char*)fx_sh_parse_bump_alloc(new_cap);\n        if (nd == NULL) {\n            return b;\n        }\n        if (b.len > 0 && b.data != NULL) {\n            memcpy(nd, b.data, b.len);\n        }\n        b.data = nd;\n        b.cap = new_cap;\n    }\n    if (add > 0) {\n        memcpy(b.data + b.len, s, add);\n    }\n    b.len = b.len + add;\n    b.data[b.len] = '\\0';\n    return b;\n}\n\nstatic const char* fx_sh_parse_strbuf_finish(fx_sh_parse_StrBuilder b) {\n    if (b.data == NULL) {\n        char* z = (char*)fx_sh_parse_bump_alloc(1);\n        if (z == NULL) {\n            return \"\";\n        }\n        z[0] = '\\0';\n        return z;\n    }\n    return b.data;\n}\n\nstatic int32_t fx_std_string_len(const char* s) {\n    return (int32_t)strlen(s);\n}\n\nstatic int32_t fx_std_string_byte_at(const char* s, int32_t i) {\n    return (int32_t)(unsigned char)s[i];\n}\n\nstatic int32_t fx_lib_sh_lexer_slice_eq(const char* src, int32_t start, int32_t len, const char* lit) {\n    if (((int32_t)strlen(lit)) != len) {\n        return 0;\n    }\n    int32_t i = 0;\n    while (i < len) {\n        if (((int32_t)(unsigned char)src[start + i]) != ((int32_t)(unsigned char)lit[i])) {\n            return 0;\n        }\n        i = i + 1;\n    }\n    return 1;\n}\n\nstatic fx_lib_sh_lexer_Result_string fx_lib_sh_lexer_slice_str(const char* src, int32_t start, int32_t len) {\n    if (len < 0) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 1 };\n    }\n    char* out = (char*)fx_sh_parse_bump_alloc((size_t)len + 1);\n    if (out == NULL) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 2 };\n    }\n    if (len > 0) {\n        memcpy(out, src + start, (size_t)len);\n    }\n    out[len] = '\\0';\n    return (fx_lib_sh_lexer_Result_string){ .tag = 0, .ok_val = out, .err_val = 0 };\n}\n\n");
+    return Ok("/* SH-C-45 — bootstrap real-parse radius (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    char* data;\n    size_t len;\n    size_t cap;\n} fx_sh_parse_StrBuilder;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    int err_val;\n} fx_lib_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_parse_bump_mem[1 << 20];\nstatic size_t fx_sh_parse_bump_off;\n\nstatic void fx_sh_parse_bump_reset(void) {\n    fx_sh_parse_bump_off = 0;\n}\n\nstatic void* fx_sh_parse_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_parse_bump_off + align > sizeof(fx_sh_parse_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_parse_bump_mem[fx_sh_parse_bump_off];\n    fx_sh_parse_bump_off += align;\n    return p;\n}\n\nstatic fx_sh_parse_StrBuilder fx_sh_parse_strbuf_new(void) {\n    return (fx_sh_parse_StrBuilder){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_sh_parse_StrBuilder fx_sh_parse_strbuf_push(fx_sh_parse_StrBuilder b, const char* s) {\n    size_t add = strlen(s);\n    size_t need = b.len + add + 1;\n    if (need > b.cap) {\n        size_t new_cap = (b.cap == 0) ? 64 : (b.cap * 2);\n        while (new_cap < need) {\n            new_cap = new_cap * 2;\n        }\n        char* nd = (char*)fx_sh_parse_bump_alloc(new_cap);\n        if (nd == NULL) {\n            return b;\n        }\n        if (b.len > 0 && b.data != NULL) {\n            memcpy(nd, b.data, b.len);\n        }\n        b.data = nd;\n        b.cap = new_cap;\n    }\n    if (add > 0) {\n        memcpy(b.data + b.len, s, add);\n    }\n    b.len = b.len + add;\n    b.data[b.len] = '\\0';\n    return b;\n}\n\nstatic const char* fx_sh_parse_strbuf_finish(fx_sh_parse_StrBuilder b) {\n    if (b.data == NULL) {\n        char* z = (char*)fx_sh_parse_bump_alloc(1);\n        if (z == NULL) {\n            return \"\";\n        }\n        z[0] = '\\0';\n        return z;\n    }\n    return b.data;\n}\n\nstatic int32_t fx_std_string_len(const char* s) {\n    return (int32_t)strlen(s);\n}\n\nstatic int32_t fx_std_string_byte_at(const char* s, int32_t i) {\n    return (int32_t)(unsigned char)s[i];\n}\n\nstatic int32_t fx_lib_sh_lexer_slice_eq(const char* src, int32_t start, int32_t len, const char* lit) {\n    if (((int32_t)strlen(lit)) != len) {\n        return 0;\n    }\n    int32_t i = 0;\n    while (i < len) {\n        if (((int32_t)(unsigned char)src[start + i]) != ((int32_t)(unsigned char)lit[i])) {\n            return 0;\n        }\n        i = i + 1;\n    }\n    return 1;\n}\n\nstatic fx_lib_sh_lexer_Result_string fx_lib_sh_lexer_slice_str(const char* src, int32_t start, int32_t len) {\n    if (len < 0) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 1 };\n    }\n    char* out = (char*)fx_sh_parse_bump_alloc((size_t)len + 1);\n    if (out == NULL) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 2 };\n    }\n    if (len > 0) {\n        memcpy(out, src + start, (size_t)len);\n    }\n    out[len] = '\\0';\n    return (fx_lib_sh_lexer_Result_string){ .tag = 0, .ok_val = out, .err_val = 0 };\n}\n\n");
 }
 
 fn emit_sh_parse_pick_st(src: string, fn_out: FnOut, mod_st: StructOut, imp_st: StructOut, param_st: StructOut) -> StructOut {
@@ -21256,7 +21256,7 @@ fn emit_real_parse_radius_module_bundle(prof: FixtureProfile, src: string, mod_s
     let res_mod: string = emit_result_struct_typedef(prof.mod_slug, "ModOut")?;
     let res_imp: string = emit_result_struct_typedef(prof.mod_slug, "ImpOut")?;
     let res_param: string = emit_result_struct_typedef(prof.mod_slug, "ParamParseOut")?;
-    // Forward decl - map_mut_ref_type_c calls map_type_span_to_c_mod before its definition.
+    // Forward decl — map_mut_ref_type_c calls map_type_span_to_c_mod before its definition.
     let fwd: string = "fx_sh_parse_Result_string fx_sh_parse_map_type_span_to_c_mod(const char* mod_slug, const char* src, int32_t off, int32_t ln);\n";
     let smoke: string = "\nint32_t fx_sh_parse_radius_smoke_tests(void) {\n    fx_sh_parse_bump_reset();\n    if (fx_sh_parse_type_span_is_vec(\"Vec<i32>\", 0, 8) != 1) {\n        return 1;\n    }\n    fx_sh_parse_Result_string mapped = fx_sh_parse_map_type_span_to_c_mod(\"sh_parse\", \"&mut i32\", 0, 8);\n    if (mapped.tag != FX_RESULT_TAG_OK) {\n        return 2;\n    }\n    if (fx_lib_sh_lexer_slice_eq(mapped.ok_val, 0, fx_std_string_len(mapped.ok_val), \"int32_t*\") != 1) {\n        return 3;\n    }\n    fx_sh_parse_Result_string rel = fx_sh_parse_include_relative_h(\"lib/sh_parse.fx\", \"sh_lexer\");\n    if (rel.tag != FX_RESULT_TAG_OK) {\n        return 4;\n    }\n    if (fx_sh_parse_find_last_slash(\"a/b/c\") != 3) {\n        return 5;\n    }\n    return 42;\n}\n";
     let b0: StrBuilder = strbuf_new();
@@ -21311,7 +21311,7 @@ fn emit_real_parse_radius_module_bundle(prof: FixtureProfile, src: string, mod_s
     return Ok(strbuf_finish(cur));
 }
 
-// SH-C-45 - parse+genuine-emit import-resolution radius of real sh_parse.
+// SH-C-45 — parse+genuine-emit import-resolution radius of real sh_parse.
 fn parse_and_emit_bootstrap_real_parse_radius() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(1 << 24);
     let prof: FixtureProfile = fixture_profile_bootstrap_real_parse_radius()?;
@@ -21500,7 +21500,7 @@ fn parse_and_emit_bootstrap_real_parse_radius() -> Result<string, core_Err> effe
     return Ok(strbuf_finish(b3));
 }
 
-// SH-C-51 - REAL-PARSE-RECURSIVE profile.
+// SH-C-51 — REAL-PARSE-RECURSIVE profile.
 fn fixture_profile_bootstrap_real_parse_recursive() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -21514,7 +21514,7 @@ fn fixture_profile_bootstrap_real_parse_recursive() -> Result<FixtureProfile, co
 fn emit_sh_parse_recursive_runtime_preamble() -> Result<string, core_Err> effects { alloc, mut } {
     let base: string = emit_sh_parse_runtime_preamble()?;
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-51 - bootstrap real-parse recursive (genuine emit) */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-51 — bootstrap real-parse recursive (genuine emit) */\n");
     let b2: StrBuilder = strbuf_push(b1, base);
     return Ok(strbuf_finish(b2));
 }
@@ -21881,7 +21881,7 @@ fn parse_and_emit_bootstrap_real_parse_recursive() -> Result<string, core_Err> e
     return Ok(strbuf_finish(b3));
 }
 
-// SH-C-46 - REAL-EMIT-RADIUS profile.
+// SH-C-46 — REAL-EMIT-RADIUS profile.
 fn fixture_profile_bootstrap_real_emit_radius() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -21892,9 +21892,9 @@ fn fixture_profile_bootstrap_real_emit_radius() -> Result<FixtureProfile, core_E
     });
 }
 
-// SH-C-46 - real StrBuilder + lexer/string substrate (NOT stub emit_strbuf_typedef_and_helpers).
+// SH-C-46 — real StrBuilder + lexer/string substrate (NOT stub emit_strbuf_typedef_and_helpers).
 fn emit_sh_emit_runtime_preamble() -> Result<string, core_Err> effects { alloc, mut } {
-    return Ok("/* SH-C-46 - bootstrap real-emit radius (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    char* data;\n    size_t len;\n    size_t cap;\n} fx_sh_emit_StrBuilder;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    int err_val;\n} fx_lib_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_emit_bump_mem[1 << 20];\nstatic size_t fx_sh_emit_bump_off;\n\nstatic void fx_sh_emit_bump_reset(void) {\n    fx_sh_emit_bump_off = 0;\n}\n\nstatic void* fx_sh_emit_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_emit_bump_off + align > sizeof(fx_sh_emit_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_emit_bump_mem[fx_sh_emit_bump_off];\n    fx_sh_emit_bump_off += align;\n    return p;\n}\n\nstatic fx_sh_emit_StrBuilder fx_sh_emit_strbuf_new(void) {\n    return (fx_sh_emit_StrBuilder){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_sh_emit_StrBuilder fx_sh_emit_strbuf_push(fx_sh_emit_StrBuilder b, const char* s) {\n    size_t add = strlen(s);\n    size_t need = b.len + add + 1;\n    if (need > b.cap) {\n        size_t new_cap = (b.cap == 0) ? 64 : (b.cap * 2);\n        while (new_cap < need) {\n            new_cap = new_cap * 2;\n        }\n        char* nd = (char*)fx_sh_emit_bump_alloc(new_cap);\n        if (nd == NULL) {\n            return b;\n        }\n        if (b.len > 0 && b.data != NULL) {\n            memcpy(nd, b.data, b.len);\n        }\n        b.data = nd;\n        b.cap = new_cap;\n    }\n    if (add > 0) {\n        memcpy(b.data + b.len, s, add);\n    }\n    b.len = b.len + add;\n    b.data[b.len] = '\\0';\n    return b;\n}\n\nstatic const char* fx_sh_emit_strbuf_finish(fx_sh_emit_StrBuilder b) {\n    if (b.data == NULL) {\n        char* z = (char*)fx_sh_emit_bump_alloc(1);\n        if (z == NULL) {\n            return \"\";\n        }\n        z[0] = '\\0';\n        return z;\n    }\n    return b.data;\n}\n\nstatic int32_t fx_std_string_len(const char* s) {\n    return (int32_t)strlen(s);\n}\n\nstatic int32_t fx_lib_sh_lexer_slice_eq(const char* src, int32_t start, int32_t len, const char* lit) {\n    if (((int32_t)strlen(lit)) != len) {\n        return 0;\n    }\n    int32_t i = 0;\n    while (i < len) {\n        if (((int32_t)(unsigned char)src[start + i]) != ((int32_t)(unsigned char)lit[i])) {\n            return 0;\n        }\n        i = i + 1;\n    }\n    return 1;\n}\n\nstatic fx_lib_sh_lexer_Result_string fx_lib_sh_lexer_slice_str(const char* src, int32_t start, int32_t len) {\n    if (len < 0) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 1 };\n    }\n    char* out = (char*)fx_sh_emit_bump_alloc((size_t)len + 1);\n    if (out == NULL) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 2 };\n    }\n    if (len > 0) {\n        memcpy(out, src + start, (size_t)len);\n    }\n    out[len] = '\\0';\n    return (fx_lib_sh_lexer_Result_string){ .tag = 0, .ok_val = out, .err_val = 0 };\n}\n\n");
+    return Ok("/* SH-C-46 — bootstrap real-emit radius (genuine emit) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\ntypedef struct {\n    int32_t* data;\n    size_t len;\n    size_t cap;\n} fx_Vec_i32;\n\ntypedef struct {\n    char* data;\n    size_t len;\n    size_t cap;\n} fx_sh_emit_StrBuilder;\n\ntypedef struct {\n    int32_t tag;\n    const char* ok_val;\n    int err_val;\n} fx_lib_sh_lexer_Result_string;\n\nstatic uint8_t fx_sh_emit_bump_mem[1 << 20];\nstatic size_t fx_sh_emit_bump_off;\n\nstatic void fx_sh_emit_bump_reset(void) {\n    fx_sh_emit_bump_off = 0;\n}\n\nstatic void* fx_sh_emit_bump_alloc(size_t n) {\n    size_t align = (n + 7u) & ~7u;\n    if (fx_sh_emit_bump_off + align > sizeof(fx_sh_emit_bump_mem)) {\n        return NULL;\n    }\n    void* p = &fx_sh_emit_bump_mem[fx_sh_emit_bump_off];\n    fx_sh_emit_bump_off += align;\n    return p;\n}\n\nstatic fx_sh_emit_StrBuilder fx_sh_emit_strbuf_new(void) {\n    return (fx_sh_emit_StrBuilder){ .data = NULL, .len = 0, .cap = 0 };\n}\n\nstatic fx_sh_emit_StrBuilder fx_sh_emit_strbuf_push(fx_sh_emit_StrBuilder b, const char* s) {\n    size_t add = strlen(s);\n    size_t need = b.len + add + 1;\n    if (need > b.cap) {\n        size_t new_cap = (b.cap == 0) ? 64 : (b.cap * 2);\n        while (new_cap < need) {\n            new_cap = new_cap * 2;\n        }\n        char* nd = (char*)fx_sh_emit_bump_alloc(new_cap);\n        if (nd == NULL) {\n            return b;\n        }\n        if (b.len > 0 && b.data != NULL) {\n            memcpy(nd, b.data, b.len);\n        }\n        b.data = nd;\n        b.cap = new_cap;\n    }\n    if (add > 0) {\n        memcpy(b.data + b.len, s, add);\n    }\n    b.len = b.len + add;\n    b.data[b.len] = '\\0';\n    return b;\n}\n\nstatic const char* fx_sh_emit_strbuf_finish(fx_sh_emit_StrBuilder b) {\n    if (b.data == NULL) {\n        char* z = (char*)fx_sh_emit_bump_alloc(1);\n        if (z == NULL) {\n            return \"\";\n        }\n        z[0] = '\\0';\n        return z;\n    }\n    return b.data;\n}\n\nstatic int32_t fx_std_string_len(const char* s) {\n    return (int32_t)strlen(s);\n}\n\nstatic int32_t fx_lib_sh_lexer_slice_eq(const char* src, int32_t start, int32_t len, const char* lit) {\n    if (((int32_t)strlen(lit)) != len) {\n        return 0;\n    }\n    int32_t i = 0;\n    while (i < len) {\n        if (((int32_t)(unsigned char)src[start + i]) != ((int32_t)(unsigned char)lit[i])) {\n            return 0;\n        }\n        i = i + 1;\n    }\n    return 1;\n}\n\nstatic fx_lib_sh_lexer_Result_string fx_lib_sh_lexer_slice_str(const char* src, int32_t start, int32_t len) {\n    if (len < 0) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 1 };\n    }\n    char* out = (char*)fx_sh_emit_bump_alloc((size_t)len + 1);\n    if (out == NULL) {\n        return (fx_lib_sh_lexer_Result_string){ .tag = 1, .ok_val = 0, .err_val = 2 };\n    }\n    if (len > 0) {\n        memcpy(out, src + start, (size_t)len);\n    }\n    out[len] = '\\0';\n    return (fx_lib_sh_lexer_Result_string){ .tag = 0, .ok_val = out, .err_val = 0 };\n}\n\n");
 }
 
 fn emit_real_emit_radius_fn(prof: FixtureProfile, src: string, fn_out: FnOut) -> Result<string, core_Err> effects { alloc, mut } {
@@ -21956,7 +21956,7 @@ fn emit_real_emit_radius_module_bundle(prof: FixtureProfile, src: string, f0: Fn
     return Ok(strbuf_finish(cur));
 }
 
-// SH-C-46 - parse+genuine-emit real sh_emit radius.
+// SH-C-46 — parse+genuine-emit real sh_emit radius.
 fn parse_and_emit_bootstrap_real_emit_radius() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(1 << 24);
     let prof: FixtureProfile = fixture_profile_bootstrap_real_emit_radius()?;
@@ -22137,7 +22137,7 @@ fn parse_and_emit_bootstrap_real_emit_radius() -> Result<string, core_Err> effec
     return Ok(strbuf_finish(b3));
 }
 
-// SH-C-77/78/79/80 - REAL-EMIT-EXPORT waves 1-4 profile.
+// SH-C-77/78/79/80 — REAL-EMIT-EXPORT waves 1–4 profile.
 fn fixture_profile_bootstrap_real_emit_module() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -22149,7 +22149,7 @@ fn fixture_profile_bootstrap_real_emit_module() -> Result<FixtureProfile, core_E
 }
 
 fn emit_sh_emit_module_runtime_preamble() -> Result<string, core_Err> effects { alloc, mut } {
-    return Ok("/* SH-C-77 - bootstrap real-emit module (genuine emit; production ok/roundtrip band) */\n/* SH-C-78 - REAL-EMIT-EXPORT wave 2 (bootstrap fixture/roundtrip band) */\n/* SH-C-79 - REAL-EMIT-EXPORT wave 3 (roundtrip_write_*_main_template band) */\n/* SH-C-80 - REAL-EMIT-EXPORT wave 4 (export closure: defer/arena+generic+import+fixtures) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\n");
+    return Ok("/* SH-C-77 — bootstrap real-emit module (genuine emit; production ok/roundtrip band) */\n/* SH-C-78 — REAL-EMIT-EXPORT wave 2 (bootstrap fixture/roundtrip band) */\n/* SH-C-79 — REAL-EMIT-EXPORT wave 3 (roundtrip_write_*_main_template band) */\n/* SH-C-80 — REAL-EMIT-EXPORT wave 4 (export closure: defer/arena+generic+import+fixtures) */\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\n");
 }
 
 fn emit_real_emit_module_fn(prof: FixtureProfile, src: string, fn_out: FnOut) -> Result<string, core_Err> effects { alloc, mut } {
@@ -22434,7 +22434,7 @@ fn emit_real_emit_module_module_bundle_tail(prof: FixtureProfile, src: string, f
     return Ok(strbuf_finish(cur));
 }
 
-// SH-C-80 - parse+genuine-emit real sh_emit production surface (waves 1-4; ABI-complete exports).
+// SH-C-80 — parse+genuine-emit real sh_emit production surface (waves 1–4; ABI-complete exports).
 fn parse_and_emit_bootstrap_real_emit_module() -> Result<string, core_Err> effects { alloc, io, mut } {
     region r = arena(1 << 26);
     let prof: FixtureProfile = fixture_profile_bootstrap_real_emit_module()?;
@@ -23351,7 +23351,7 @@ fn parse_and_emit_bootstrap_real_emit_module() -> Result<string, core_Err> effec
     let m3: StrBuilder = strbuf_push(m2, bundle);
     return Ok(strbuf_finish(m3));
 }
-// SH-C-53 - REAL-PARSE-EXPR-STMT profile.
+// SH-C-53 — REAL-PARSE-EXPR-STMT profile.
 fn fixture_profile_bootstrap_real_parse_expr_stmt() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -23375,7 +23375,7 @@ fn emit_sh_parse_expr_stmt_runtime_preamble() -> Result<string, core_Err> effect
     let vecs: string = emit_fx_vec_parser_opaque_typedefs()?;
     let gcc: string = emit_sh_parse_expr_stmt_gcc_runtime()?;
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-53 - bootstrap real-parse expr-stmt (genuine emit) */\n");
+    let b1: StrBuilder = strbuf_push(b0, "/* SH-C-53 — bootstrap real-parse expr-stmt (genuine emit) */\n");
     let b2: StrBuilder = strbuf_push(b1, base);
     let b3: StrBuilder = strbuf_push(b2, vecs);
     let b4: StrBuilder = strbuf_push(b3, gcc);
@@ -23882,7 +23882,7 @@ fn parse_and_emit_bootstrap_real_parse_expr_stmt() -> Result<string, core_Err> e
     return Ok(strbuf_finish(b4));
 }
 
-// SH-C-72 - Map type-span lowering helpers (type-span family; appended here so the
+// SH-C-72 — Map type-span lowering helpers (type-span family; appended here so the
 // live golden fn ordering of SH-C-55…71 stays stable).
 fn type_span_is_map(src: string, off: i32, ln: i32) -> i32 {
     if (ln < 5) {
@@ -23900,7 +23900,7 @@ fn type_span_is_map(src: string, off: i32, ln: i32) -> i32 {
     return 1;
 }
 
-// FX-SH-NAT-6 - LV5 map ABI: `Map<string, i32>` and `Map<string, string>` (space-normalized for ss).
+// FX-SH-NAT-6 — LV5 map ABI: `Map<string, i32>` and `Map<string, string>` (space-normalized for ss).
 fn type_span_is_map_string_string(src: string, off: i32, ln: i32) -> i32 {
     let want: string = "Map<string,string>";
     let wi: i32 = 0;
@@ -23937,7 +23937,7 @@ fn map_map_type_c(src: string, off: i32, ln: i32) -> Result<string, core_Err> ef
     return Err(1);
 }
 
-// SH-C-72 - REAL-PARSE-MAP-EXPORTS profile (extends SH-C-71).
+// SH-C-72 — REAL-PARSE-MAP-EXPORTS profile (extends SH-C-71).
 fn fixture_profile_bootstrap_real_parse_fn_def() -> Result<FixtureProfile, core_Err> effects { alloc, mut } {
     let inc: string = includes_stdint_stddef()?;
     return Ok(FixtureProfile {
@@ -25036,7 +25036,7 @@ fn emit_real_parse_emit_wave8_helper_tail(prof: FixtureProfile, src: string, fn_
 }
 
 fn parse_and_emit_bootstrap_real_parse_fn_def() -> Result<string, core_Err> effects { alloc, io, mut } {
-    // SH-C-73 - boot smoke/self_subset bodies (genuine emit; 256MiB region).
+    // SH-C-73 — boot smoke/self_subset bodies (genuine emit; 256MiB region).
     region r = arena(1 << 28);
     let prof: FixtureProfile = fixture_profile_bootstrap_real_parse_fn_def()?;
     let src: string = load_golden_src(prof.golden_path)?;

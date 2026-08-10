@@ -15,4 +15,4 @@ fx build examples/cap_host_smoke/guest_lib.fx -o build/cap_host_smoke --emit-c -
 ```
 
 Composition: `docs/COMPOSITION.md` in the language package.  
-In-language `FsCap` / `io_cap` - **FX-DYN-1** (the composition / wrap guides, `examples/cap_regions_*`). Same region physics; not a soft dialect.
+In-language `FsCap` / `io_cap` - **** (the composition / wrap guides, `examples/cap_regions_*`). Same region physics; not a soft dialect.

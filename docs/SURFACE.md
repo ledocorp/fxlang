@@ -20,7 +20,7 @@ Prefer [TRACKING.md](TRACKING.md) when asking “how does emitted C map back to 
 ### Keywords
 
 `enum` `struct` `extern` `fn` `import` `let` `match` `module` `return` `effects`
-`if` `while` `for` `break` `continue` `else` `defer` `region` `arena` `scope`
+`if` `while` `for` `break` `continue` `else` `defer` `region` `arena` `scope` `dynamic` `guest`
 `temp` `fx` `own` `mut` `true` `false` `using` · `Ok` / `Err` on Result paths
 
 Comments: `//` line comments. Refinement `where` is verification-tier (not required for everyday programs).
@@ -105,8 +105,9 @@ Omit the clause when pure. Callers see cost before reading the body.
 | `region r = temp(n);` | Short-lived heap batch |
 | `region r = scope;` | Stack borrow region (no heap) |
 | `region r = fx(n);` | Hierarchical fx region |
+| `dynamic region g = guest(n);` | Guest session (emit-C + `host/cap` link) |
 
-Details: [REGIONS.md](REGIONS.md). Advanced device/capability Runtime regions are **not** in this package.
+Details: [REGIONS.md](REGIONS.md). Advanced device Runtime (migration, soft heaps) is **not** in this package; capability guest sessions are.
 
 ### Value-threading
 
@@ -194,10 +195,10 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 | C owns `main` | `fx run lib.fx --host host.c` |
 | Extra link | `--link` / `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
-| Host spine | `host/cap` (guest session + caps + NetCap allowlist) · `host/cli` (argv helpers) |
-| Examples | `showcase_*` · `bind_*` · `wrap_sqlite` · `wrap_llhttp` · `wasm_smoke` · `composition_*` · `cap_*` |
+| Host spine | `host/cap` (guest session + caps + NetCap) · `host/cli` (argv helpers) · `std/net` TCP dial |
+| Examples | `showcase_*` · `bind_*` · `wrap_sqlite` · `wrap_llhttp` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` |
 
-Non-C FFI is **not** shipped. NetCap is **allow/deny only** — no dial in this package.
+Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TLS is refused.
 
 ---
 
@@ -209,7 +210,7 @@ Non-C FFI is **not** shipped. NetCap is **allow/deny only** — no dial in this 
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
 - `Vec` index **assign sugar** `v[i]=x` (by design — use `vec_set`); `&mut Vec` as a mut slice; mut sub-slices
-- Package manager; sockets / full net std
+- Package registry (vendor/`fx.sum` foothold exists); TLS / full net std
 - Advanced fx Runtime (device-aware regions, capabilities, migration)
 - Neuton / OS product; Experimental horizon features
 - macOS prebuilt binary (Win/Linux only in-tree today)

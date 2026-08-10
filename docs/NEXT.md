@@ -40,7 +40,8 @@ See [COMPOSITION.md](COMPOSITION.md) · [AGENT.md](AGENT.md).
 
 1. Keep composition teaching and dogfood apps green on both run paths.  
 2. Deepen C wraps when an app needs them — [LIBRARIES.md](LIBRARIES.md).  
-3. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
+3. Host-side structured task nursery (`host/concur`) is available for join-before-teardown OS threads — not language `spawn` / channels.  
+4. Selective editor deepen only when `#line`/gdb or the thin LSP loop proves insufficient ([EDITOR.md](EDITOR.md), [DEBUG.md](DEBUG.md)).  
 
 ---
 

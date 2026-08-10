@@ -1,7 +1,7 @@
-// Host-owned guest context (FX-DYN Phase B.1 + AllocCap / FuelCap Phase C).
+// Host-owned guest context.
 // Session = bump arena + cap set; end revokes caps and frees arena.
 // Soft-fx refused: same region / slot-mut physics inside the guest.
-// B.2: `dynamic region g = guest(N);` lowers to fx_guest_begin / end (FX-DYN-8/9).
+// B.2: `dynamic region g = guest(N);` lowers to fx_guest_begin / end.
 module guest;
 
 using core;
@@ -14,6 +14,11 @@ struct GuestCtx {
 
 extern "c" {
     effects { alloc } fn fx_guest_begin(root: string, arena_bytes: i64) -> i64;
+    effects { alloc } fn fx_guest_begin_nested(
+        parent: i64,
+        root: string,
+        arena_bytes: i64
+    ) -> i64;
     effects { alloc } fn fx_guest_end(ctx_handle: i64) -> i32;
     effects { alloc } fn fx_guest_mint_fscap(ctx_handle: i64, root: string) -> i64;
     effects { alloc } fn fx_guest_mint_outcap(ctx_handle: i64, root: string) -> i64;
@@ -21,6 +26,13 @@ extern "c" {
     effects { alloc } fn fx_alloccap_alloc(alloc_handle: i64, nbytes: i64) -> i64;
     effects { alloc } fn fx_guest_mint_fuelcap(ctx_handle: i64, units: i64) -> i64;
     effects { alloc } fn fx_fuelcap_burn(fuel_handle: i64, units: i64) -> i32;
+    effects { alloc } fn fx_guest_mint_netcap(
+        ctx_handle: i64,
+        allow_host: string,
+        port_min: i32,
+        port_max: i32
+    ) -> i64;
+    effects { alloc } fn fx_netcap_allows(net_handle: i64, host: string, port: i32) -> i32;
     effects { alloc } fn fx_guest_alloc(ctx_handle: i64, nbytes: i64) -> i64;
     effects { alloc } fn fx_guest_is_live(ctx_handle: i64) -> i32;
 }
@@ -37,6 +49,19 @@ fn handle_of(g: GuestCtx) -> i64 {
 /// Ok(GuestCtx) or Err(1) if mint/begin failed.
 fn begin(root: string, arena_bytes: i64) -> Result<GuestCtx, core_Err> effects { alloc } {
     let h: i64 = fx_guest_begin(root, arena_bytes);
+    if (h == 0) {
+        return Err(1);
+    }
+    return Ok(GuestCtx { handle: h });
+}
+
+/// Nested child session under `parent`. Empty root → inherit.
+fn begin_nested(
+    parent: GuestCtx,
+    root: string,
+    arena_bytes: i64
+) -> Result<GuestCtx, core_Err> effects { alloc } {
+    let h: i64 = fx_guest_begin_nested(parent.handle, root, arena_bytes);
     if (h == 0) {
         return Err(1);
     }
@@ -94,6 +119,11 @@ fn alloc(a: AllocCap, nbytes: i64) -> Result<i64, core_Err> effects { alloc } {
     return Ok(p);
 }
 
+/// Pointer or 0 (for tests without Result match).
+fn alloc_ptr(a: AllocCap, nbytes: i64) -> i64 effects { alloc } {
+    return fx_alloccap_alloc(a.handle, nbytes);
+}
+
 /// Mint FuelCap with a unit/step budget (revoked on end).
 fn mint_fuel(g: GuestCtx, units: i64) -> Result<FuelCap, core_Err> effects { alloc } {
     let h: i64 = fx_guest_mint_fuelcap(g.handle, units);
@@ -110,6 +140,30 @@ fn burn(f: FuelCap, units: i64) -> Result<i32, core_Err> effects { alloc } {
         return Err(5);
     }
     return Ok(0);
+}
+
+/// Nonzero if burn succeeded (for tests without Result match).
+fn burn_ok(f: FuelCap, units: i64) -> i32 effects { alloc } {
+    return fx_fuelcap_burn(f.handle, units);
+}
+
+/// Mint NetCap allowlist (no dial). Revoked on end.
+fn mint_net(
+    g: GuestCtx,
+    allow_host: string,
+    port_min: i32,
+    port_max: i32
+) -> Result<NetCap, core_Err> effects { alloc } {
+    let h: i64 = fx_guest_mint_netcap(g.handle, allow_host, port_min, port_max);
+    if (h == 0) {
+        return Err(1);
+    }
+    return Ok(cap.net_from_handle(h));
+}
+
+/// 1 if host+port allowed; 0 if denied / dead handle.
+fn net_allows(n: NetCap, host: string, port: i32) -> i32 effects { alloc } {
+    return fx_netcap_allows(n.handle, host, port);
 }
 
 fn is_live(g: GuestCtx) -> i32 effects { alloc } {

@@ -4,9 +4,9 @@ Safe fx wrapper over vendored **stb_image** (public domain) via the in-tree FFI 
 
 ```text
 fx run main.fx `
-  --link <repo>/fx-compiler/tests/fixtures/ffi/stb_image_ref.c `
-  --link-include <repo>/fx-compiler/tests/fixtures/ffi `
-  --link-lib m
+ --link <repo>/fx-compiler/tests/fixtures/ffi/stb_image_ref.c `
+ --link-include <repo>/fx-compiler/tests/fixtures/ffi `
+ --link-lib m
 
 fx run main.fx --emit-c --link ... --link-include ... --link-lib m
 ```

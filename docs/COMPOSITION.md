@@ -162,15 +162,20 @@ fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
 # default prog: begin → run → end → stale-handle deny
 ```
 
-**NetCap (allowlist only):** host mints a network authority (`fx_guest_mint_netcap` /
-`fx_netcap_allows`) for host+port checks. **No dial / sockets** in the language package yet —
-see `examples/wrap_llhttp` host for a parse + allow demo.
+**NetCap (allowlist only):** `guest.mint_net` / `guest.net_allows` (or C
+`fx_guest_mint_netcap` / `fx_netcap_allows`). **No dial / sockets** — see
+`examples/dyn_assure/netcap_test.fx` and `examples/wrap_llhttp` host.
 
 **CLI hosts:** shared argv / usage / exit helpers live in `host/cli/fx_cli_host.h`
 (compat: `examples/cli_host/`). Starter: `fx new mytool --scaffold cli`.
 
-**Fx host (no C driver):** when present in your tree, `examples/cap_guest_fxhost/` calls
-`guest.begin` / `end` from fx.
+**Task nursery (host):** for OS threads that must finish before teardown, link
+`host/concur/fx_task_nursery.c` (`create` → `spawn` → `join_all` / `shutdown`).
+This is not language `spawn` / channels — see `examples/concur_nursery_smoke/`.
+
+**Fx host (no C driver):** `examples/cap_guest_fxhost/` calls `guest.begin` / `end`
+from fx (canonical happy path). Prefer that over a C `host.c` driver when teaching
+sessions. Build: `--emit-c --link host/cap/fx_cap_runtime.c --link-include host/cap`.
 
 Dogfood apps that still use ambient `io` are honest process-trust tools — see [DOGFOOD.md](DOGFOOD.md).
 

@@ -109,8 +109,42 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 - **`std/pool`** needs `lib/id_pool.fx` (also staged by `fx new`). Handles are typed **`Id`**. `set` uses `vec_set` (stable slot write; D2). `raw` / `from_raw` unwrap/wrap explicitly.
 - `fx new` (simple) copies a Core `std/` set beside your project so imports resolve offline.
 
+## Testing (native culture)
+
+- `std/testing`, `std/proptest` — asserts with stderr diagnostics, property helpers  
+- `fx test` / `fx fuzz` — discover `*_test.fx`, named `test_*`, dual-path (`--backend c|ir|both`); fuzz runs an fx-compiled driver  
+- Shared corpora live under `validation/reference/`; assure dogfood under `examples/assure/`
+
+## Capability / guest sessions
+
+- `std/cap` — `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` (allowlist)  
+- `std/guest` — begin/end/`begin_nested`, mint_*, alloc/burn, `mint_net` / `net_allows`  
+- `std/io_cap` — cap-scoped file I/O  
+- `std/net` — TCP dial under NetCap allowlist (TLS refused)  
+- `dynamic region g = guest(n)` — language sugar (emit-C + IR + `host/cap` link)  
+- Soft-fx refused; process-trust ambient `std/io` remains for ordinary tools
+
+## Concurrency (synthesis product)
+
+- `std/nursery`, `std/chan`, `std/select`, `std/mailbox`, `std/supervise` — structured nursery, i32/i64 channels, select timeout, mailboxes, supervision apply  
+- `nursery.spawn_i32` / `await_i32` — production API (keyword `nursery`/`spawn`/`await` later)  
+- Host substrate under facades; emit-C + IR dual-path for linked `concur_*`  
+- Not a Go/Erlang/BEAM runtime identity claim
+
+## Path, encoding, fs, log, json, sqlite (0.9.x production)
+
+- `std/path` — join, parent_len, basename_off, ext_off, is_abs, has_double_sep  
+- `std/strutil` — contains / starts_with / ends_with  
+- `std/encoding` — hex + base64 over `Vec<i32>` byte codes  
+- `std/fs` — `copy_file`; `std/fs_walk.list_names` for directory names  
+- `std/log` — thin tagged stderr helpers  
+- `std/json` — thin cJSON path facade (link cJSON)  
+- `std/json_validate` / `std/json_full` — fx-native validate path  
+- `std/sqlite` — SQLite WRAP facade (link amalgamation; FsCap path available)  
+- Also: `std/time`, `std/env` (argv stays host/cli), `std/http` (llhttp parse), `std/sync` mutex
+
 ## Growth
 
-The stdlib is intentionally small in 0.7.x. The 0.7.2 baseline added Buf/Bytes facades and Map iterate; 0.7.3 adds `Map<string,string>` helpers (`*_ss`). Later packages may add richer I/O, paths, JSON, time/RNG, and testing helpers, still as explicit, allocator-aware fx code.
+The stdlib stays modular and lean at link time. Deferred domains land when pulled — still as explicit, allocator-aware fx code.
 
 [LANGUAGE.md](LANGUAGE.md) · [REGIONS.md](REGIONS.md) · [REFERENCE.md](REFERENCE.md)

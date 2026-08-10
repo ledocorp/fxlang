@@ -1,4 +1,4 @@
-// Negative fixture for FX-DYN-2 enforcement - MUST NOT build with --guest / --host.
+// Negative fixture for  enforcement - MUST NOT build with --guest / --host.
 // Harness + `fx check --guest` expect FX0031.
 import std/io;
 using core;

@@ -1,4 +1,4 @@
-// lib/id_pool.fx - region id-pool with typed Id (FX-0.7.5-A1).
+// lib/id_pool.fx - region id-pool with typed Id.
 // Grow: value-threaded alloc. Slot write: vec_set (D2). No escaping pointers.
 module id_pool;
 

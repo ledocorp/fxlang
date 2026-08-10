@@ -3,5 +3,5 @@ using core;
 import stbi_safe;
 
 fn main() -> Result<i32, core_Err> {
-    return stbi_safe.decode1();
+ return stbi_safe.decode1();
 }

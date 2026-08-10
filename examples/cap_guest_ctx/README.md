@@ -1,4 +1,4 @@
-# Guest context smoke (FX-DYN Phase B.1)
+# Guest context smoke
 
 Host owns a **guest session**: bump arena + minted caps. `fx_guest_end` frees the
 arena and **revokes** caps (stale handles → deny **5**). Guest uses `io_cap` only

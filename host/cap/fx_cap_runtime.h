@@ -191,4 +191,8 @@ int64_t fx_guest_mint_netcap(int64_t ctx_handle, const char *allow_host, int por
  */
 int64_t fx_guest_begin_nested(int64_t parent_ctx, const char *root, int64_t arena_bytes);
 
+/*  - TCP dial if allowlisted; want_tls!=0 → always fail (no TLS yet). */
+int64_t fx_netcap_dial(int64_t net_handle, const char *host, int32_t port, int32_t want_tls);
+int32_t fx_netcap_close(int64_t sock_handle);
+
 #endif /* FX_CAP_RUNTIME_H */

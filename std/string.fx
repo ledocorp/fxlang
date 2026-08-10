@@ -1,4 +1,5 @@
 // user-facing string helpers (L2)
+// Note: emit uses hand-rolled C. New search helpers live in std/strutil.
 module string;
 
 fn compare(a: string, b: string) -> bool {

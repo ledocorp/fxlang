@@ -1,2 +1,2 @@
-/* Compat shim - compile host/cap SoT (FX-HOST-SPINE-1). */
+/* Compat shim - compile host/cap SoT. */
 #include "../../host/cap/fx_cap_runtime.c"
