@@ -8,6 +8,20 @@ Humans remain reviewers and adopters. This is not a mega-IDE product.
 
 ---
 
+## Path chooser (before coding)
+
+```text
+1. Path?   pure fx | --cli | --host + native lib (--use) | guest
+2. Syntax? SURFACE — fx ≠ C (struct fields use `,` not `;`; no C compound literals; Result needs `?`)
+3. APIs?   STD / SURFACE only — never invent names (e.g. no string.concat unless listed)
+4. Link?   --use <dir> with dir/link.args — never invent winmm/gdi32 lists
+5. Backend? host+GUI → --emit-c until IR host/struct parity is documented
+```
+
+Put package `bin/` on PATH (`fx doctor`). See [WRAP.md](WRAP.md) · [SURFACE.md](SURFACE.md) · [STD.md](STD.md).
+
+---
+
 ## Day-one loop (terminal)
 
 ```text

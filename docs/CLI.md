@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.6`) |
+| `fx version` | Print version (expect `v0.9.66`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -68,7 +68,8 @@ Useful flags:
 | `--no-zspec` | Do not link zspec (only when appropriate) |
 | `--host <file.c>` | Use this C file as `main`; link fx objects with it |
 | `--link-args-file <path>` | Extra linker args, one per line |
-| `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths |
+| `--use <dir>` | Self-linking unit: include+lib dir + optional `dir/link.args` (prefer over inventing `--link-lib` lists) |
+| `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths (escape hatch) |
 | `--backend auto\|ir\|c` | Advanced backend select (`auto` = IR-first with emit-C fallback) |
 
 Default linking expects **gcc** and the zspec library that matches your OS (`build/gcc` or `build/gcc-linux`).

@@ -29,7 +29,7 @@ Comments: `//` line comments. Refinement `where` is verification-tier (not requi
 
 | Kind | Forms |
 |------|--------|
-| Integers | decimal `123`, hex `0x1F` (underscores allowed) |
+| Integers | decimal `123`, hex `0x1F` (underscores allowed). Unsuffixed ints adopt an **expected** integer type when they fit. Values that fit `u32` but not signed `i32` (e.g. `0xFF0000FF`) are **`i32` bit-patterns** when expected/`default` — use `: i64` / `as i64` if you need the full magnitude as 64-bit. |
 | Floats | `1.5` → `f64` by default; `1.5f32` |
 | Chars | `'A'`, `'\n'` (lower to `i32` byte values) |
 | Strings / bools | `"…"` with escapes · `true` / `false` |
@@ -59,6 +59,8 @@ Comments: `//` line comments. Refinement `where` is verification-tier (not requi
 
 Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** implicit signed↔unsigned or int↔float. Cast: `x as T`.
 
+**fx ≠ C (agents):** struct literal fields use `,` not `;`; no C compound literals `(T){ .x = … }`; `Result` needs `?` / match; do not invent std APIs — read [STD.md](STD.md).
+
 ### Control flow
 
 `if` / `else` · `while` · C-style `for` · `break` / `continue` · exhaustive `match` · `defer` (LIFO) · `return`
@@ -71,11 +73,11 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 | Bitwise | `& \| ^ << >>` on integer families |
 | Logical | `!` `&&` `\|\|` |
 | Compare | `== != < <= > >=` |
-| Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get`; Vec **slot write** via `vec_set` (no `v[i]=x`) |
+| Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get`; Vec **slot write** via `vec_set` or no-grow `v[i]=x` (needs `mut`) |
 | Sub-slice | `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, slices) |
 | Other | `expr as T` · `*p` deref |
 
-**No** `v[i] = x` on `Vec`.
+**Yes** no-grow `v[i] = x` on `Vec` under `mut` (same as `vec_set`). **No** growable index-assign.
 
 ### Result / ?
 
@@ -128,7 +130,7 @@ Teaching patterns: scaffold let-chains · loop reassignment · `&mut` field upda
 
 | Surface | Can | Cannot / limit |
 |---------|-----|----------------|
-| `Vec<T>` | `vec_new` / `push` / `get` / `vec_set` / `.len`; read `v[i]` | **`v[i]=x` refused** — use `vec_set` for slots; grow via push; nested/exotic elems |
+| `Vec<T>` | `vec_new` / `push` / `get` / `vec_set` / `.len`; read `v[i]`; write `v[i]=x` (no grow) | grow via push; nested/exotic elems |
 | Arrays `[T; N]` | index R/W; sub-slice | — |
 | `&[T]` | read index; sub-slice | write through immutable view |
 | `&mut [T]` | index write-through (array-backed) | `&mut Vec` as slice; mut sub-slices |
@@ -193,7 +195,9 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 |------------|----------------|
 | Dual native paths | `fx run` / `build` → IR → native; `--emit-c` / `fx emit-c` → readable C on zspec |
 | C owns `main` | `fx run lib.fx --host host.c` |
-| Extra link | `--link` / `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
+| Native lib unit | `fx run app.fx --host host.c --use ./libdir` (loads `libdir/link.args`) |
+| Extra link | `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` (escape) |
+| Host+GUI backend | Prefer `--emit-c` until IR host/struct parity is documented |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
 | Host spine | `host/cap` (guest session + caps + NetCap) · `host/cli` (argv helpers) · `std/net` TCP dial |
 | Examples | `showcase_*` · `bind_*` · `wrap_sqlite` · `wrap_llhttp` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` |
@@ -204,14 +208,14 @@ Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TL
 
 ## G. Honesty bounds & deferred
 
-### Not in the product dialect (as of 0.9.6)
+### Not in the product dialect (as of 0.9.65)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
-- `Vec` index **assign sugar** `v[i]=x` (by design — use `vec_set`); `&mut Vec` as a mut slice; mut sub-slices
+- Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as a mut slice; mut sub-slices
 - Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
-- TLS / full network stack (TCP dial under NetCap exists; TLS refused)
+- Full network stack / HTTP client product (TCP + TLS **client** dial under NetCap exists; see `std/net`)
 - Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
 - Advanced fx Runtime (device-aware migration / Soft-fx)
 - Neuton / OS product; Experimental horizon features
@@ -244,7 +248,7 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Text path (str↔bytes↔file) | StrBuilder → file → `byte_at` → Buf · see `examples/tool_text` |
 | Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
 | Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
-| Vec slot write | `vec_set` / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` |
+| Vec slot write | `vec_set` / `v[i]=x` (no grow) / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` · `programs/lv0965_vec_index_assign.fx` |
 | Graph / IR shape | typed **`Id`** into pool · `examples/pattern_ids` · **`std/pool`** · `examples/pattern_pool` · **`examples/composition_reach`** · `programs/lv075_typed_id.fx` · [COMPOSITION.md](COMPOSITION.md) |
 | Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |
 | Fixed ring | array + cursors · `examples/pattern_ring` · or `std/queue` |
@@ -263,7 +267,7 @@ Teach **Lane A** (fx method): value-threaded grow, indices over interior pointer
 
 → [COMPOSITION.md](COMPOSITION.md) · dual-emit tracking → [TRACKING.md](TRACKING.md)
 
-**Landed D1–D2 + NAT-8 + A1–A3 + NAT-9:** `std/pool` typed **`Id`**, `map_add_i32`, `composition_*` programs, `vec_set` slot mut (not `v[i]=x`). D3/D4 **skipped**. A4 **hold/skip**.
+**Landed D1–D2 + NAT-8 + A1–A3 + NAT-9 + MUT-2:** `std/pool` typed **`Id`**, `map_add_i32`, `composition_*` programs, `vec_set` + no-grow `v[i]=x`. D3/D4 **skipped**. A4 **hold/skip**.
 
 ---
 

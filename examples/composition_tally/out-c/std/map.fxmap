@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "module": "std_map",
+  "fx_file": "D:/fx/std/map.fx",
+  "c_file": "std/map.c",
+  "entries": [
+  ]
+}

@@ -45,12 +45,27 @@ extern "c" {
 ```
 
 fx emits a prototype and expects the real symbol at link time.
-Provide the implementation via `--host` and/or `--link-args-file` / `--link-lib` / `--link-dir`.
+Provide the implementation via **`--use <dir>`** (preferred for native libs), `--host`, and/or `--link-args-file` / `--link-lib` / `--link-dir`.
+
+## Self-linking folders (`--use`) — FX-HOST-LINK
+
+Ship headers + `.a`/`.lib` + a `link.args` beside them. Do **not** invent OS system-lib lists in chat.
+
+```text
+fx run app.fx --host host.c --use ./third_party/raylib/src --emit-c
+```
+
+`--use <dir>` adds include + library search for `<dir>` and expands `<dir>/link.args` when present (same format as `--link-args-file`). Notice on stderr: `fx: --use … (loaded link.args)`.
+
+Golden: `examples/gui_microui/` — prefer `--use …/raylib/src`. Host+GUI: prefer **`--emit-c`** until IR host/struct parity is claimed.
+
+Escape hatch: raw `--link-include` / `--link-dir` / `--link-lib` / `--link-args-file`.
 
 ## Related flags
 
 ```text
 fx run lib.fx --host host.c
+fx run app.fx --host host.c --use ./lib_unit --emit-c
 fx build lib.fx --host host.c -o out
 fx run lib.fx --link-args-file link.args
 fx emit-c lib.fx -o out_c

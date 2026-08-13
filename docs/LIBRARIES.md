@@ -3,8 +3,11 @@
 **Last updated:** 8 August 2026
 
 fx’s interop story is the **C ABI**: bind or declare, wrap into fx-shaped APIs
-(regions, effects, `Result`), then use from programs. There is **no package manager yet** —
-structure code with path imports and `std/` / `lib/`.
+(regions, effects, `Result`), then use from programs.
+
+**Modules today:** path imports + `std/` / `lib/`. **Pin today:** `fx.mod` + `fx mod vendor` /
+`verify` + `fx.sum` (checksum pin for `std` — compile still uses `std/` / `FX_STD_ROOT`,
+not `vendor/` yet). **Not yet:** download registry or third-party `require`. See [CLI.md](CLI.md).
 
 Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 

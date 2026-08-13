@@ -120,7 +120,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 - `std/cap` — `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` (allowlist)  
 - `std/guest` — begin/end/`begin_nested`, mint_*, alloc/burn, `mint_net` / `net_allows`  
 - `std/io_cap` — cap-scoped file I/O  
-- `std/net` — TCP dial under NetCap allowlist (TLS refused)  
+- `std/net` — TCP + TLS client dial under NetCap (`dial` / `dial_tls`; CA via `set_ca_file` or `FX_TLS_CA_FILE`)  
 - `dynamic region g = guest(n)` — language sugar (emit-C + IR + `host/cap` link)  
 - Soft-fx refused; process-trust ambient `std/io` remains for ordinary tools
 

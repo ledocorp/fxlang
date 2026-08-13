@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.6 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.9.66 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -28,7 +28,7 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.9.6
+fx version                    # expect v0.9.66
 fx doctor
 
 fx new hello

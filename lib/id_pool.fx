@@ -44,6 +44,6 @@ fn get(p: Pool, id: Id) -> i32 {
 }
 
 fn set(p: Pool, id: Id, x: i32) -> Pool effects { alloc, mut } {
-    // D2: stable-slot write - identity/capacity unchanged (not growable-Vec v[i]=x).
+    // D2/MUT-2: stable-slot write - identity/capacity unchanged (not growable-Vec realloc).
     return Pool { data: vec_set(p.data, id.raw, x) };
 }

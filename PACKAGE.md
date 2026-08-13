@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.6 (see [VERSION](VERSION))  
+**Version:** 0.9.66 (see [VERSION](VERSION))  
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · Apache-2.0  
 
@@ -21,6 +21,7 @@ This repository is the **fx language package**: everything you need to install t
 | `std/` | Standard library (fx modules) |
 | `host/cap/` | Guest / capability session runtime (+ NetCap dial shim) |
 | `host/cli/` | Shared argv / exit helpers for thin C hosts |
+| `host/process/` | Shared OS process edge (spawn / mkdir / cwd) — **FX-PROCESS-EDGE-1** |
 | `host/concur/` | Structured concurrency substrate (nursery, chan, select, …) |
 | `host/std_time/` · `host/std_env/` · `host/std_fs_walk/` | Thin host shims for time / env / walk |
 | `docs/` | User documentation (incl. `docs/releases/`) |
@@ -40,4 +41,4 @@ This repository is the **fx language package**: everything you need to install t
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md)
 
-Release notes: [docs/releases/0.9.6.md](docs/releases/0.9.6.md)
+Release notes: [docs/releases/0.9.66.md](docs/releases/0.9.66.md)

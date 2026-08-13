@@ -1,10 +1,10 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.9.1).
+> Canonical public docs for the fx systems language (package version 0.9.66).
 > Package: https://github.com/ledocorp/fxlang (Apache-2.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.1.md`
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.66.md`
 
 ## Product
 
@@ -13,12 +13,12 @@
 - Not a GC language; not a batteries-included app platform
 - Prefer parallel `Vec`s + typed ids (SoA); host-minted `FsCap`/`OutCap` + `std/guest` for guests; ambient `std/io` for process-trust tools
 - Surface: numeric tower, ownership/borrows, Result/?, structs/enums/match, generics (no traits), Vec/arrays/`&[T]`/`&mut [T]`/Map/StrBuilder/Buf, modules, extern "c"
-- Also: sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), `Map<string,string>` (`map_new_ss`), grow ergonomics, Vec `v[i]` **reads**, `vec_set` slot writes, array-backed `&mut [T]`, `std/pool` + typed **`Id`**, `map_add_i32` / `std/map.add_i32`, `lib/ring_queue` for `std/queue`
+- Also: sub-slices `a[lo..hi]`, Map dense iterate (`map_nth_*`), `Map<string,string>` (`map_new_ss`), grow ergonomics, Vec `v[i]` **reads** and no-grow `v[i]=x` / `vec_set` slot writes, array-backed `&mut [T]`, `std/pool` + typed **`Id`**, `map_add_i32` / `std/map.add_i32`, `lib/ring_queue` for `std/queue`
 - Caps: `std/cap`, `std/io_cap`, `std/guest`; examples `cap_regions_*`, `cap_guest_ctx`, `cap_host_smoke`
 - Week-two tools: `examples/tool_{files,bytes,tally,text,result}`
 - Composition patterns: `examples/pattern_{ids,mut_table,grow_freeze,ring,pool}`
 - Composition examples: `examples/composition_tally`, `examples/composition_reach`
-- Dogfood: `examples/dogfood_{chip8,jsonget,chip8_ui,fxjson,textdiff}`
+- Dogfood: `examples/dogfood_{chip8,jsonget,chip8_ui,fxjson,textdiff,pathc_slots}`
 
 ## Documentation (prefer these URLs)
 
@@ -44,6 +44,7 @@
 ## Day-one agent loop
 
 ```text
+fx doctor
 fx check path/to/main.fx
 fx run path/to/main.fx
 fx run path/to/main.fx --emit-c
@@ -52,8 +53,20 @@ fx locate --c-file out/main.c --line <n>
 fx mcp
 ```
 
-## As of 0.9.1 — can / cannot (agents)
+## Before inventing code (routing)
 
-**Can:** IR→native `fx run` (Linux `obj/qbe`; Windows `windows/qbe.exe` when staged — same everyday differential set); emit readable C; regions/effects; SoA + pools; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
+```text
+1. Path?  pure fx | --cli | --host+native (--use <dir>) | guest
+2. Syntax? SURFACE — fx ≠ C (`,` in structs; Result `?`; hex colors are i32 bit-patterns)
+3. APIs?  STD/SURFACE only — never invent std names
+4. Link?  --use <dir> (loads link.args) — never invent winmm lists
+5. Backend? host+GUI → --emit-c
+```
 
-**Cannot / not claimed:** growable `v[i]=x` sugar; Soft-fx / second mutation model; package registry; DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`).
+Wrap: https://www.ledocorp.org/fx/docs/wrap/ · Std: https://www.ledocorp.org/fx/docs/std/
+
+## As of 0.9.66 — can / cannot (agents)
+
+**Can:** IR→native `fx run` (Linux `obj/qbe`; Windows `windows/qbe.exe` when staged); emit readable C; regions/effects; SoA + pools; no-grow `v[i]=x` / `vec_set` under `mut`; `--cli` auto-host; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
+
+**Cannot / not claimed:** growable `v[i]=x` that reallocates; Soft-fx / second mutation model; package registry; `fx run` program argv (use `--cli` / `--host`); DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`).

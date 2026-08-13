@@ -24,7 +24,7 @@ enum Expr {
     TryExpr(i32),
     Index(i32, i32),
     SliceRange(i32, i32, i32),
-    // FX-SH-NAT-7 — array literal `[a, b, …]` (count + up to 8 elem indices).
+    // FX-SH-NAT-7 - array literal `[a, b, …]` (count + up to 8 elem indices).
     ArrayLit(i32, i32, i32, i32, i32, i32, i32, i32, i32),
 }
 
@@ -39,7 +39,7 @@ enum Stmt {
     Break,
     Continue,
     Region(i32, i32, i32),
-    // FX-SH-NAT-7 — `base[index] = value` (mut slice / array write).
+    // FX-SH-NAT-7 - `base[index] = value` (mut slice / array write).
     IndexAssign(i32, i32, i32),
 }
 
@@ -50,7 +50,7 @@ enum TopItem {
     StructDef(i32, i32, i32),
 }
 
-/// Discriminant helper — proves cross-module `Expr` use (SH-ERG-4.1 gate).
+/// Discriminant helper - proves cross-module `Expr` use (SH-ERG-4.1 gate).
 fn tag(e: Expr) -> i32 {
     return match e {
         Num(_) => 1,
