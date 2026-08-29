@@ -7,13 +7,14 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.66`) |
+| `fx version` | Print version (expect `v0.9.68`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
-| `fx run <file.fx>` | IR → native (default); link and run (**does not forward program argv**) |
+| `fx run <file.fx>` | **Auto** driver: live `sh_*` when the program fits; otherwise the built-in fallback engine (IR → native by default). Link and run (**does not forward program argv**) |
 | `fx build <file.fx>` | Same backends as run (link; do not run) |
-| `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link) |
+| `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link); `--surface` also writes `.fxsurface.*` |
+| `fx surface <file.fx> [-o <dir>]` | Static module passport (JSON + Markdown) |
 | `fx mod vendor\|tidy\|verify` | Offline `vendor/std` + `fx.sum` pin (checksum; see below) |
 | `fx bind <header.h> --out <file.fx>` | Cleaned C header → inspectable `extern "c"` stubs (`[--module name]`) |
 
@@ -44,14 +45,15 @@ fx new sandbox --scaffold guest
 ### `fx run` / `fx build`
 
 ```text
-fx run main.fx                 # IR → native (default)
-fx run main.fx --emit-c        # emit-C → native
+fx run main.fx                 # Auto driver: live sh_* when supported, else foundry
+fx run main.fx --emit-c        # emit-C → native (backend)
+fx run main.fx --driver foundry  # force foundry oracle
 fx run main.fx --release
 fx build main.fx -o out
-fx run lib.fx --host host.c    # C owns process main / argv
+fx run lib.fx --host host.c    # C owns process main / argv (foundry path)
 ```
 
-By default, `fx run` / `fx build` lower through the **IR → native** path. Pass **`--emit-c`** to use the readable C emission path instead (same checked program, different lowering). Advanced: `--backend auto|ir|c`.
+By default, `fx run` / `fx build` use **driver Auto**: try the live `sh_*` path for supported programs; if that cannot serve the program (FX0036 / toolchain), fall back to the **built-in engine** inside `bin/fx` (CLI name: `--driver foundry` — not a separate Rust install). On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C. Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry`.
 
 **Argv (frozen):** `fx run` does **not** forward program arguments into the fx program. The auto-shim is `main(void)`. Product CLIs use **`--scaffold cli`**, **`--host <file.c>`**, and shared helpers in `host/cli/` — C owns argc/argv at the process edge. → [SCAFFOLDS.md](SCAFFOLDS.md) · [WRAP.md](WRAP.md)
 
@@ -62,6 +64,7 @@ Useful flags:
 | Flag | Meaning |
 |------|---------|
 | `--emit-c` | Use emit-C → native instead of IR → native |
+| `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = live `sh_*` first, foundry fallback; `fx cc` defaults foundry) |
 | `-o <dir>` | Output directory (default `out/`) |
 | `--release` | Optimize more; less debug instrumentation |
 | `--watch` | Rebuild when sources change |
@@ -83,7 +86,17 @@ fx emit-c main.fx -o out_c --debug-source   # .fxmap + #line
 
 Inspect the generated C without linking. Default emit includes `/* fx: … */` annotate comments.
 `--debug-source` adds a machine map for `fx locate` and debugger `#line`s.
+`--surface` also writes `.fxsurface.json` + `.fxsurface.md` (types, effects, caps, regions).
 → [TRACKING.md](TRACKING.md)
+
+### `fx surface`
+
+```text
+fx surface main.fx
+fx surface main.fx -o out
+```
+
+Emits a static passport for public types and functions (effects, regions, capabilities). Does not change codegen. Companion of `fx emit-c --surface`.
 
 ### Power path: `fx cc`
 
@@ -95,8 +108,9 @@ Same family of flags as run/build, for hosts who want full control over emit + l
 | Command | Role |
 |---------|------|
 | `fx lsp` | Language server (stdio) — see [EDITOR.md](EDITOR.md) |
-| `fx mcp` | Lean MCP server (`fx_check`, `fx_locate`, `fx_run`, …) |
+| `fx mcp` | Lean MCP server (`fx_check`, `fx_locate`, `fx_run`, `fx_surface`, …) |
 | `fx locate --c-file <f.c> --line <n>` | Map a C line back to fx via `.fxmap` |
+| `fx surface <file.fx>` | Module passport JSON + Markdown |
 
 ### `fx mod` (offline std pin)
 

@@ -21,9 +21,9 @@ void  core_mem_reset(core_Allocator* allocator);
 size_t core_mem_stats_live_bytes(const core_Allocator* allocator);
 
 /*
- * Test-harness fault injection (FX-ASR-B2 / Hipp N-th alloc).
+ * Test-harness fault injection (N-th alloc fail).
  * Default off. Not required for normal product paths.
- * `core_mem_fault_fail_nth(n)` — the n-th `core_mem_alloc` call returns NULL (1-based).
+ * `core_mem_fault_fail_nth(n)` - the n-th `core_mem_alloc` call returns NULL (1-based).
  * `n == 0` clears. Affects calloc (via alloc); does not rewrite production call sites.
  */
 void core_mem_fault_clear(void);

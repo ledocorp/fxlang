@@ -26,6 +26,8 @@ enum Expr {
     SliceRange(i32, i32, i32),
     // FX-SH-NAT-7 - array literal `[a, b, …]` (count + up to 8 elem indices).
     ArrayLit(i32, i32, i32, i32, i32, i32, i32, i32, i32),
+    // FX-SH-NAT-15b - `base with { f: v }` one-override foothold (base, fname_off, fname_ln, val).
+    RecordUpdate(i32, i32, i32, i32),
 }
 
 enum Stmt {
@@ -72,5 +74,6 @@ fn tag(e: Expr) -> i32 {
         Index(_, _) => 17,
         SliceRange(_, _, _) => 18,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 19,
+        RecordUpdate(_, _, _, _) => 20,
     };
 }

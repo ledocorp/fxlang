@@ -1,15 +1,15 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.9.66).
-> Package: https://github.com/ledocorp/fxlang (Apache-2.0)
+> Canonical public docs for the fx systems language (package version 0.9.68).
+> Package: https://github.com/ledocorp/fxlang (GPL-3.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.66.md`
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.68.md`
 
 ## Product
 
 - Home: https://www.ledocorp.org/fx/
-- Pitch: explicit systems language; named regions + effects; **IR → native by default**; dual emission to readable C; wrap/host with C main
+- Pitch: explicit systems language; named regions + effects; **native-first Auto** `fx run` (live `sh_*` when supported, foundry fallback); **IR → native** on foundry path; dual emission to readable C; wrap/host with C main
 - Not a GC language; not a batteries-included app platform
 - Prefer parallel `Vec`s + typed ids (SoA); host-minted `FsCap`/`OutCap` + `std/guest` for guests; ambient `std/io` for process-trust tools
 - Surface: numeric tower, ownership/borrows, Result/?, structs/enums/match, generics (no traits), Vec/arrays/`&[T]`/`&mut [T]`/Map/StrBuilder/Buf, modules, extern "c"
@@ -65,8 +65,8 @@ fx mcp
 
 Wrap: https://www.ledocorp.org/fx/docs/wrap/ · Std: https://www.ledocorp.org/fx/docs/std/
 
-## As of 0.9.66 — can / cannot (agents)
+## As of 0.9.68 — can / cannot (agents)
 
-**Can:** IR→native `fx run` (Linux `obj/qbe`; Windows `windows/qbe.exe` when staged); emit readable C; regions/effects; SoA + pools; no-grow `v[i]=x` / `vec_set` under `mut`; `--cli` auto-host; typed `FsCap`/`OutCap` + guest session teardown; `fx lsp` diagnostics/refs; lean MCP.
+**Can:** native-first Auto `fx run` (live `sh_*` for supported demos; honest fallback otherwise); IR→native when QBE staged (Linux `obj/qbe`; Windows `windows/qbe.exe`); emit readable C; regions/effects; SoA + pools; no-grow `v[i]=x` / `vec_set` under `mut`; `--cli` auto-host; Map&lt;string,string&gt;; typed `FsCap`/`OutCap` + guest; `fx lsp` / lean MCP; inspect `compiler-source/` (read-only).
 
-**Cannot / not claimed:** growable `v[i]=x` that reallocates; Soft-fx / second mutation model; package registry; `fx run` program argv (use `--cli` / `--host`); DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`).
+**Cannot / not claimed:** growable `v[i]=x` that reallocates; Soft-fx / second mutation model; package registry; `fx run` program argv (use `--cli` / `--host`); every program on live `sh_*` without fallback; DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`); rebuild `bin/fx` from `compiler-source/` alone.

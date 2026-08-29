@@ -47,7 +47,7 @@ extern "c" {
 fx emits a prototype and expects the real symbol at link time.
 Provide the implementation via **`--use <dir>`** (preferred for native libs), `--host`, and/or `--link-args-file` / `--link-lib` / `--link-dir`.
 
-## Self-linking folders (`--use`) — FX-HOST-LINK
+## Self-linking folders (`--use`)
 
 Ship headers + `.a`/`.lib` + a `link.args` beside them. Do **not** invent OS system-lib lists in chat.
 

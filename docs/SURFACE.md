@@ -1,6 +1,6 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.2  
+**Package version:** 0.9.68  
 
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
@@ -12,6 +12,9 @@ Use it as a cheatsheet and as a depth ledger: if something is not listed here, d
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
 Prefer [COMPOSITION.md](COMPOSITION.md) when asking “how do I build a graph / table / ring in fx?”
 Prefer [TRACKING.md](TRACKING.md) when asking “how does emitted C map back to fx?”
+
+**Short paths:** Vec read `v[i]` · slot write `vec_set` / no-grow `v[i]=x` (needs `mut`) · grow `push`.
+Same physics — Soft-fx refused. See [COMPOSITION.md](COMPOSITION.md).
 
 ---
 
@@ -75,9 +78,11 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 | Compare | `== != < <= > >=` |
 | Index | `a[i]` arrays R/W; `&[T]` read-only; `&mut [T]` write-through; Vec **read** via `v[i]` / `vec_get`; Vec **slot write** via `vec_set` or no-grow `v[i]=x` (needs `mut`) |
 | Sub-slice | `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, slices) |
-| Other | `expr as T` · `*p` deref |
+| Other | `expr as T` · `*p` deref · record update `base with { f: v, … }` (value copy; unmentioned fields from `base`) |
 
 **Yes** no-grow `v[i] = x` on `Vec` under `mut` (same as `vec_set`). **No** growable index-assign.
+
+**Record update:** `let p2 = p with { y: 32 };` builds a new struct value (not shared mut / Soft-fx).
 
 ### Result / ?
 
@@ -179,10 +184,11 @@ Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the pro
 | `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` / `cli` / `guest` |
 | `fx check` | parse + typecheck |
 | `fx run` / `fx build` | IR → native (default); `--emit-c` for C path; `--release` / `--watch` |
-| `fx emit-c` | `.c` / `.h` only (no link) |
+| `fx emit-c` | `.c` / `.h` only (no link); `--surface` also writes passport files |
+| `fx surface` | Static module passport (JSON + Markdown: types, effects, caps/regions) |
 | `fx cc` | power emit+link path |
 | `fx lsp` | language server (stdio) — basic |
-| `fx mcp` | lean MCP (`check` / `locate` / `run`, …) |
+| `fx mcp` | lean MCP (`check` / `locate` / `run` / `surface`, …) |
 | `fx locate` | C line → fx via `.fxmap` |
 
 Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only** (macOS prebuilt frozen out of this package). `fx run` does **not** forward program argv — use `--host` / `--scaffold cli`.
@@ -208,7 +214,17 @@ Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TL
 
 ## G. Honesty bounds & deferred
 
-### Not in the product dialect (as of 0.9.65)
+### Also as implemented (0.9.68 floor)
+
+| Surface | Notes |
+|---------|--------|
+| Collection method sugar | `v.push(x)` / `m.insert(…)` expand to `vec_push` / `map_insert` (all `.fx`) |
+| SIMD foothold | `v4i32` / related helpers on emit-C; optional SSE/NEON where staged — not a full vector ISA product |
+| `@override` + `asm { }` | Portable fx SoT stays; targeted C/`#ifdef` or constrained asm inside override |
+| Guest helpers | Guest-gated `vec_filter` / `vec_map` / `vec_collect` (no lambdas; same region physics) |
+| Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
+
+### Not in the product dialect (as of 0.9.68)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
@@ -249,6 +265,8 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
 | Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
 | Vec slot write | `vec_set` / `v[i]=x` (no grow) / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` · `programs/lv0965_vec_index_assign.fx` |
+| Record update | `p with { y: 32 }` · `programs/lv_record_update.fx` |
+| Module passport | `fx surface file.fx` · `fx emit-c --surface` |
 | Graph / IR shape | typed **`Id`** into pool · `examples/pattern_ids` · **`std/pool`** · `examples/pattern_pool` · **`examples/composition_reach`** · `programs/lv075_typed_id.fx` · [COMPOSITION.md](COMPOSITION.md) |
 | Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |
 | Fixed ring | array + cursors · `examples/pattern_ring` · or `std/queue` |
@@ -267,7 +285,7 @@ Teach **Lane A** (fx method): value-threaded grow, indices over interior pointer
 
 → [COMPOSITION.md](COMPOSITION.md) · dual-emit tracking → [TRACKING.md](TRACKING.md)
 
-**Landed D1–D2 + NAT-8 + A1–A3 + NAT-9 + MUT-2:** `std/pool` typed **`Id`**, `map_add_i32`, `composition_*` programs, `vec_set` + no-grow `v[i]=x`. D3/D4 **skipped**. A4 **hold/skip**.
+**Also landed:** `std/pool` typed **`Id`**, `map_add_i32`, `composition_*` programs, `vec_set` + no-grow `v[i]=x`.
 
 ---
 

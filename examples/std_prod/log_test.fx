@@ -1,4 +1,4 @@
-// log helpers return Ok.
+// FX-PROD-STD-5 — log helpers return Ok.
 using core;
 import std/testing;
 import std/log;

@@ -1,4 +1,4 @@
-// Mutex create/lock/unlock/destroy.
+// FX-PROD-STD-SYNC — Mutex create/lock/unlock/destroy.
 using core;
 import std/sync;
 

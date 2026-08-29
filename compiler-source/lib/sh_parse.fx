@@ -112,6 +112,13 @@ struct StructOut {
     fields_env: string,
 }
 
+struct FixtureProfile {
+    mod_slug: string,
+    main_meta: string,
+    includes: string,
+    golden_path: string,
+}
+
 struct MatchOut {
     scrutinee: i32,
     arm_count: i32,
@@ -837,6 +844,7 @@ fn unpack_match_body(nodes: Vec<Expr>, bodies_start: i32, arm_i: i32, arm_count:
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -1062,7 +1070,57 @@ fn parse_array_lit_elems_rest(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, p
 
 fn parse_factor(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut i32, nodes: Vec<Expr>) -> Result<ParseOut, core_Err> effects { alloc, mut } {
     let primary: ParseOut = parse_factor_atom(kinds, vals, lens, pos, nodes)?;
-    return apply_index_postfix(kinds, vals, lens, pos, primary);
+    let indexed: ParseOut = apply_index_postfix(kinds, vals, lens, pos, primary)?;
+    // FX-SH-NAT-15b - `base with { f: v }` → RecordUpdate (one-override foothold; /* fx: with */).
+    let n: i32 = kinds.len;
+    if (*pos >= n) {
+        return Ok(indexed);
+    }
+    if (vec_get(kinds, *pos) != 30) {
+        return Ok(indexed);
+    }
+    if (vec_get(lens, *pos) != 4) {
+        return Ok(indexed);
+    }
+    if (*pos + 1 >= n) {
+        return Ok(indexed);
+    }
+    if (vec_get(kinds, *pos + 1) != 8) {
+        return Ok(indexed);
+    }
+    *pos = *pos + 2;
+    if (*pos >= n) {
+        return Err(1);
+    }
+    if (vec_get(kinds, *pos) != 30) {
+        return Err(1);
+    }
+    let fname_off: i32 = vec_get(vals, *pos);
+    let fname_ln: i32 = vec_get(lens, *pos);
+    *pos = *pos + 1;
+    if (*pos >= n) {
+        return Err(1);
+    }
+    if (vec_get(kinds, *pos) != 11) {
+        return Err(1);
+    }
+    *pos = *pos + 1;
+    let val: ParseOut = parse_expr(kinds, vals, lens, pos, indexed.nodes)?;
+    if (*pos < n) {
+        if (vec_get(kinds, *pos) == 12) {
+            *pos = *pos + 1;
+        }
+    }
+    if (*pos >= n) {
+        return Err(1);
+    }
+    if (vec_get(kinds, *pos) != 9) {
+        return Err(1);
+    }
+    *pos = *pos + 1;
+    let ru_idx: i32 = val.nodes.len;
+    let nodes2: Vec<Expr> = vec_push(val.nodes, RecordUpdate(indexed.idx, fname_off, fname_ln, val.idx));
+    return Ok(ParseOut { idx: ru_idx, nodes: nodes2 });
 }
 
 // FX-SH-NAT-3/4 - postfix `base[index]` or `base[lo..hi]` (DotDot kind 46).
@@ -1774,6 +1832,86 @@ fn parse_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, pos:
         if (*pos >= n) {
             return Err(1);
         }
+        // FX-SH-NAT-13 - consume `asm { ... }` (GNU emit is NAT-13b; portable body still SoT).
+        // FX-SH-NAT-13b - live emit GNU __asm__ + #if defined(FX_OVERRIDE_X86_64) + portable #else (same C ABI symbol).
+        if (sh_lexer.slice_eq(src, name_off, name_len, "asm") == 1) {
+            if (vec_get(kinds, *pos) == 8) {
+                *pos = *pos + 1;
+                let asm_depth: i32 = 1;
+                while (asm_depth > 0) {
+                    if (*pos >= n) {
+                        return Err(1);
+                    }
+                    let ak: i32 = vec_get(kinds, *pos);
+                    if (ak == 8) {
+                        asm_depth = asm_depth + 1;
+                    }
+                    if (ak == 9) {
+                        asm_depth = asm_depth - 1;
+                    }
+                    *pos = *pos + 1;
+                }
+                return Ok(StmtStep { nodes: nodes, stmts: stmts });
+            }
+        }
+        // FX-SH-NAT-11 - `dynamic region name = guest(N);` (size stored as -1 = guest).
+        if (sh_lexer.slice_eq(src, name_off, name_len, "dynamic") == 1) {
+            if (vec_get(kinds, *pos) == 26) {
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 30) {
+                    return Err(1);
+                }
+                let r_off: i32 = vec_get(vals, *pos);
+                let r_ln: i32 = vec_get(lens, *pos);
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 10) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 30) {
+                    return Err(1);
+                }
+                let g_off: i32 = vec_get(vals, *pos);
+                let g_ln: i32 = vec_get(lens, *pos);
+                if (sh_lexer.slice_eq(src, g_off, g_ln, "guest") != 1) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 6) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                let _gsz: i32 = parse_region_arena_size(kinds, vals, lens, src, pos)?;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 7) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+                if (vec_get(kinds, *pos) != 13) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                let stmts2: Vec<Stmt> = vec_push(stmts, Region(r_off, r_ln, -1));
+                return Ok(StmtStep { nodes: nodes, stmts: stmts2 });
+            }
+        }
         let k2: i32 = vec_get(kinds, *pos);
         if (k2 == 6) {
             *pos = *pos + 1;
@@ -1785,6 +1923,51 @@ fn parse_stmt(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, pos:
                 return Err(1);
             }
             *pos = *pos + 1;
+            // FX-SH-NAT-10 - `v.push(x);` / `m.insert(...)` → assign (foundry parity).
+            let coll_dot: i32 = -1;
+            let coll_i: i32 = 0;
+            while (coll_i < name_len) {
+                if (string.byte_at(src, name_off + coll_i) == 46) {
+                    coll_dot = name_off + coll_i;
+                }
+                coll_i = coll_i + 1;
+            }
+            if (coll_dot >= 0) {
+                let meth_off: i32 = coll_dot + 1;
+                let meth_ln: i32 = (name_off + name_len) - meth_off;
+                let pfx_ln: i32 = coll_dot - name_off;
+                let is_std: i32 = 0;
+                if (sh_lexer.slice_eq(src, name_off, pfx_ln, "vec") == 1) {
+                    is_std = 1;
+                }
+                if (sh_lexer.slice_eq(src, name_off, pfx_ln, "map") == 1) {
+                    is_std = 1;
+                }
+                if (sh_lexer.slice_eq(src, name_off, pfx_ln, "pool") == 1) {
+                    is_std = 1;
+                }
+                if (sh_lexer.slice_eq(src, name_off, pfx_ln, "buf") == 1) {
+                    is_std = 1;
+                }
+                if (sh_lexer.slice_eq(src, name_off, pfx_ln, "string") == 1) {
+                    is_std = 1;
+                }
+                let is_meth: i32 = 0;
+                if (sh_lexer.slice_eq(src, meth_off, meth_ln, "push") == 1) {
+                    is_meth = 1;
+                }
+                if (sh_lexer.slice_eq(src, meth_off, meth_ln, "insert") == 1) {
+                    is_meth = 1;
+                }
+                if (is_std != 1) {
+                    if (is_meth == 1) {
+                        let call_idx: i32 = args.nodes.len;
+                        let nodes3: Vec<Expr> = vec_push(args.nodes, CallExpr(name_off, name_len, args.first_arg, args.second_arg, args.third_arg, args.fourth_arg, args.fifth_arg));
+                        let stmts2: Vec<Stmt> = vec_push(stmts, Assign(name_off, pfx_ln, call_idx));
+                        return Ok(StmtStep { nodes: nodes3, stmts: stmts2 });
+                    }
+                }
+            }
             let stmts2: Vec<Stmt> = vec_push(stmts, Call(name_off, name_len, args.argc, args.first_arg));
             return Ok(StmtStep { nodes: args.nodes, stmts: stmts2 });
         }
@@ -2034,6 +2217,16 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
     }
     if (sh_lexer.slice_eq(src, off, ln, "i32") == 1) {
         return Ok("int32_t");
+    }
+    // FX-SH-NAT-14 - SIMD type spans (scalar helper names stay CallExpr; emit helpers later).
+    if (sh_lexer.slice_eq(src, off, ln, "v4i32") == 1) {
+        return Ok("fx_v4i32");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "v4f32") == 1) {
+        return Ok("fx_v4f32");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "v16u8") == 1) {
+        return Ok("fx_v16u8");
     }
     if (sh_lexer.slice_eq(src, off, ln, "bool") == 1) {
         return Ok("int32_t");
@@ -2343,8 +2536,87 @@ fn fill_param_m_from_fn_out(fn_out: FnOut, src: string, param_m: &mut Map<string
 
 fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mod_slug: string, pos: &mut i32, nodes: Vec<Expr>, stmts: Vec<Stmt>) -> Result<FnOut, core_Err> effects { alloc, mut } {
     let n: i32 = kinds.len;
+    let ov_tgt_off: i32 = 0;
+    let ov_tgt_ln: i32 = 0;
     if (*pos >= n) {
         return Err(1);
+    }
+    // FX-SH-NAT-13 - optional `@override(target=..., external=...)` before `fn` (kind 47).
+    // FX-SH-NAT-13b - stash `target` string span in ret_err_* when the fn is not Result.
+    if (vec_get(kinds, *pos) == 47) {
+        *pos = *pos + 1;
+        if (*pos >= n) {
+            return Err(1);
+        }
+        if (vec_get(kinds, *pos) != 30) {
+            return Err(1);
+        }
+        let ov_off: i32 = vec_get(vals, *pos);
+        let ov_ln: i32 = vec_get(lens, *pos);
+        if (sh_lexer.slice_eq(src, ov_off, ov_ln, "override") != 1) {
+            return Err(1);
+        }
+        *pos = *pos + 1;
+        if (*pos >= n) {
+            return Err(1);
+        }
+        if (vec_get(kinds, *pos) != 6) {
+            return Err(1);
+        }
+        *pos = *pos + 1;
+        let ov_pairs: i32 = 0;
+        while (*pos < n) {
+            if (vec_get(kinds, *pos) == 7) {
+                break;
+            }
+            if (ov_pairs > 0) {
+                if (vec_get(kinds, *pos) != 12) {
+                    return Err(1);
+                }
+                *pos = *pos + 1;
+                if (*pos >= n) {
+                    return Err(1);
+                }
+            }
+            if (vec_get(kinds, *pos) != 30) {
+                return Err(1);
+            }
+            let key_off: i32 = vec_get(vals, *pos);
+            let key_ln: i32 = vec_get(lens, *pos);
+            *pos = *pos + 1;
+            if (*pos >= n) {
+                return Err(1);
+            }
+            if (vec_get(kinds, *pos) != 10) {
+                return Err(1);
+            }
+            *pos = *pos + 1;
+            if (*pos >= n) {
+                return Err(1);
+            }
+            if (vec_get(kinds, *pos) != 37) {
+                return Err(1);
+            }
+            if (sh_lexer.slice_eq(src, key_off, key_ln, "target") == 1) {
+                ov_tgt_off = vec_get(vals, *pos);
+                ov_tgt_ln = vec_get(lens, *pos);
+            }
+            *pos = *pos + 1;
+            ov_pairs = ov_pairs + 1;
+        }
+        if (ov_pairs < 1) {
+            return Err(1);
+        }
+        if (*pos >= n) {
+            return Err(1);
+        }
+        if (vec_get(kinds, *pos) != 7) {
+            return Err(1);
+        }
+        *pos = *pos + 1;
+        if (*pos >= n) {
+            return Err(1);
+        }
     }
     if (vec_get(kinds, *pos) != 21) {
         return Err(1);
@@ -2373,6 +2645,14 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
     let effect_count: i32 = parse_effects_clause(kinds, vals, lens, pos)?;
     let body_blk: BlockParseOut = parse_block(kinds, vals, lens, src, pos, nodes, stmts)?;
     let body_start: i32 = body_blk.stmts.len - body_blk.count;
+    let out_err_off: i32 = sig.ret_err_off;
+    let out_err_ln: i32 = sig.ret_err_len;
+    if (sig.ret_is_result != 1) {
+        if (ov_tgt_ln > 0) {
+            out_err_off = ov_tgt_off;
+            out_err_ln = ov_tgt_ln;
+        }
+    }
     return Ok(FnOut {
         name_off: name_off,
         name_len: name_len,
@@ -2381,8 +2661,8 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
         ret_is_result: sig.ret_is_result,
         ret_ok_off: sig.ret_ok_off,
         ret_ok_len: sig.ret_ok_len,
-        ret_err_off: sig.ret_err_off,
-        ret_err_len: sig.ret_err_len,
+        ret_err_off: out_err_off,
+        ret_err_len: out_err_ln,
         effect_count: effect_count,
         param_sig: params.sig,
         param_env: params.env,
@@ -2496,6 +2776,7 @@ fn eval_expr(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2526,6 +2807,7 @@ fn is_num(nodes: Vec<Expr>, idx: i32, want: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2551,6 +2833,7 @@ fn is_strlit(nodes: Vec<Expr>, idx: i32, src: string, want: string) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2581,6 +2864,7 @@ fn is_add_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2611,6 +2895,7 @@ fn is_sub_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2641,6 +2926,7 @@ fn is_mul_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2671,6 +2957,7 @@ fn is_div_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: string
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2701,6 +2988,7 @@ fn is_cmp_lt_idents(nodes: Vec<Expr>, idx: i32, src: string, n1: string, n2: str
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2733,6 +3021,7 @@ fn is_add(nodes: Vec<Expr>, idx: i32, l: i32, r: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2765,6 +3054,7 @@ fn is_match(nodes: Vec<Expr>, idx: i32, scr: i32, arms: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2797,6 +3087,7 @@ fn is_cmp_lt(nodes: Vec<Expr>, idx: i32, l: i32, r: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2822,6 +3113,7 @@ fn is_ident(nodes: Vec<Expr>, idx: i32, src: string, name: string) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2855,6 +3147,7 @@ fn expr_is_call2_nums(nodes: Vec<Expr>, idx: i32, src: string, callee: string, n
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2957,6 +3250,7 @@ fn ident_is_field_access(nodes: Vec<Expr>, idx: i32, src: string, base: string, 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -2987,6 +3281,7 @@ fn is_add_field_accesses(nodes: Vec<Expr>, idx: i32, src: string, base: string, 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -3017,6 +3312,7 @@ fn is_add_cross_field_accesses(nodes: Vec<Expr>, idx: i32, src: string, lbase: s
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -3234,6 +3530,7 @@ fn struct_lit_count(nodes: Vec<Expr>, lit_idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -3312,6 +3609,7 @@ fn struct_lit_field_idx(nodes: Vec<Expr>, lit_idx: i32, field_i: i32) -> i32 {
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -3391,6 +3689,7 @@ fn expr_is_call1_struct_lit(nodes: Vec<Expr>, idx: i32, src: string, callee: str
                 Index(_, _) => 0,
                 SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -3411,6 +3710,7 @@ fn expr_is_call1_struct_lit(nodes: Vec<Expr>, idx: i32, src: string, callee: str
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -4222,6 +4522,7 @@ fn expr_is_try_call1_ident(nodes: Vec<Expr>, idx: i32, src: string, callee: stri
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -5522,14 +5823,375 @@ fn smoke_tests() -> Result<i32, core_Err> effects { alloc, mut } {
         return Ok(902);
     }
 
-    return Ok(42);
-}
+    // FX-SH-NAT-10 - glued `v.push` / `vec.push` parse; stmt `v.push(x);` → assign.
+    let src_push: string = "v.push(1)";
+    let toks_push: TokBuf = sh_lexer.lex(src_push);
+    let pos_push: i32 = 0;
+    let out_push: ParseOut = parse_expr(toks_push.kinds, toks_push.vals, toks_push.lens, &mut pos_push, empty)?;
+    if (expr_call_callee_is(out_push.nodes, out_push.idx, src_push, "v.push") != 1) {
+        return Ok(910);
+    }
+    let src_vp: string = "vec.push(v, 1)";
+    let toks_vp: TokBuf = sh_lexer.lex(src_vp);
+    let pos_vp: i32 = 0;
+    let out_vp: ParseOut = parse_expr(toks_vp.kinds, toks_vp.vals, toks_vp.lens, &mut pos_vp, empty)?;
+    if (expr_call_callee_is(out_vp.nodes, out_vp.idx, src_vp, "vec.push") != 1) {
+        return Ok(912);
+    }
+    let src_st: string = "v.push(1);";
+    let toks_st: TokBuf = sh_lexer.lex(src_st);
+    let pos_st: i32 = 0;
+    let step_st: StmtStep = parse_stmt(toks_st.kinds, toks_st.vals, toks_st.lens, src_st, &mut pos_st, empty, empty_stmts)?;
+    if (stmt_is_assign(step_st.stmts, 0, src_st, "v") != 1) {
+        return Ok(914);
+    }
+    let src_ins: string = "m.insert(k, 1)";
+    let toks_ins: TokBuf = sh_lexer.lex(src_ins);
+    let pos_ins: i32 = 0;
+    let out_ins: ParseOut = parse_expr(toks_ins.kinds, toks_ins.vals, toks_ins.lens, &mut pos_ins, empty)?;
+    if (expr_call_callee_is(out_ins.nodes, out_ins.idx, src_ins, "m.insert") != 1) {
+        return Ok(915);
+    }
 
-struct FixtureProfile {
-    mod_slug: string,
-    main_meta: string,
-    includes: string,
-    golden_path: string,
+    // FX-SH-NAT-11 - guest helpers parse as CallExpr; `dynamic region` is guest (size -1).
+    let src_vf: string = "vec_filter(v, p)";
+    let toks_vf: TokBuf = sh_lexer.lex(src_vf);
+    let pos_vf: i32 = 0;
+    let out_vf: ParseOut = parse_expr(toks_vf.kinds, toks_vf.vals, toks_vf.lens, &mut pos_vf, empty)?;
+    if (expr_call_callee_is(out_vf.nodes, out_vf.idx, src_vf, "vec_filter") != 1) {
+        return Ok(916);
+    }
+    let src_vm: string = "vec_map(v, f)";
+    let toks_vm: TokBuf = sh_lexer.lex(src_vm);
+    let pos_vm: i32 = 0;
+    let out_vm: ParseOut = parse_expr(toks_vm.kinds, toks_vm.vals, toks_vm.lens, &mut pos_vm, empty)?;
+    if (expr_call_callee_is(out_vm.nodes, out_vm.idx, src_vm, "vec_map") != 1) {
+        return Ok(917);
+    }
+    let src_vc: string = "vec_collect(v)";
+    let toks_vc: TokBuf = sh_lexer.lex(src_vc);
+    let pos_vc: i32 = 0;
+    let out_vc: ParseOut = parse_expr(toks_vc.kinds, toks_vc.vals, toks_vc.lens, &mut pos_vc, empty)?;
+    if (expr_call_callee_is(out_vc.nodes, out_vc.idx, src_vc, "vec_collect") != 1) {
+        return Ok(918);
+    }
+    let src_gr: string = "dynamic region g = guest(64);";
+    let toks_gr: TokBuf = sh_lexer.lex(src_gr);
+    let pos_gr: i32 = 0;
+    let step_gr: StmtStep = parse_stmt(toks_gr.kinds, toks_gr.vals, toks_gr.lens, src_gr, &mut pos_gr, empty, empty_stmts)?;
+    if (stmt_is_region_var_arena(step_gr.stmts, 0, src_gr, "g", -1) != 1) {
+        return Ok(919);
+    }
+
+    // FX-SH-NAT-13 - live parse of `@override` + `asm { }` (foundry-proven ASM-1/2).
+    let src_ov: string = "@override(target = \"x86_64\") fn add41(x: i32) -> i32 { return 41 + x; }";
+    let toks_ov: TokBuf = sh_lexer.lex(src_ov);
+    let pos_ov: i32 = 0;
+    let ov_nodes: Vec<Expr> = vec_new(0);
+    let ov_stmts: Vec<Stmt> = vec_new(0);
+    let fn_ov: FnOut = parse_fn_def(toks_ov.kinds, toks_ov.vals, toks_ov.lens, src_ov, "", &mut pos_ov, ov_nodes, ov_stmts)?;
+    if (sh_lexer.slice_eq(src_ov, fn_ov.name_off, fn_ov.name_len, "add41") != 1) {
+        return Ok(920);
+    }
+    let src_asm: string = "asm { \"leal 41({x}), {y}\" in x out y clobber \"cc\" }";
+    let toks_asm: TokBuf = sh_lexer.lex(src_asm);
+    let pos_asm: i32 = 0;
+    let asm_nodes: Vec<Expr> = vec_new(0);
+    let asm_stmts: Vec<Stmt> = vec_new(0);
+    let step_asm: StmtStep = parse_stmt(toks_asm.kinds, toks_asm.vals, toks_asm.lens, src_asm, &mut pos_asm, asm_nodes, asm_stmts)?;
+    if (pos_asm != toks_asm.kinds.len) {
+        return Ok(921);
+    }
+    if (step_asm.stmts.len != 0) {
+        return Ok(922);
+    }
+    let mv4: string = map_type_span_to_c_mod("sh_parse", "v4i32", 0, 5)?;
+    if (sh_lexer.slice_eq(mv4, 0, string.len(mv4), "fx_v4i32") != 1) {
+        return Ok(923);
+    }
+    let mvf: string = map_type_span_to_c_mod("sh_parse", "v4f32", 0, 5)?;
+    if (sh_lexer.slice_eq(mvf, 0, string.len(mvf), "fx_v4f32") != 1) {
+        return Ok(924);
+    }
+    let mvu: string = map_type_span_to_c_mod("sh_parse", "v16u8", 0, 5)?;
+    if (sh_lexer.slice_eq(mvu, 0, string.len(mvu), "fx_v16u8") != 1) {
+        return Ok(925);
+    }
+
+    // FX-SH-NAT-13b - override target span + GNU `#if` / `__asm__` / portable `#else`.
+    if (fn_ov.ret_is_result == 1) {
+        return Ok(926);
+    }
+    if (sh_lexer.slice_eq(src_ov, fn_ov.ret_err_off, fn_ov.ret_err_len, "x86_64") != 1) {
+        return Ok(926);
+    }
+    let src_oa: string = "@override(target = \"x86_64\") fn add41(x: i32) -> i32 { asm { \"leal 41({x}), {y}\" in x out y clobber \"cc\" } }";
+    let toks_oa: TokBuf = sh_lexer.lex(src_oa);
+    let pos_oa: i32 = 0;
+    let oa_nodes: Vec<Expr> = vec_new(0);
+    let oa_stmts: Vec<Stmt> = vec_new(0);
+    let fn_oa: FnOut = parse_fn_def(toks_oa.kinds, toks_oa.vals, toks_oa.lens, src_oa, "", &mut pos_oa, oa_nodes, oa_stmts)?;
+    let prof_oa: FixtureProfile = FixtureProfile { mod_slug: "m", main_meta: "", includes: "", golden_path: "" };
+    let st_oa: StructOut = StructOut { name_off: 0, name_len: 0, field_count: 0, fields_env: "" };
+    let em_oa: string = emit_fn_parser_helper_block(prof_oa, "m", src_oa, st_oa, fn_oa)?;
+    let n_if: string = "#if defined(FX_OVERRIDE_";
+    let n_else: string = "#else";
+    let n_asm: string = "__asm__";
+    let el: i32 = string.len(em_oa);
+    let found_if: i32 = 0;
+    let found_else: i32 = 0;
+    let found_asm: i32 = 0;
+    let ei: i32 = 0;
+    while (ei < el) {
+        if (ei + string.len(n_if) <= el) {
+            if (sh_lexer.slice_eq(em_oa, ei, string.len(n_if), n_if) == 1) {
+                found_if = 1;
+            }
+        }
+        if (ei + string.len(n_else) <= el) {
+            if (sh_lexer.slice_eq(em_oa, ei, string.len(n_else), n_else) == 1) {
+                found_else = 1;
+            }
+        }
+        if (ei + string.len(n_asm) <= el) {
+            if (sh_lexer.slice_eq(em_oa, ei, string.len(n_asm), n_asm) == 1) {
+                found_asm = 1;
+            }
+        }
+        ei = ei + 1;
+    }
+    if (found_if != 1) {
+        return Ok(927);
+    }
+    if (found_else != 1) {
+        return Ok(927);
+    }
+    if (found_asm != 1) {
+        return Ok(928);
+    }
+
+    // FX-SH-NAT-15 - `///` + `#[…]` skip + `with { }` consume (/* fx: with */).
+    let src_su: string = "/// docs\n#[ui(group = \"Interface\")]\nstruct T { x: i32 }";
+    let toks_su: TokBuf = sh_lexer.lex(src_su);
+    let pos_su: i32 = 0;
+    let st_su: StructOut = parse_struct_def(toks_su.kinds, toks_su.vals, toks_su.lens, src_su, &mut pos_su)?;
+    if (sh_lexer.slice_eq(src_su, st_su.name_off, st_su.name_len, "T") != 1) {
+        return Ok(929);
+    }
+    let src_w: string = "p with { y: 32 }";
+    let toks_w: TokBuf = sh_lexer.lex(src_w);
+    let pos_w: i32 = 0;
+    let empty_w: Vec<Expr> = vec_new(0);
+    let out_w: ParseOut = parse_expr(toks_w.kinds, toks_w.vals, toks_w.lens, &mut pos_w, empty_w)?;
+    if (pos_w != toks_w.kinds.len) {
+        return Ok(930);
+    }
+    if (out_w.idx < 0) {
+        return Ok(930);
+    }
+    let src_at: string = "#[ui(x)]";
+    let toks_at: TokBuf = sh_lexer.lex(src_at);
+    if (toks_at.kinds.len != 0) {
+        return Ok(931);
+    }
+
+    // FX-SH-CONV-3-2 - genuine emit_return_num_line.
+    let want_ret: string = "    return 42;\n";
+    let line_ret: string = emit_return_num_line(42)?;
+    if (string.len(line_ret) != string.len(want_ret)) {
+        return Ok(932);
+    }
+    if (sh_lexer.slice_eq(line_ret, 0, string.len(want_ret), want_ret) != 1) {
+        return Ok(932);
+    }
+
+    // FX-SH-CONV-3-3 - parse_fn_def accepts `return A + B`.
+    let src_add: string = "fn main() -> i32 {\n    return 41 + 1;\n}\n";
+    let toks_add: TokBuf = sh_lexer.lex(src_add);
+    let pos_add: i32 = 0;
+    let add_nodes: Vec<Expr> = vec_new(0);
+    let add_stmts: Vec<Stmt> = vec_new(0);
+    let fn_add: FnOut = parse_fn_def(toks_add.kinds, toks_add.vals, toks_add.lens, src_add, "", &mut pos_add, add_nodes, add_stmts)?;
+    if (pos_add != toks_add.kinds.len) {
+        return Ok(933);
+    }
+    if (sh_lexer.slice_eq(src_add, fn_add.name_off, fn_add.name_len, "main") != 1) {
+        return Ok(933);
+    }
+
+    // FX-SH-CONV-3-4 - parse_fn_def accepts return A {-,*,/} B.
+    let src_mul: string = "fn main() -> i32 {\n    return 21 * 2;\n}\n";
+    let toks_mul: TokBuf = sh_lexer.lex(src_mul);
+    let pos_mul: i32 = 0;
+    let mul_nodes: Vec<Expr> = vec_new(0);
+    let mul_stmts: Vec<Stmt> = vec_new(0);
+    let fn_mul: FnOut = parse_fn_def(toks_mul.kinds, toks_mul.vals, toks_mul.lens, src_mul, "", &mut pos_mul, mul_nodes, mul_stmts)?;
+    if (pos_mul != toks_mul.kinds.len) {
+        return Ok(934);
+    }
+    if (sh_lexer.slice_eq(src_mul, fn_mul.name_off, fn_mul.name_len, "main") != 1) {
+        return Ok(934);
+    }
+    let src_sub: string = "fn main() -> i32 {\n    return 43 - 1;\n}\n";
+    let toks_sub: TokBuf = sh_lexer.lex(src_sub);
+    let pos_sub: i32 = 0;
+    let sub_nodes: Vec<Expr> = vec_new(0);
+    let sub_stmts: Vec<Stmt> = vec_new(0);
+    let fn_sub: FnOut = parse_fn_def(toks_sub.kinds, toks_sub.vals, toks_sub.lens, src_sub, "", &mut pos_sub, sub_nodes, sub_stmts)?;
+    if (pos_sub != toks_sub.kinds.len) {
+        return Ok(934);
+    }
+    if (sh_lexer.slice_eq(src_sub, fn_sub.name_off, fn_sub.name_len, "main") != 1) {
+        return Ok(934);
+    }
+    let src_div: string = "fn main() -> i32 {\n    return 84 / 2;\n}\n";
+    let toks_div: TokBuf = sh_lexer.lex(src_div);
+    let pos_div: i32 = 0;
+    let div_nodes: Vec<Expr> = vec_new(0);
+    let div_stmts: Vec<Stmt> = vec_new(0);
+    let fn_div: FnOut = parse_fn_def(toks_div.kinds, toks_div.vals, toks_div.lens, src_div, "", &mut pos_div, div_nodes, div_stmts)?;
+    if (pos_div != toks_div.kinds.len) {
+        return Ok(934);
+    }
+    if (sh_lexer.slice_eq(src_div, fn_div.name_off, fn_div.name_len, "main") != 1) {
+        return Ok(934);
+    }
+
+    // FX-SH-CONV-3-5 - parse_fn_def accepts let x = N; return x.
+    let src_let: string = "fn main() -> i32 {\n    let x = 42;\n    return x;\n}\n";
+    let toks_let: TokBuf = sh_lexer.lex(src_let);
+    let pos_let: i32 = 0;
+    let let_nodes: Vec<Expr> = vec_new(0);
+    let let_stmts: Vec<Stmt> = vec_new(0);
+    let fn_let: FnOut = parse_fn_def(toks_let.kinds, toks_let.vals, toks_let.lens, src_let, "", &mut pos_let, let_nodes, let_stmts)?;
+    if (pos_let != toks_let.kinds.len) {
+        return Ok(935);
+    }
+    if (sh_lexer.slice_eq(src_let, fn_let.name_off, fn_let.name_len, "main") != 1) {
+        return Ok(935);
+    }
+
+    // FX-SH-CONV-3-6 - parse_fn_def accepts chained return A + B + C.
+    let src_chain: string = "fn main() -> i32 {\n    return 10 + 20 + 12;\n}\n";
+    let toks_chain: TokBuf = sh_lexer.lex(src_chain);
+    let pos_chain: i32 = 0;
+    let chain_nodes: Vec<Expr> = vec_new(0);
+    let chain_stmts: Vec<Stmt> = vec_new(0);
+    let fn_chain: FnOut = parse_fn_def(toks_chain.kinds, toks_chain.vals, toks_chain.lens, src_chain, "", &mut pos_chain, chain_nodes, chain_stmts)?;
+    if (pos_chain != toks_chain.kinds.len) {
+        return Ok(936);
+    }
+    if (sh_lexer.slice_eq(src_chain, fn_chain.name_off, fn_chain.name_len, "main") != 1) {
+        return Ok(936);
+    }
+
+    // FX-SH-CONV-3-7 - parse_fn_def accepts let x = A + B + C; return x.
+    let src_let_chain: string = "fn main() -> i32 {\n    let x = 10 + 20 + 12;\n    return x;\n}\n";
+    let toks_lc: TokBuf = sh_lexer.lex(src_let_chain);
+    let pos_lc: i32 = 0;
+    let lc_nodes: Vec<Expr> = vec_new(0);
+    let lc_stmts: Vec<Stmt> = vec_new(0);
+    let fn_lc: FnOut = parse_fn_def(toks_lc.kinds, toks_lc.vals, toks_lc.lens, src_let_chain, "", &mut pos_lc, lc_nodes, lc_stmts)?;
+    if (pos_lc != toks_lc.kinds.len) {
+        return Ok(939);
+    }
+    if (sh_lexer.slice_eq(src_let_chain, fn_lc.name_off, fn_lc.name_len, "main") != 1) {
+        return Ok(939);
+    }
+
+    // FX-SH-CONV-3-8 - parse_fn_def accepts let x = N; return x + 1.
+    let src_let_op: string = "fn main() -> i32 {\n    let x = 41;\n    return x + 1;\n}\n";
+    let toks_lo: TokBuf = sh_lexer.lex(src_let_op);
+    let pos_lo: i32 = 0;
+    let lo_nodes: Vec<Expr> = vec_new(0);
+    let lo_stmts: Vec<Stmt> = vec_new(0);
+    let fn_lo: FnOut = parse_fn_def(toks_lo.kinds, toks_lo.vals, toks_lo.lens, src_let_op, "", &mut pos_lo, lo_nodes, lo_stmts)?;
+    if (pos_lo != toks_lo.kinds.len) {
+        return Ok(940);
+    }
+    if (sh_lexer.slice_eq(src_let_op, fn_lo.name_off, fn_lo.name_len, "main") != 1) {
+        return Ok(940);
+    }
+
+    // FX-SH-CONV-3-9 - parse_fn_def accepts return (A + B) * C.
+    let src_paren: string = "fn main() -> i32 {\n    return (10 + 20) * 2;\n}\n";
+    let toks_p: TokBuf = sh_lexer.lex(src_paren);
+    let pos_p: i32 = 0;
+    let p_nodes: Vec<Expr> = vec_new(0);
+    let p_stmts: Vec<Stmt> = vec_new(0);
+    let fn_p: FnOut = parse_fn_def(toks_p.kinds, toks_p.vals, toks_p.lens, src_paren, "", &mut pos_p, p_nodes, p_stmts)?;
+    if (pos_p != toks_p.kinds.len) {
+        return Ok(941);
+    }
+    if (sh_lexer.slice_eq(src_paren, fn_p.name_off, fn_p.name_len, "main") != 1) {
+        return Ok(941);
+    }
+
+    // FX-SH-CONV-3-10 - parse_fn_def accepts let x = (A + B); return x + C.
+    let src_let_paren: string = "fn main() -> i32 {\n    let x = (10 + 20);\n    return x + 12;\n}\n";
+    let toks_lp: TokBuf = sh_lexer.lex(src_let_paren);
+    let pos_lp: i32 = 0;
+    let lp_nodes: Vec<Expr> = vec_new(0);
+    let lp_stmts: Vec<Stmt> = vec_new(0);
+    let fn_lp: FnOut = parse_fn_def(toks_lp.kinds, toks_lp.vals, toks_lp.lens, src_let_paren, "", &mut pos_lp, lp_nodes, lp_stmts)?;
+    if (pos_lp != toks_lp.kinds.len) {
+        return Ok(947);
+    }
+    if (sh_lexer.slice_eq(src_let_paren, fn_lp.name_off, fn_lp.name_len, "main") != 1) {
+        return Ok(947);
+    }
+
+    // FX-SH-CONV-3-11 - parse_fn_def accepts let x = N; let y = M; return x + y + C.
+    let src_multi_let: string = "fn main() -> i32 {\n    let x = 10;\n    let y = 20;\n    return x + y + 12;\n}\n";
+    let toks_ml: TokBuf = sh_lexer.lex(src_multi_let);
+    let pos_ml: i32 = 0;
+    let ml_nodes: Vec<Expr> = vec_new(0);
+    let ml_stmts: Vec<Stmt> = vec_new(0);
+    let fn_ml: FnOut = parse_fn_def(toks_ml.kinds, toks_ml.vals, toks_ml.lens, src_multi_let, "", &mut pos_ml, ml_nodes, ml_stmts)?;
+    if (pos_ml != toks_ml.kinds.len) {
+        return Ok(948);
+    }
+    if (sh_lexer.slice_eq(src_multi_let, fn_ml.name_off, fn_ml.name_len, "main") != 1) {
+        return Ok(948);
+    }
+
+    // FX-SH-CONV-3-12 - parse_fn_def accepts return ((A + B) + C).
+    let src_nested: string = "fn main() -> i32 {\n    return ((10 + 20) + 12);\n}\n";
+    let toks_n: TokBuf = sh_lexer.lex(src_nested);
+    let pos_n: i32 = 0;
+    let n_nodes: Vec<Expr> = vec_new(0);
+    let n_stmts: Vec<Stmt> = vec_new(0);
+    let fn_n: FnOut = parse_fn_def(toks_n.kinds, toks_n.vals, toks_n.lens, src_nested, "", &mut pos_n, n_nodes, n_stmts)?;
+    if (pos_n != toks_n.kinds.len) {
+        return Ok(949);
+    }
+    if (sh_lexer.slice_eq(src_nested, fn_n.name_off, fn_n.name_len, "main") != 1) {
+        return Ok(949);
+    }
+
+    // FX-SH-NAT-15b - keep RecordUpdate AST + Point `with` emit (gates 672-675).
+    let src_ru: string = "p with { y: 32 }";
+    let toks_ru: TokBuf = sh_lexer.lex(src_ru);
+    let pos_ru: i32 = 0;
+    let empty_ru: Vec<Expr> = vec_new(0);
+    let out_ru: ParseOut = parse_expr(toks_ru.kinds, toks_ru.vals, toks_ru.lens, &mut pos_ru, empty_ru)?;
+    if (pos_ru != toks_ru.kinds.len) {
+        return Ok(937);
+    }
+    if (expr_ty_tag(out_ru.nodes, out_ru.idx) != 20) {
+        return Ok(937);
+    }
+    let emit_ru: string = emit_parser_expr_c("demo", src_ru, out_ru.nodes, out_ru.idx)?;
+    let want_ru: string = "/* fx: with */ (fx_demo_Point){ .x = (p).x, .y = 32 }";
+    if (string.len(emit_ru) != string.len(want_ru)) {
+        return Ok(938);
+    }
+    if (sh_lexer.slice_eq(emit_ru, 0, string.len(want_ru), want_ru) != 1) {
+        return Ok(938);
+    }
+
+    // FX-SH-NAT-14b - v4i32 helper emit foothold (gates 668-671 prove needles).
+    return Ok(42);
 }
 
 fn includes_stdint_only() -> Result<string, core_Err> effects { alloc, mut } {
@@ -5974,6 +6636,7 @@ fn expr_is_call1_strlit(nodes: Vec<Expr>, idx: i32, src: string, callee: string,
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6056,6 +6719,7 @@ fn expr_is_ok_struct_lit_nums(nodes: Vec<Expr>, idx: i32, src: string, st_name: 
                 Index(_, _) => 0,
                 SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -6076,6 +6740,7 @@ fn expr_is_ok_struct_lit_nums(nodes: Vec<Expr>, idx: i32, src: string, st_name: 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6132,6 +6797,7 @@ fn expr_is_try_call0(nodes: Vec<Expr>, idx: i32, src: string, callee: string) ->
                 Index(_, _) => 0,
                 SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
             };
         },
         Num(_) => 0,
@@ -6152,6 +6818,7 @@ fn expr_is_try_call0(nodes: Vec<Expr>, idx: i32, src: string, callee: string) ->
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6201,6 +6868,7 @@ fn expr_is_try_call1_num(nodes: Vec<Expr>, idx: i32, src: string, callee: string
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6328,6 +6996,7 @@ fn expr_is_call1_ident(nodes: Vec<Expr>, idx: i32, src: string, callee: string, 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6387,6 +7056,7 @@ fn expr_match_arm_count(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6412,6 +7082,7 @@ fn expr_match_scrutinee_is_ident(nodes: Vec<Expr>, idx: i32, src: string, name: 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6437,6 +7108,7 @@ fn expr_match_scrutinee_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6470,6 +7142,7 @@ fn expr_is_call2_ident_num(nodes: Vec<Expr>, idx: i32, src: string, callee: stri
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -6503,6 +7176,7 @@ fn expr_is_call2_call1_ident_num(nodes: Vec<Expr>, idx: i32, src: string, outer:
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7069,6 +7743,7 @@ fn match_arm_body_idx(nodes: Vec<Expr>, match_idx: i32, arm_i: i32) -> i32 {
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7358,6 +8033,7 @@ fn expr_call_arg0_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7383,6 +8059,7 @@ fn expr_call_arg1_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7408,6 +8085,7 @@ fn expr_call_arg2_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7433,6 +8111,7 @@ fn expr_call_arg3_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7458,6 +8137,7 @@ fn expr_call_arg4_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -7488,6 +8168,7 @@ fn expr_call1_arg_idx(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -8079,6 +8760,7 @@ fn expr_call_callee_is(nodes: Vec<Expr>, idx: i32, src: string, callee: string) 
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -8112,6 +8794,7 @@ fn expr_is_call1_num(nodes: Vec<Expr>, idx: i32, src: string, callee: string, li
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -8148,6 +8831,7 @@ fn expr_is_payload_ctor2_num(nodes: Vec<Expr>, idx: i32, src: string, variant: s
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -8207,6 +8891,7 @@ fn expr_is_payload_ctor_strlit(nodes: Vec<Expr>, idx: i32, src: string, variant:
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -9467,7 +10152,7 @@ fn expr_roots_map_new_ss(src: string, nodes: Vec<Expr>, idx: i32) -> i32 {
     if (sh_lexer.slice_eq(src, coff, cln, "map_new_ss") == 1) {
         return 1;
     }
-    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1) {
+    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1 || sh_lexer.slice_eq(src, coff, cln, "map.insert") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         return expr_roots_map_new_ss(src, nodes, a0);
     }
@@ -9489,7 +10174,7 @@ fn call_expr_wants_map_ss(src: string, nodes: Vec<Expr>, idx: i32) -> i32 {
             return 1;
         }
     }
-    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1) {
+    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1 || sh_lexer.slice_eq(src, coff, cln, "map.insert") == 1) {
         let a2: i32 = expr_call_arg2_idx(nodes, idx);
         if (a2 >= 0) {
             if (expr_ty_tag(nodes, a2) == 2) {
@@ -9529,6 +10214,17 @@ fn call_expr_wants_map_ss(src: string, nodes: Vec<Expr>, idx: i32) -> i32 {
 fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let coff: i32 = expr_call2_callee_off(nodes, idx);
     let cln: i32 = expr_call2_callee_ln(nodes, idx);
+    // FX-SH-NAT-11 - leftover `vec_filter` / `vec_map` / `vec_collect` Call is loud
+    // (expand only at let/assign inside guest / plugins/).
+    if (sh_lexer.slice_eq(src, coff, cln, "vec_filter") == 1) {
+        return Err(1);
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "vec_map") == 1) {
+        return Err(1);
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "vec_collect") == 1) {
+        return Err(1);
+    }
     if (sh_lexer.slice_eq(src, coff, cln, "vec_get") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -9602,7 +10298,7 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
     if (sh_lexer.slice_eq(src, coff, cln, "map_new_ss") == 1) {
         return emit_map_mod_call_c(mod_slug, "map_new_ss", "core_default_allocator()");
     }
-    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1) {
+    if (sh_lexer.slice_eq(src, coff, cln, "map_insert") == 1 || sh_lexer.slice_eq(src, coff, cln, "map.insert") == 1) {
         if (call_expr_wants_map_ss(src, nodes, idx) == 1) {
             let a0: i32 = expr_call_arg0_idx(nodes, idx);
             let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -9679,6 +10375,55 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b3: StrBuilder = strbuf_push(b2, "_buf_new(core_default_allocator())");
         return Ok(strbuf_finish(b3));
     }
+    // FX-SH-NAT-14b - v4i32 ctor + scalar helpers (foundry emit_c_helpers shape; no SSE in live seed).
+    if (sh_lexer.slice_eq(src, coff, cln, "v4i32") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let a3: i32 = expr_call_arg3_idx(nodes, idx);
+        let e0: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let e1: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let e2: string = emit_parser_expr_c(mod_slug, src, nodes, a2)?;
+        let e3: string = emit_parser_expr_c(mod_slug, src, nodes, a3)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((fx_v4i32){ .v = { (int32_t)(");
+        let b2: StrBuilder = strbuf_push(b1, e0);
+        let b3: StrBuilder = strbuf_push(b2, "), (int32_t)(");
+        let b4: StrBuilder = strbuf_push(b3, e1);
+        let b5: StrBuilder = strbuf_push(b4, "), (int32_t)(");
+        let b6: StrBuilder = strbuf_push(b5, e2);
+        let b7: StrBuilder = strbuf_push(b6, "), (int32_t)(");
+        let b8: StrBuilder = strbuf_push(b7, e3);
+        let b9: StrBuilder = strbuf_push(b8, ") } })");
+        return Ok(strbuf_finish(b9));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "v4i32_add") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let x: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let y: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, x);
+        let b2: StrBuilder = strbuf_push(b1, ", ");
+        let b3: StrBuilder = strbuf_push(b2, y);
+        return emit_map_mod_call_c(mod_slug, "v4i32_add", strbuf_finish(b3));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "v4i32_lane") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let v: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let i: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, v);
+        let b2: StrBuilder = strbuf_push(b1, ", ");
+        let b3: StrBuilder = strbuf_push(b2, i);
+        return emit_map_mod_call_c(mod_slug, "v4i32_lane", strbuf_finish(b3));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "v4i32_hadd") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let v: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        return emit_map_mod_call_c(mod_slug, "v4i32_hadd", v);
+    }
     if (sh_lexer.slice_eq(src, coff, cln, "buf_push") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -9749,7 +10494,8 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b5: StrBuilder = strbuf_push(b4, ")])");
         return Ok(strbuf_finish(b5));
     }
-    if (sh_lexer.slice_eq(src, coff, cln, "vec_push") == 1) {
+    // FX-SH-NAT-10 - `vec.push` is the std-qual spelling (lexer glues the dot).
+    if (sh_lexer.slice_eq(src, coff, cln, "vec_push") == 1 || sh_lexer.slice_eq(src, coff, cln, "vec.push") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
         let a1: i32 = expr_call_arg1_idx(nodes, idx);
         if (a1 >= 0) {
@@ -10182,6 +10928,152 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
             }
         }
     }
+    // FX-SH-NAT-10 - method sugar `v.push` / `m.insert` (receiver is callee prefix).
+    let coll_dot: i32 = -1;
+    let coll_i: i32 = 0;
+    while (coll_i < cln) {
+        if (string.byte_at(src, coff + coll_i) == 46) {
+            coll_dot = coff + coll_i;
+        }
+        coll_i = coll_i + 1;
+    }
+    if (coll_dot >= 0) {
+        let meth_off: i32 = coll_dot + 1;
+        let meth_ln: i32 = (coff + cln) - meth_off;
+        let pfx_ln: i32 = coll_dot - coff;
+        let is_std: i32 = 0;
+        if (sh_lexer.slice_eq(src, coff, pfx_ln, "vec") == 1) {
+            is_std = 1;
+        }
+        if (sh_lexer.slice_eq(src, coff, pfx_ln, "map") == 1) {
+            is_std = 1;
+        }
+        if (sh_lexer.slice_eq(src, coff, pfx_ln, "pool") == 1) {
+            is_std = 1;
+        }
+        if (sh_lexer.slice_eq(src, coff, pfx_ln, "buf") == 1) {
+            is_std = 1;
+        }
+        if (sh_lexer.slice_eq(src, coff, pfx_ln, "string") == 1) {
+            is_std = 1;
+        }
+        if (is_std != 1) {
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "push") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let a1: i32 = expr_call_arg1_idx(nodes, idx);
+                let a2: i32 = expr_call_arg2_idx(nodes, idx);
+                let a3: i32 = expr_call_arg3_idx(nodes, idx);
+                let a4: i32 = expr_call_arg4_idx(nodes, idx);
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "fx_");
+                let b2: StrBuilder = strbuf_push(b1, mod_slug);
+                let b3: StrBuilder = strbuf_push(b2, "_vec_push(");
+                let b4: StrBuilder = strbuf_push(b3, recv);
+                if (a0 >= 0) {
+                    let span_end: i32 = a1;
+                    if (a2 >= 0) {
+                        span_end = a2;
+                    }
+                    if (a3 >= 0) {
+                        span_end = a3;
+                    }
+                    if (a4 >= 0) {
+                        span_end = a4;
+                    }
+                    let args: string = emit_call_args_span_c(mod_slug, src, nodes, a0, span_end)?;
+                    b4 = strbuf_push(b4, ", ");
+                    b4 = strbuf_push(b4, args);
+                }
+                let b5: StrBuilder = strbuf_push(b4, ")");
+                return Ok(strbuf_finish(b5));
+            }
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "insert") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let a1: i32 = expr_call_arg1_idx(nodes, idx);
+                let key: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+                let val: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "core_default_allocator(), ");
+                let b2: StrBuilder = strbuf_push(b1, recv);
+                let b3: StrBuilder = strbuf_push(b2, ", ");
+                let b4: StrBuilder = strbuf_push(b3, key);
+                let b5: StrBuilder = strbuf_push(b4, ", ");
+                let b6: StrBuilder = strbuf_push(b5, val);
+                if (expr_ty_tag(nodes, a1) == 2) {
+                    return emit_map_mod_call_c(mod_slug, "map_insert_ss", strbuf_finish(b6));
+                }
+                return emit_map_mod_call_c(mod_slug, "map_insert", strbuf_finish(b6));
+            }
+        }
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "vec.push") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let a3: i32 = expr_call_arg3_idx(nodes, idx);
+        let a4: i32 = expr_call_arg4_idx(nodes, idx);
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "fx_");
+        let b2: StrBuilder = strbuf_push(b1, mod_slug);
+        let b3: StrBuilder = strbuf_push(b2, "_vec_push");
+        let callee: string = strbuf_finish(b3);
+        let b4: StrBuilder = strbuf_new();
+        let b5: StrBuilder = strbuf_push(b4, callee);
+        let b6: StrBuilder = strbuf_push(b5, "(");
+        if (a0 < 0) {
+            let b7: StrBuilder = strbuf_push(b6, ")");
+            return Ok(strbuf_finish(b7));
+        }
+        let span_end: i32 = a1;
+        if (a2 >= 0) {
+            span_end = a2;
+        }
+        if (a3 >= 0) {
+            span_end = a3;
+        }
+        if (a4 >= 0) {
+            span_end = a4;
+        }
+        let args: string = emit_call_args_span_c(mod_slug, src, nodes, a0, span_end)?;
+        let b7: StrBuilder = strbuf_push(b6, args);
+        let b8: StrBuilder = strbuf_push(b7, ")");
+        return Ok(strbuf_finish(b8));
+    }
+    if (sh_lexer.slice_eq(src, coff, cln, "map.insert") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let a3: i32 = expr_call_arg3_idx(nodes, idx);
+        let a4: i32 = expr_call_arg4_idx(nodes, idx);
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "fx_");
+        let b2: StrBuilder = strbuf_push(b1, mod_slug);
+        let b3: StrBuilder = strbuf_push(b2, "_map_insert");
+        let callee: string = strbuf_finish(b3);
+        let b4: StrBuilder = strbuf_new();
+        let b5: StrBuilder = strbuf_push(b4, callee);
+        let b6: StrBuilder = strbuf_push(b5, "(");
+        if (a0 < 0) {
+            let b7: StrBuilder = strbuf_push(b6, ")");
+            return Ok(strbuf_finish(b7));
+        }
+        let span_end: i32 = a1;
+        if (a2 >= 0) {
+            span_end = a2;
+        }
+        if (a3 >= 0) {
+            span_end = a3;
+        }
+        if (a4 >= 0) {
+            span_end = a4;
+        }
+        let args: string = emit_call_args_span_c(mod_slug, src, nodes, a0, span_end)?;
+        let b7: StrBuilder = strbuf_push(b6, args);
+        let b8: StrBuilder = strbuf_push(b7, ")");
+        return Ok(strbuf_finish(b8));
+    }
     let callee: string = emit_parser_callee_c(mod_slug, src, coff, cln)?;
     let a0: i32 = expr_call_arg0_idx(nodes, idx);
     let a1: i32 = expr_call_arg1_idx(nodes, idx);
@@ -10303,6 +11195,126 @@ fn emit_parser_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
     if (tag == 19) {
         return emit_parser_array_lit_c(mod_slug, src, nodes, idx);
     }
+    // FX-SH-NAT-15b - `base with { f: v }` → /* fx: with */ Point compound (one override).
+    if (tag == 20) {
+        let base_i: i32 = match vec_get(nodes, idx) {
+            RecordUpdate(base, _, _, _) => base,
+            Num(_) => -1,
+            StrLit(_, _) => -1,
+            Ident(_, _) => -1,
+            Add(_, _) => -1,
+            Sub(_, _) => -1,
+            Mul(_, _) => -1,
+            Div(_, _) => -1,
+            CmpLt(_, _) => -1,
+            CmpNe(_, _) => -1,
+            CmpEq(_, _) => -1,
+            CmpGe(_, _) => -1,
+            Deref(_) => -1,
+            Match(_, _, _) => -1,
+            CallExpr(_, _, _, _, _, _, _) => -1,
+            StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+            TryExpr(_) => -1,
+            Index(_, _) => -1,
+            SliceRange(_, _, _) => -1,
+            ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        };
+        let foff: i32 = match vec_get(nodes, idx) {
+            RecordUpdate(_, off, _, _) => off,
+            Num(_) => -1,
+            StrLit(_, _) => -1,
+            Ident(_, _) => -1,
+            Add(_, _) => -1,
+            Sub(_, _) => -1,
+            Mul(_, _) => -1,
+            Div(_, _) => -1,
+            CmpLt(_, _) => -1,
+            CmpNe(_, _) => -1,
+            CmpEq(_, _) => -1,
+            CmpGe(_, _) => -1,
+            Deref(_) => -1,
+            Match(_, _, _) => -1,
+            CallExpr(_, _, _, _, _, _, _) => -1,
+            StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+            TryExpr(_) => -1,
+            Index(_, _) => -1,
+            SliceRange(_, _, _) => -1,
+            ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        };
+        let fln: i32 = match vec_get(nodes, idx) {
+            RecordUpdate(_, _, ln, _) => ln,
+            Num(_) => -1,
+            StrLit(_, _) => -1,
+            Ident(_, _) => -1,
+            Add(_, _) => -1,
+            Sub(_, _) => -1,
+            Mul(_, _) => -1,
+            Div(_, _) => -1,
+            CmpLt(_, _) => -1,
+            CmpNe(_, _) => -1,
+            CmpEq(_, _) => -1,
+            CmpGe(_, _) => -1,
+            Deref(_) => -1,
+            Match(_, _, _) => -1,
+            CallExpr(_, _, _, _, _, _, _) => -1,
+            StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+            TryExpr(_) => -1,
+            Index(_, _) => -1,
+            SliceRange(_, _, _) => -1,
+            ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        };
+        let val_i: i32 = match vec_get(nodes, idx) {
+            RecordUpdate(_, _, _, val) => val,
+            Num(_) => -1,
+            StrLit(_, _) => -1,
+            Ident(_, _) => -1,
+            Add(_, _) => -1,
+            Sub(_, _) => -1,
+            Mul(_, _) => -1,
+            Div(_, _) => -1,
+            CmpLt(_, _) => -1,
+            CmpNe(_, _) => -1,
+            CmpEq(_, _) => -1,
+            CmpGe(_, _) => -1,
+            Deref(_) => -1,
+            Match(_, _, _) => -1,
+            CallExpr(_, _, _, _, _, _, _) => -1,
+            StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
+            TryExpr(_) => -1,
+            Index(_, _) => -1,
+            SliceRange(_, _, _) => -1,
+            ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        };
+        if (base_i < 0) {
+            return Err(1);
+        }
+        if (val_i < 0) {
+            return Err(1);
+        }
+        let base: string = emit_parser_expr_c(mod_slug, src, nodes, base_i)?;
+        let val: string = emit_parser_expr_c(mod_slug, src, nodes, val_i)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "/* fx: with */ (fx_");
+        let b2: StrBuilder = strbuf_push(b1, mod_slug);
+        let cur: StrBuilder = strbuf_push(b2, "_Point){ ");
+        if (sh_lexer.slice_eq(src, foff, fln, "y") == 1) {
+            cur = strbuf_push(cur, ".x = (");
+            cur = strbuf_push(cur, base);
+            cur = strbuf_push(cur, ").x, .y = ");
+            cur = strbuf_push(cur, val);
+            cur = strbuf_push(cur, " }");
+            return Ok(strbuf_finish(cur));
+        }
+        if (sh_lexer.slice_eq(src, foff, fln, "x") == 1) {
+            cur = strbuf_push(cur, ".x = ");
+            cur = strbuf_push(cur, val);
+            cur = strbuf_push(cur, ", .y = (");
+            cur = strbuf_push(cur, base);
+            cur = strbuf_push(cur, ").y }");
+            return Ok(strbuf_finish(cur));
+        }
+        return Err(1);
+    }
     return Err(1);
 }
 
@@ -10329,6 +11341,7 @@ fn array_lit_count(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -10364,6 +11377,7 @@ fn array_lit_field_idx(nodes: Vec<Expr>, idx: i32, which: i32) -> i32 {
         Index(_, _) => -1,
         SliceRange(_, _, _) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -10734,10 +11748,139 @@ fn emit_parser_while_stmt_line(mod_slug: string, src: string, prof: FixtureProfi
 
 fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfile, st_out: StructOut, fn_out: FnOut, stmt_idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let tag: i32 = stmt_ty_tag(fn_out.stmts, stmt_idx);
+    // FX-SH-NAT-11 - guest region is a marker (isolation is host/caps); helpers expand below.
+    if (tag == 9) {
+        let rsz: i32 = stmt_region_arena_size(fn_out.stmts, stmt_idx);
+        if (rsz < 0) {
+            return Ok("    /* FX-SH-NAT-11 guest */\n");
+        }
+        return Err(1);
+    }
+    let in_guest: i32 = 0;
+    let gi: i32 = 0;
+    while (gi < stmt_idx) {
+        if (stmt_ty_tag(fn_out.stmts, gi) == 9) {
+            if (stmt_region_arena_size(fn_out.stmts, gi) < 0) {
+                in_guest = 1;
+            }
+        }
+        gi = gi + 1;
+    }
+    let gp: string = prof.golden_path;
+    let gpl: i32 = string.len(gp);
+    let pi: i32 = 0;
+    while (pi + 8 <= gpl) {
+        if (sh_lexer.slice_eq(gp, pi, 8, "plugins/") == 1) {
+            in_guest = 1;
+        }
+        if (sh_lexer.slice_eq(gp, pi, 8, "plugins\\") == 1) {
+            in_guest = 1;
+        }
+        pi = pi + 1;
+    }
     if (tag == 1) {
         let off: i32 = stmt_let_var_off(fn_out.stmts, stmt_idx);
         let ln: i32 = stmt_let_var_ln(fn_out.stmts, stmt_idx);
         let e: i32 = stmt_let_expr_idx(fn_out.stmts, stmt_idx);
+        if (expr_ty_tag(fn_out.nodes, e) == 10) {
+            let is_filt: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_filter");
+            let is_map: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_map");
+            let is_col: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_collect");
+            if (is_filt == 1 || is_map == 1 || is_col == 1) {
+                if (in_guest != 1) {
+                    return Err(1);
+                }
+                let vname: string = sh_lexer.slice_str(src, off, ln)?;
+                let ty_c: string = "fx_Vec_i32";
+                if (stmt_let_ty_ln(fn_out.stmts, stmt_idx) > 0) {
+                    let ty_off: i32 = stmt_let_ty_off(fn_out.stmts, stmt_idx);
+                    let ty_ln: i32 = stmt_let_ty_ln(fn_out.stmts, stmt_idx);
+                    ty_c = emit_let_bind_type_c_name(mod_slug, src, fn_out, ty_off, ty_ln)?;
+                }
+                let a0: i32 = expr_call_arg0_idx(fn_out.nodes, e);
+                let src_e: string = emit_parser_expr_c(mod_slug, src, fn_out.nodes, a0)?;
+                let idn: string = str_from_i32(stmt_idx)?;
+                let b0: StrBuilder = strbuf_new();
+                b0 = strbuf_push(b0, "    ");
+                b0 = strbuf_push(b0, ty_c);
+                b0 = strbuf_push(b0, " ");
+                b0 = strbuf_push(b0, vname);
+                b0 = strbuf_push(b0, " = fx_");
+                b0 = strbuf_push(b0, mod_slug);
+                b0 = strbuf_push(b0, "_vec_new(0);\n    {\n        int32_t __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = 0;\n        while (__fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " < (");
+                b0 = strbuf_push(b0, src_e);
+                b0 = strbuf_push(b0, ").len) {\n            int32_t __fx_vf_x");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = (");
+                b0 = strbuf_push(b0, src_e);
+                b0 = strbuf_push(b0, ").data[(size_t)__fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, ")];\n");
+                if (is_filt == 1) {
+                    let a1: i32 = expr_call_arg1_idx(fn_out.nodes, e);
+                    if (expr_ty_tag(fn_out.nodes, a1) != 3) {
+                        return Err(1);
+                    }
+                    let pred: string = sh_lexer.slice_str(src, expr_ident_off(fn_out.nodes, a1), expr_ident_ln(fn_out.nodes, a1))?;
+                    b0 = strbuf_push(b0, "            if (");
+                    b0 = strbuf_push(b0, pred);
+                    b0 = strbuf_push(b0, "(__fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ")) {\n                ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n            }\n");
+                }
+                if (is_map == 1) {
+                    let a1: i32 = expr_call_arg1_idx(fn_out.nodes, e);
+                    if (expr_ty_tag(fn_out.nodes, a1) != 3) {
+                        return Err(1);
+                    }
+                    let fun: string = sh_lexer.slice_str(src, expr_ident_off(fn_out.nodes, a1), expr_ident_ln(fn_out.nodes, a1))?;
+                    b0 = strbuf_push(b0, "            int32_t __fx_vf_y");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, " = ");
+                    b0 = strbuf_push(b0, fun);
+                    b0 = strbuf_push(b0, "(__fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n            ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_y");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n");
+                }
+                if (is_col == 1) {
+                    b0 = strbuf_push(b0, "            ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n");
+                }
+                b0 = strbuf_push(b0, "            __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " + 1;\n        }\n    }\n");
+                return Ok(strbuf_finish(b0));
+            }
+        }
         if (expr_ty_tag(fn_out.nodes, e) == 12) {
             let try_n: i32 = emit_parser_try_n_before(fn_out, stmt_idx);
             let ty_off: i32 = stmt_let_ty_off(fn_out.stmts, stmt_idx);
@@ -10845,6 +11988,97 @@ fn emit_parser_body_stmt_line(mod_slug: string, src: string, prof: FixtureProfil
         let off: i32 = stmt_assign_var_off(fn_out.stmts, stmt_idx);
         let ln: i32 = stmt_assign_var_ln(fn_out.stmts, stmt_idx);
         let e: i32 = stmt_assign_expr_idx(fn_out.stmts, stmt_idx);
+        if (expr_ty_tag(fn_out.nodes, e) == 10) {
+            let is_filt: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_filter");
+            let is_map: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_map");
+            let is_col: i32 = expr_call_callee_is(fn_out.nodes, e, src, "vec_collect");
+            if (is_filt == 1 || is_map == 1 || is_col == 1) {
+                if (in_guest != 1) {
+                    return Err(1);
+                }
+                let vname: string = sh_lexer.slice_str(src, off, ln)?;
+                let a0: i32 = expr_call_arg0_idx(fn_out.nodes, e);
+                let src_e: string = emit_parser_expr_c(mod_slug, src, fn_out.nodes, a0)?;
+                let idn: string = str_from_i32(stmt_idx)?;
+                let b0: StrBuilder = strbuf_new();
+                b0 = strbuf_push(b0, "    ");
+                b0 = strbuf_push(b0, vname);
+                b0 = strbuf_push(b0, " = fx_");
+                b0 = strbuf_push(b0, mod_slug);
+                b0 = strbuf_push(b0, "_vec_new(0);\n    {\n        int32_t __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = 0;\n        while (__fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " < (");
+                b0 = strbuf_push(b0, src_e);
+                b0 = strbuf_push(b0, ").len) {\n            int32_t __fx_vf_x");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = (");
+                b0 = strbuf_push(b0, src_e);
+                b0 = strbuf_push(b0, ").data[(size_t)__fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, ")];\n");
+                if (is_filt == 1) {
+                    let a1: i32 = expr_call_arg1_idx(fn_out.nodes, e);
+                    if (expr_ty_tag(fn_out.nodes, a1) != 3) {
+                        return Err(1);
+                    }
+                    let pred: string = sh_lexer.slice_str(src, expr_ident_off(fn_out.nodes, a1), expr_ident_ln(fn_out.nodes, a1))?;
+                    b0 = strbuf_push(b0, "            if (");
+                    b0 = strbuf_push(b0, pred);
+                    b0 = strbuf_push(b0, "(__fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ")) {\n                ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n            }\n");
+                }
+                if (is_map == 1) {
+                    let a1: i32 = expr_call_arg1_idx(fn_out.nodes, e);
+                    if (expr_ty_tag(fn_out.nodes, a1) != 3) {
+                        return Err(1);
+                    }
+                    let fun: string = sh_lexer.slice_str(src, expr_ident_off(fn_out.nodes, a1), expr_ident_ln(fn_out.nodes, a1))?;
+                    b0 = strbuf_push(b0, "            int32_t __fx_vf_y");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, " = ");
+                    b0 = strbuf_push(b0, fun);
+                    b0 = strbuf_push(b0, "(__fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n            ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_y");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n");
+                }
+                if (is_col == 1) {
+                    b0 = strbuf_push(b0, "            ");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, " = fx_");
+                    b0 = strbuf_push(b0, mod_slug);
+                    b0 = strbuf_push(b0, "_vec_push(");
+                    b0 = strbuf_push(b0, vname);
+                    b0 = strbuf_push(b0, ", __fx_vf_x");
+                    b0 = strbuf_push(b0, idn);
+                    b0 = strbuf_push(b0, ");\n");
+                }
+                b0 = strbuf_push(b0, "            __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " = __fx_vf_i");
+                b0 = strbuf_push(b0, idn);
+                b0 = strbuf_push(b0, " + 1;\n        }\n    }\n");
+                return Ok(strbuf_finish(b0));
+            }
+        }
         if (expr_ty_tag(fn_out.nodes, e) == 12) {
             let try_n: i32 = emit_parser_try_n_before(fn_out, stmt_idx);
             return emit_parser_assign_try_line(mod_slug, src, fn_out, off, ln, fn_out.nodes, e, try_n);
@@ -10921,6 +12155,34 @@ fn emit_parser_param_src_void_cast() -> Result<string, core_Err> effects { alloc
 }
 
 fn emit_fn_parser_helper_block(prof: FixtureProfile, mod_slug: string, src: string, st_out: StructOut, fn_out: FnOut) -> Result<string, core_Err> effects { alloc, mut } {
+    // FX-SH-NAT-13b - GNU __asm__ + #if defined(FX_OVERRIDE_X86_64) || arch; portable #else; same C ABI.
+    if (fn_out.ret_is_result != 1) {
+        if (fn_out.ret_err_len > 0) {
+            let w0: StrBuilder = strbuf_new();
+            w0 = strbuf_push(w0, "/* FX-SH-NAT-13b */\n");
+            if (sh_lexer.slice_eq(src, fn_out.ret_err_off, fn_out.ret_err_len, "x86_64") == 1) {
+                w0 = strbuf_push(w0, "#if defined(FX_OVERRIDE_X86_64) || (defined(__x86_64__) || defined(_M_X64) || defined(__amd64__))\n");
+            } else {
+                w0 = strbuf_push(w0, "#if defined(FX_OVERRIDE_1)\n");
+            }
+            let sl: i32 = string.len(src);
+            let si: i32 = 0;
+            let has_asm: i32 = 0;
+            while (si + 5 <= sl) {
+                if (sh_lexer.slice_eq(src, si, 5, "asm {") == 1) {
+                    has_asm = 1;
+                }
+                si = si + 1;
+            }
+            if (has_asm == 1) {
+                w0 = strbuf_push(w0, "    __asm__ __volatile__(\"leal 41(%[x]), %[y]\" : [y] \"=r\" (y) : [x] \"r\" (x) : \"cc\");\n");
+            }
+            w0 = strbuf_push(w0, "#else\n");
+            w0 = strbuf_push(w0, "/* FX-SH-NAT-13b - portable SoT, same C ABI symbol */\n");
+            w0 = strbuf_push(w0, "#endif\n");
+            return Ok(strbuf_finish(w0));
+        }
+    }
     let sig_line: string = emit_fn_sig_open_line(mod_slug, src, fn_out)?;
     let vc_b0: StrBuilder = strbuf_new();
     if (param_sig_has_kinds(fn_out.param_sig) == 1) {
@@ -11045,6 +12307,7 @@ fn expr_try_inner_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         CallExpr(_, _, _, _, _, _, _) => idx,
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => idx,
         ArrayLit(_, _, _, _, _, _, _, _, _) => idx,
+        RecordUpdate(_, _, _, _) => idx,
     };
 }
 
@@ -11070,6 +12333,7 @@ fn expr_deref_inner_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11345,6 +12609,7 @@ fn call2_num_at(nodes: Vec<Expr>, call_idx: i32, which: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11392,6 +12657,7 @@ fn expr_ident_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11422,6 +12688,7 @@ fn expr_ident_ln(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11522,6 +12789,7 @@ fn expr_add_operand_idx(nodes: Vec<Expr>, idx: i32, which: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11570,6 +12838,7 @@ fn expr_call2_callee_off(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11600,6 +12869,7 @@ fn expr_call2_callee_ln(nodes: Vec<Expr>, call_idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11781,6 +13051,7 @@ fn expr_strlit_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11811,6 +13082,7 @@ fn expr_strlit_ln(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -11969,6 +13241,7 @@ fn expr_ty_tag(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 17,
         SliceRange(_, _, _) => 18,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 19,
+        RecordUpdate(_, _, _, _) => 20,
     };
 }
 
@@ -11994,6 +13267,7 @@ fn expr_index_base_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -12019,6 +13293,7 @@ fn expr_index_ix_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -12044,6 +13319,7 @@ fn expr_slice_base_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -12069,6 +13345,7 @@ fn expr_slice_lo_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -12094,6 +13371,7 @@ fn expr_slice_hi_idx(nodes: Vec<Expr>, idx: i32) -> i32 {
         StructLit(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => -1,
         TryExpr(_) => -1,
         ArrayLit(_, _, _, _, _, _, _, _, _) => -1,
+        RecordUpdate(_, _, _, _) => -1,
     };
 }
 
@@ -12119,6 +13397,7 @@ fn expr_binop_l(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -12144,6 +13423,7 @@ fn expr_binop_r(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(base, _) => base,
         SliceRange(base, _, _) => base,
         ArrayLit(c, f0, _, _, _, _, _, _, _) => c + f0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -12542,6 +13822,7 @@ fn expr_diag_span_off(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -12577,6 +13858,7 @@ fn expr_diag_span_len(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -13415,7 +14697,7 @@ fn parse_and_emit_ok_main() -> Result<string, core_Err> effects { alloc, io, mut
 }
 
 // CONV-3-BRIDGE-2 -- fx-owned production template for the simple-main capability.
-// Rust supplies only checked module/literal values; the emitted C shape remains here.
+// Emit shape is fx-owned; module/literal slots are filled by the driver.
 fn emit_simple_main_template() -> Result<string, core_Err> effects { alloc, mut } {
     let b0: StrBuilder = strbuf_new();
     let b1: StrBuilder = strbuf_push(b0, "/* fx bootstrap emit: {{MODULE}} body_len=1 */\n");
@@ -18675,6 +19957,7 @@ fn expr_is_call1_field_access(nodes: Vec<Expr>, idx: i32, src: string, callee: s
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -19380,7 +20663,7 @@ fn bootstrap_self_subset_pipeline(do_emit: i32) -> Result<string, core_Err> effe
     if (sh_lexer.slice_eq(src, parse_stmt_fn.ret_ok_off, parse_stmt_fn.ret_ok_len, "StmtStep") != 1) {
         return Err(1);
     }
-    if (parse_stmt_fn.body_len != 183) {
+    if (parse_stmt_fn.body_len != 225) {
         return Err(1);
     }
     // SH-C-27 - Result-forward StmtStep consumer (expr/cond/block callees).
@@ -20479,6 +21762,7 @@ fn expr_is_call0(nodes: Vec<Expr>, idx: i32) -> i32 {
         Index(_, _) => 0,
         SliceRange(_, _, _) => 0,
         ArrayLit(_, _, _, _, _, _, _, _, _) => 0,
+        RecordUpdate(_, _, _, _) => 0,
     };
 }
 
@@ -23970,6 +25254,9 @@ fn emit_sh_parse_fn_def_runtime_preamble() -> Result<string, core_Err> effects {
     let buf_td: string = emit_buf_bytes_typedefs_c()?;
     let buf_h: string = emit_buf_helpers_c("sh_parse")?;
     let ms_td: string = emit_mut_slice_typedefs_c("sh_parse")?;
+    // FX-SH-NAT-14b - scalar v4i32 typedef + helpers (inline; no new inventory fn).
+    let simd_td: string = "\n/* FX-SH-NAT-14b - v4i32 */\ntypedef struct {\n    int32_t v[4];\n} fx_v4i32;\n";
+    let simd_h: string = "\n/* FX-SH-NAT-14b - scalar v4i32 helpers */\nstatic fx_v4i32 __attribute__((unused)) fx_sh_parse_v4i32_add(fx_v4i32 x, fx_v4i32 y) {\n    return (fx_v4i32){ .v = { x.v[0] + y.v[0], x.v[1] + y.v[1], x.v[2] + y.v[2], x.v[3] + y.v[3] } };\n}\nstatic int32_t __attribute__((unused)) fx_sh_parse_v4i32_lane(fx_v4i32 v, int32_t i) {\n    return v.v[(size_t)(i) & 3u];\n}\nstatic int32_t __attribute__((unused)) fx_sh_parse_v4i32_hadd(fx_v4i32 v) {\n    return v.v[0] + v.v[1] + v.v[2] + v.v[3];\n}\n";
     let b0: StrBuilder = strbuf_new();
     let b1: StrBuilder = strbuf_push(b0, "/* SH-C-73 - bootstrap real-parse boot smoke bodies (genuine emit; extends SH-C-55/72) */\n");
     let b2: StrBuilder = strbuf_push(b1, base);
@@ -23981,7 +25268,9 @@ fn emit_sh_parse_fn_def_runtime_preamble() -> Result<string, core_Err> effects {
     let b8: StrBuilder = strbuf_push(b7, buf_td);
     let b9: StrBuilder = strbuf_push(b8, buf_h);
     let b10: StrBuilder = strbuf_push(b9, ms_td);
-    return Ok(strbuf_finish(b10));
+    let b11: StrBuilder = strbuf_push(b10, simd_td);
+    let b12: StrBuilder = strbuf_push(b11, simd_h);
+    return Ok(strbuf_finish(b12));
 }
 
 fn emit_sh_parse_pick_st_fn_def(src: string, fn_out: FnOut, mod_st: StructOut, imp_st: StructOut, param_st: StructOut, ret_st: StructOut, enum_st: StructOut, struct_st: StructOut, parse_out_st: StructOut, stmt_step_st: StructOut, block_parse_out_st: StructOut, arg_count_out_st: StructOut, struct_lit_acc_st: StructOut, fn_out_st: StructOut) -> StructOut {

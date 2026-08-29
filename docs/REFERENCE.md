@@ -74,11 +74,14 @@ Details: [REGIONS.md](REGIONS.md)
 - Bitwise: `& | ^ << >>` on integer families
 - Logical: `!` `&&` `||` (bool)
 - Compare: `== != < <= > >=`
-- Index: arrays R/W; `&[T]` read-only; `&mut [T]` write-through (array-backed); Vec **read** via `v[i]` / `vec_get`; Vec **slot** via `vec_set`
+- Index: arrays R/W; `&[T]` read-only; `&mut [T]` write-through (array-backed); Vec **read** via `v[i]` / `vec_get`; Vec **slot** via `vec_set` or no-grow `v[i]=x` (needs `mut`)
 - Sub-slice: `a[lo..hi]` → `&[T]` (exclusive `hi`; arrays, `Vec`, or slices)
 - Cast: `expr as T` · deref: `*p`
+- Record update: `base with { f: v, … }` (new value; unmentioned fields from `base`)
 
-**No** `v[i] = x` on `Vec` (by design). Slot writes: `vec_set` / `std/vec.set`. Views: arrays + `&mut [T]`.
+**Yes** no-grow `v[i] = x` on `Vec` under `mut`. **No** growable realloc under index-assign. Views: arrays + `&mut [T]`.
+
+Also: `fx surface` passport · collection sugar `v.push` / `m.insert` · `@override` / constrained `asm` · SIMD `v4i32` foothold — see [SURFACE.md](SURFACE.md).
 
 ## Statements
 
@@ -120,7 +123,7 @@ Non-toy compose: `examples/composition_tally`, `examples/composition_reach`.
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration (nth is table order)
-- `Vec` index **writes** (`v[i] = x` — refused); `&mut Vec` as slice; mut sub-slices
+- Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as slice; mut sub-slices
 - Package manager; advanced fx Runtime device/capability model
 - Non-C FFI
 

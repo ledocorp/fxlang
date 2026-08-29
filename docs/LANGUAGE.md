@@ -129,7 +129,9 @@ Three teaching patterns (no hidden mutation):
 2. **Loop reassignment**: `v = vec.push(v, n);` inside a `while`
 3. **`&mut` state fields**: `p.nodes = vec.push(p.nodes, x);` instead of rebuilding the whole struct
 
-Prefer `vec_get(v, i)` or sugar `v[i]` for **reads** (writes `v[i] = x` refused). For in-place writes use arrays + `&mut [T]`.
+Prefer `vec_get(v, i)` or sugar `v[i]` for **reads**. For in-place **slot** writes use `vec_set` / no-grow `v[i]=x` (needs `mut`), or arrays + `&mut [T]`. Growable realloc under index-assign stays refused.
+
+Record update (new value, not Soft-fx): `let p2 = p with { y: 32 };`
 
 ## First programs
 

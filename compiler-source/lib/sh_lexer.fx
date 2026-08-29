@@ -296,6 +296,61 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
         if (is_space(b) == 1) {
             pos = pos + 1;
         } else {
+            // FX-SH-NAT-15 - skip `///` line comments and data-only `#[…]` (never control flow).
+            let skip_tr: i32 = 0;
+            if (b == '/') {
+                if (pos + 1 < n) {
+                    if (str_byte_at(src, pos + 1) == '/') {
+                        pos = pos + 2;
+                        while (pos < n) {
+                            if (str_byte_at(src, pos) == 10) {
+                                break;
+                            }
+                            pos = pos + 1;
+                        }
+                        skip_tr = 1;
+                    }
+                }
+            }
+            if (b == '#') {
+                if (pos + 1 < n) {
+                    if (str_byte_at(src, pos + 1) == '[') {
+                        pos = pos + 2;
+                        let ad: i32 = 1;
+                        let in_s: i32 = 0;
+                        while (ad > 0) {
+                            if (pos >= n) {
+                                break;
+                            }
+                            let ac: i32 = str_byte_at(src, pos);
+                            pos = pos + 1;
+                            if (in_s == 1) {
+                                if (ac == 92) {
+                                    if (pos < n) {
+                                        pos = pos + 1;
+                                    }
+                                } else {
+                                    if (ac == 34) {
+                                        in_s = 0;
+                                    }
+                                }
+                            } else {
+                                if (ac == 34) {
+                                    in_s = 1;
+                                }
+                                if (ac == 91) {
+                                    ad = ad + 1;
+                                }
+                                if (ac == 93) {
+                                    ad = ad - 1;
+                                }
+                            }
+                        }
+                        skip_tr = 1;
+                    }
+                }
+            }
+            if (skip_tr != 1) {
             if (is_digit(b) == 1) {
                 let num: i32 = 0;
                 while (pos < n) {
@@ -523,9 +578,12 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                                                                                             buf = push_tok(buf, 38, b, 0);
                                                                                             pos = pos + 2;
                                                                                         } else {
+                                                                                            // FX-SH-LIVE-STD-40 - unary `!` (token 52; not `!=`).
+                                                                                            buf = push_tok(buf, 52, b, 0);
                                                                                             pos = pos + 1;
                                                                                         }
                                                                                     } else {
+                                                                                        buf = push_tok(buf, 52, b, 0);
                                                                                         pos = pos + 1;
                                                                                     }
                                                                                 } else {
@@ -554,7 +612,13 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                                                                                                         pos = pos + 1;
                                                                                                     }
                                                                                                 } else {
-                                                                                                    pos = pos + 1;
+                                                                                                    if (b == '@') {
+                                                                                                        // FX-ASM-3 / FX-SH-NAT-12 - `@` (kind 47) for `@override`.
+                                                                                                        buf = push_tok(buf, 47, b, 0);
+                                                                                                        pos = pos + 1;
+                                                                                                    } else {
+                                                                                                        pos = pos + 1;
+                                                                                                    }
                                                                                                 }
                                                                                             }
                                                                                         }
@@ -578,6 +642,7 @@ fn lex(src: string) -> TokBuf effects { alloc, mut } {
                     }
                     }
                 }
+            }
             }
         }
     }

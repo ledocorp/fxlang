@@ -602,6 +602,175 @@ fn fixture_bootstrap_real_parse_fn_def_tests() -> Result<i32, core_Err> effects 
     if (str_contains(c_src, "fx_sh_parse_map_add_i32") != 1) {
         return Ok(634);
     }
+    // FX-SH-NAT-10 - collection method sugar in live emit (vec.push / v.push).
+    if (str_contains(c_src, "FX-SH-NAT-10") != 1) {
+        return Ok(638);
+    }
+    if (str_contains(c_src, "vec.push") != 1) {
+        return Ok(639);
+    }
+    if (str_contains(c_src, "map.insert") != 1) {
+        return Ok(640);
+    }
+    // FX-SH-NAT-11 - guest vec_filter / vec_map / vec_collect in live emit.
+    if (str_contains(c_src, "FX-SH-NAT-11") != 1) {
+        return Ok(641);
+    }
+    if (str_contains(c_src, "vec_filter") != 1) {
+        return Ok(642);
+    }
+    if (str_contains(c_src, "vec_map") != 1) {
+        return Ok(643);
+    }
+    if (str_contains(c_src, "vec_collect") != 1) {
+        return Ok(644);
+    }
+    // FX-SH-NAT-13 - live parse of `@override` / `asm { }` (emit GNU asm = NAT-13b).
+    if (str_contains(c_src, "FX-SH-NAT-13") != 1) {
+        return Ok(645);
+    }
+    if (str_contains(c_src, "@override") != 1) {
+        return Ok(646);
+    }
+    if (str_contains(c_src, "asm { ... }") != 1) {
+        return Ok(647);
+    }
+    // FX-SH-NAT-14 - SIMD type spans in live parse emit.
+    if (str_contains(c_src, "FX-SH-NAT-14") != 1) {
+        return Ok(648);
+    }
+    if (str_contains(c_src, "fx_v4i32") != 1) {
+        return Ok(649);
+    }
+    if (str_contains(c_src, "fx_v4f32") != 1) {
+        return Ok(650);
+    }
+    // FX-SH-NAT-13b - GNU asm + ifdef emit in live parse.
+    if (str_contains(c_src, "FX-SH-NAT-13b") != 1) {
+        return Ok(651);
+    }
+    if (str_contains(c_src, "__asm__") != 1) {
+        return Ok(652);
+    }
+    if (str_contains(c_src, "FX_OVERRIDE") != 1) {
+        return Ok(653);
+    }
+    // FX-SH-NAT-15 - Surface attrs + `with { }` in live parse.
+    if (str_contains(c_src, "FX-SH-NAT-15") != 1) {
+        return Ok(654);
+    }
+    if (str_contains(c_src, "#[") != 1) {
+        return Ok(655);
+    }
+    if (str_contains(c_src, "with {") != 1) {
+        return Ok(656);
+    }
+    if (str_contains(c_src, "fx: with") != 1) {
+        return Ok(657);
+    }
+    // FX-SH-CONV-3-2 - genuine emit_return_num_line in live parse seed.
+    if (str_contains(c_src, "FX-SH-CONV-3-2") != 1) {
+        return Ok(658);
+    }
+    if (str_contains(c_src, "    return %d;") != 1) {
+        return Ok(659);
+    }
+    // FX-SH-CONV-3-3 - parse_fn_def accepts return A + B.
+    if (str_contains(c_src, "FX-SH-CONV-3-3") != 1) {
+        return Ok(660);
+    }
+    if (str_contains(c_src, "return 41 + 1") != 1) {
+        return Ok(661);
+    }
+    // FX-SH-CONV-3-4 - parse_fn_def accepts return A {-,*,/} B.
+    if (str_contains(c_src, "FX-SH-CONV-3-4") != 1) {
+        return Ok(662);
+    }
+    if (str_contains(c_src, "return 21 * 2") != 1) {
+        return Ok(663);
+    }
+    // FX-SH-CONV-3-5 - parse_fn_def accepts let x = N; return x.
+    if (str_contains(c_src, "FX-SH-CONV-3-5") != 1) {
+        return Ok(664);
+    }
+    if (str_contains(c_src, "let x = 42") != 1) {
+        return Ok(665);
+    }
+    // FX-SH-CONV-3-6 - parse_fn_def accepts chained return A + B + C.
+    if (str_contains(c_src, "FX-SH-CONV-3-6") != 1) {
+        return Ok(666);
+    }
+    if (str_contains(c_src, "return 10 + 20 + 12") != 1) {
+        return Ok(667);
+    }
+    // FX-SH-CONV-3-7 - let x = chain; return x (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-7") != 1) {
+        return Ok(676);
+    }
+    if (str_contains(c_src, "let x = 10 + 20 + 12") != 1) {
+        return Ok(677);
+    }
+    // FX-SH-CONV-3-8 - let x = N; return x + 1 (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-8") != 1) {
+        return Ok(678);
+    }
+    if (str_contains(c_src, "let x = 41") != 1) {
+        return Ok(679);
+    }
+    // FX-SH-CONV-3-9 - return (group) (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-9") != 1) {
+        return Ok(680);
+    }
+    if (str_contains(c_src, "return (10 + 20) * 2") != 1) {
+        return Ok(681);
+    }
+    // FX-SH-CONV-3-10 - let x = (group); return x + N (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-10") != 1) {
+        return Ok(682);
+    }
+    if (str_contains(c_src, "let x = (10 + 20)") != 1) {
+        return Ok(683);
+    }
+    // FX-SH-CONV-3-11 - two lets + return ident op ident (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-11") != 1) {
+        return Ok(684);
+    }
+    if (str_contains(c_src, "let x = 10") != 1 || str_contains(c_src, "let y = 20") != 1) {
+        return Ok(685);
+    }
+    // FX-SH-CONV-3-12 - nested return paren (product driver bridge).
+    if (str_contains(c_src, "FX-SH-CONV-3-12") != 1) {
+        return Ok(686);
+    }
+    if (str_contains(c_src, "return ((10 + 20) + 12)") != 1) {
+        return Ok(687);
+    }
+    // FX-SH-NAT-14b - scalar v4i32 helpers + call rewrite in live emit.
+    if (str_contains(c_src, "FX-SH-NAT-14b") != 1) {
+        return Ok(668);
+    }
+    if (str_contains(c_src, "fx_sh_parse_v4i32_hadd") != 1) {
+        return Ok(669);
+    }
+    if (str_contains(c_src, "v4i32_add") != 1) {
+        return Ok(670);
+    }
+    if (str_contains(c_src, "((fx_v4i32){ .v = {") != 1) {
+        return Ok(671);
+    }
+    // FX-SH-NAT-15b - RecordUpdate `with { }` Point emit in live sh_*.
+    if (str_contains(c_src, "FX-SH-NAT-15b") != 1) {
+        return Ok(672);
+    }
+    if (str_contains(c_src, "RecordUpdate") != 1) {
+        return Ok(673);
+    }
+    if (str_contains(c_src, "fx: with") != 1) {
+        return Ok(674);
+    }
+    if (str_contains(c_src, "_Point){ ") != 1) {
+        return Ok(675);
+    }
     if (str_contains(c_src, "fx_sh_parse_type_span_is_map") != 1) {
         return Ok(597);
     }

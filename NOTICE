@@ -7,8 +7,13 @@ by Shawn Londono / LedoCorp.
 Project home: http://www.ledocorp.org
 Source hosting: https://github.com/ledocorp/fxlang
 
+Licensed under the GNU General Public License, Version 3 (see LICENSE).
+Steward: BDFL (Shawn Londono / LedoCorp). A future commercial dual-license
+option for private use without GPL obligations may be offered later; it is
+not part of this package today.
+
 The contents of this NOTICE file are for informational purposes only and
-do not modify the Apache License, Version 2.0.
+do not modify the GPL-3.0 terms.
 
 ---
 

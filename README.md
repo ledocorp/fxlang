@@ -1,9 +1,9 @@
 # fx
 
-**Version:** [0.9.6](VERSION) · [Release notes](docs/releases/0.9.6.md) · [GitHub Release](https://github.com/ledocorp/fxlang/releases/tag/v0.9.6)
+**Version:** [0.9.68](VERSION) · [Release notes](docs/releases/0.9.68.md) · [GitHub](https://github.com/ledocorp/fxlang)
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org  
-**License:** [Apache License 2.0](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
+**License:** [GNU GPL v3](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
 
 ---
 
@@ -11,9 +11,10 @@
 
 **fx is a systems language that refuses hidden control.**
 
-Named **regions** + **effects** in signatures. **IR → native** by default. **Emit-C** stays first-class and readable. Wrap mature C libraries instead of rewriting them.
+Named **regions** + **effects** in signatures. **Native-first** `fx run` (live `sh_*` when the program fits; otherwise a built-in fallback engine inside `bin/fx`). **IR → native** on that fallback path when QBE is present. **Emit-C** stays first-class and readable. Wrap mature C libraries instead of rewriting them.
 
-This repo is the **language package**: put `bin/` on your `PATH` and write fx.
+This repo is the **language package**: put `bin/` on your `PATH` and write fx.  
+**License:** GNU GPL v3 — see [LICENSE](LICENSE). No Rust toolchain required.
 
 ---
 
@@ -24,7 +25,7 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version                 # v0.9.6
+fx version                 # v0.9.68
 fx new hello
 cd hello
 fx run main.fx             # expect exit 42
@@ -83,17 +84,15 @@ What’s next (honest): [docs/NEXT.md](docs/NEXT.md).
 
 ---
 
-## What’s in 0.9.6
+## What’s in 0.9.68
 
-Honesty freeze on top of **0.9.5** product surface:
+- **GPL-3.0** product license (see [LICENSE](LICENSE) · [NOTICE](NOTICE) · [docs/LICENSES.md](docs/LICENSES.md))
+- **Native-first Auto driver** — live `sh_*` when supported; otherwise fallback engine inside `bin/fx` (CLI flag: `--driver foundry`)
+- **Wider live demos** — Path C dogfood, tools, composition, concur footholds, `manifest_gate`, `std_path_smoke`, and related std surfaces
+- Inspectable **`compiler-source/`** (fx modules, read-only — not how you rebuild `bin/fx`)
+- On top of **0.9.66** Path C dogfood and **0.9.6** honesty freeze (argv · platforms · vendor pin)
 
-- **Argv** — C host / `--scaffold cli` owns argc/argv (`fx run` does not)
-- **Platforms** — Win + Linux x86_64 prebuilts only
-- **Vendor** — `fx.sum` checksum pin (not vendor-first compile resolve)
-
-Plus everything from 0.9.5: `fx test`/`fuzz`, structured concurrency, strong std, caps/guest IR, NetCap dial (**TLS refused**).
-
-Full notes: [docs/releases/0.9.6.md](docs/releases/0.9.6.md).
+Full notes: [docs/releases/0.9.68.md](docs/releases/0.9.68.md).
 
 ---
 
@@ -113,4 +112,4 @@ Stewarded by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.6](docs/releases/0.9.6.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.68](docs/releases/0.9.68.md).**

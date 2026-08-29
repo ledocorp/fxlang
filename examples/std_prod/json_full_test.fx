@@ -1,4 +1,4 @@
-// fx-native validate via std/json_full.
+// FX-PROD-STD-JSON-FULL — fx-native validate via std/json_full.
 using core;
 import std/testing;
 import std/json_full;

@@ -25,7 +25,7 @@ There is **no unsafe path**. Prefer Lane A always.
 Region-local **slot** mutation is part of the language method today.
 What we are **not** adding:
 
-- Growable-`Vec` index-assign sugar (`v[i] = x`)
+- Growable-`Vec` index-assign that **reallocates** (no-grow `v[i]=x` / `vec_set` are OK)
 - Rust-style `Cell` / hidden shared interior mutability
 - A “soft” dialect where scripts get different mutability physics
 
@@ -50,7 +50,7 @@ The reassignment keeps identity/grow honest at the source level.
 5. Prefer **indices** over pointers into growing storage.
 6. Dual emit stays readable — see [TRACKING.md](TRACKING.md).
 
-**Vec writes:** `v[i] = x` is **refused**. Grow with `vec_push`; slot update with `vec_set(v, i, x)` (requires `mut`); fixed tables with arrays + `&mut [T]`.
+**Vec writes:** Grow with `vec_push` / reassign. Slot update with `vec_set(v, i, x)` or no-grow `v[i]=x` (requires `mut`). Growable realloc under index-assign stays refused. Fixed tables: arrays + `&mut [T]`.
 
 ---
 
@@ -87,7 +87,7 @@ fx run examples/pattern_ids/main.fx     # SoA Vecs
 fx run examples/pattern_pool/main.fx    # std/pool + lib/id_pool
 ```
 
-`pool.set` / `vec_set` write a **stable slot** (no realloc). Handles are typed **`Id`** (bare `i32` at get/set is a type error). Grow remains `push` / reassign. Still **no** `v[i] = x`.
+`pool.set` / `vec_set` / no-grow `v[i]=x` write a **stable slot** (no realloc). Handles are typed **`Id`** (bare `i32` at get/set is a type error). Grow remains `push` / reassign.
 
 ### 5. Fixed ring (cursors + array)
 

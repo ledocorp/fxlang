@@ -1,6 +1,6 @@
 # fx `std/` · standard library facades
 
-Ordinary `.fx` modules for applications. Copyright Shawn Londono · Apache-2.0
+Ordinary `.fx` modules for applications. Copyright Shawn Londono · GPL-3.0
 (see repo `LICENSE` / `NOTICE`).
 
 ## Included (0.7.2)

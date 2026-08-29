@@ -1,7 +1,7 @@
 # Contributing to fx
 
 **Copyright holder / primary maintainer:** Shawn Londono (LedoCorp)  
-**License:** Apache License, Version 2.0 (see [LICENSE](LICENSE) and [NOTICE](NOTICE))  
+**License:** GNU General Public License, Version 3 (see [LICENSE](LICENSE) and [NOTICE](NOTICE))  
 **Site:** http://www.ledocorp.org  
 **Hosting:** https://github.com/ledocorp/fxlang  
 
@@ -37,5 +37,5 @@ vulnerability reports.
 ## License of contributions
 
 Unless explicitly stated otherwise, any material intentionally submitted for
-inclusion in fx is offered under the Apache License, Version 2.0, with no
+inclusion in fx is offered under the GNU General Public License, Version 3, with no
 additional terms.

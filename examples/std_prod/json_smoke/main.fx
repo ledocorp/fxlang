@@ -1,4 +1,4 @@
-// std/json path get → 42 (needs cJSON link).
+// FX-PROD-STD-6 — std/json path get → 42 (needs cJSON link).
 using core;
 import std/json;
 

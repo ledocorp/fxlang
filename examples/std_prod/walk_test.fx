@@ -1,4 +1,4 @@
-// list immediate dir names (cwd = fx -o out dir).
+// FX-PROD-STD-WALK — list immediate dir names (cwd = fx -o out dir).
 using core;
 import std/io;
 import std/fs;

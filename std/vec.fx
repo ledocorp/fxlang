@@ -23,7 +23,7 @@ fn set<T>(v: Vec<T>, i: i32, x: T) -> Vec<T> effects { mut } {
     return vec_set(v, i, x);
 }
 
-fn get<T>(v: Vec<T>, i: i32) -> i32 effects { alloc } {
+fn get<T>(v: Vec<T>, i: i32) -> T effects { alloc } {
     return vec_get(v, i);
 }
 

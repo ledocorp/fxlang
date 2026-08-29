@@ -1,4 +1,4 @@
-// std/sqlite memory open → 42.
+// FX-PROD-STD-7 — std/sqlite memory open → 42.
 using core;
 import std/sqlite;
 

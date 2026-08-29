@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.66 · Copyright © 2026 Shawn Londono · LedoCorp · Apache-2.0  
+**Version:** 0.9.68 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0  
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -28,13 +28,13 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.9.66
+fx version                    # expect v0.9.68
 fx doctor
 
 fx new hello
 cd hello
-fx run main.fx                # IR → native when QBE is in the package; expect exit 42
-fx run main.fx --emit-c       # optional: readable C path (also the fallback if QBE is missing)
+fx run main.fx                # Auto: live sh_* when supported, else foundry (IR/emit-C); expect exit 42
+fx run main.fx --emit-c       # optional: force emit-C backend (also the fallback if QBE is missing)
 ```
 
 **Argv:** `fx run` does **not** pass program arguments into your fx `main`. For CLIs, use `fx new mytool --scaffold cli` (thin C host) or `fx run lib.fx --host host.c`. → [CLI.md](CLI.md) · [SCAFFOLDS.md](SCAFFOLDS.md)

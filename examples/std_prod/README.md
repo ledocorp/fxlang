@@ -1,4 +1,4 @@
-# std_prod -  fx suites
+# std_prod — FX-PROD-STD fx suites
 
 ```powershell
 .\scripts\test-prod-std.ps1
