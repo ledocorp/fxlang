@@ -14,7 +14,7 @@
 Named **regions** + **effects** in signatures. **Native-first** `fx run` (live `sh_*` when the program fits; otherwise a built-in fallback engine inside `bin/fx`). **IR → native** on that fallback path when QBE is present. **Emit-C** stays first-class and readable. Wrap mature C libraries instead of rewriting them.
 
 This repo is the **language package**: put `bin/` on your `PATH` and write fx.  
-**License:** GNU GPL v3 — see [LICENSE](LICENSE). No Rust toolchain required.
+**License:** GNU GPL v3 — see [LICENSE](LICENSE). 
 
 ---
 
