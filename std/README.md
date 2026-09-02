@@ -3,25 +3,26 @@
 Ordinary `.fx` modules for applications. Copyright Shawn Londono · GPL-3.0
 (see repo `LICENSE` / `NOTICE`).
 
-## Included (0.7.2)
+## Included (0.9.68)
 
 | Module | Purpose |
 |--------|---------|
-| `vec` | Vec helpers (`new` / `push` / `get` / `len`) |
-| `box` | Box / ownership helpers |
-| `string` | String helpers |
-| `math` | Small math helpers |
-| `map` / `set` | Map / set facades |
-| `queue` | Bounded queue facade |
-| `buf` | Growable byte buffer (`Buf`) + `Bytes` view |
-| `pair` | Pair helpers |
-| `fmt` / `io` | Format / I/O facades |
-| `fx_defaults` | Defaults-related helpers |
+| `vec` / `string` / `map` / `set` / `buf` | Core collections |
+| `box` / `pair` / `math` / `fmt` / `io` | Helpers + ambient I/O |
+| `queue` / `pool` / `fx_defaults` | Bounded queue, typed `Id` pool, defaults |
+| `cap` / `guest` / `io_cap` / `net` | Caps, guest sessions, cap I/O, TCP dial |
+| `nursery` / `chan` / `select` / `mailbox` / `supervise` / `sync` | Structured concurrency |
+| `async` | Deprecated stub — prefer `nursery` |
+| `path` / `strutil` / `encoding` / `fs` / `fs_walk` | Paths, strings, bytes, files, walk |
+| `log` / `json` / `json_validate` / `json_full` / `sqlite` / `http` | Log, JSON, SQLite, HTTP parse |
+| `time` / `env` | Clock / sleep / getenv (argv stays host/cli) |
+| `testing` / `proptest` | Native asserts + property helpers |
 
 `fx new` (simple) stages these so `import std/vec` works in a new project.
-It also stages `lib/ring_queue.fx` so `import std/queue` resolves.
+It also stages `lib/ring_queue.fx` / `lib/id_pool.fx` so `queue` / `pool` resolve.
 
-## Later expansion
+Public inventory: `docs/SURFACE.md` §D · `docs/STD.md`.
 
-Richer collections, paths, JSON/config, time/RNG, and app testing helpers may
-land in future packages, still as explicit fx modules.
+## Growth
+
+Richer domains land when pulled — still as explicit, allocator-aware fx modules.

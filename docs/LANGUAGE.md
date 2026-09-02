@@ -2,10 +2,11 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-The **0.8.0** package is a full programming surface, not just “regions + vec.”
+The **0.9.68** package is a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
-typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / `vec_set` slot writes,
-array-backed `&mut [T]`, and general Result/`?`. Non-toy demos: `examples/composition_tally`, `composition_reach`.
+typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / no-grow `v[i]=x` / `vec_set` slot writes,
+array-backed `&mut [T]`, lexical loan checking on `&`/`&mut`, structured concurrency facades, SIMD/`@override` footholds,
+and general Result/`?`. Non-toy demos: `examples/composition_tally`, `composition_reach`, `dogfood_pathc_slots`.
 
 **How to compose** (ids, accumulate, reachability, grow/freeze, dual-emit tracking): [COMPOSITION.md](COMPOSITION.md) · [TRACKING.md](TRACKING.md).
 
@@ -60,7 +61,7 @@ Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`,
 - Zspec symbols: `using core;` (for idiomatic `Err` / `core_Err`).
 - C FFI: `extern "c" { fn name(…) -> …; }` then link with `--host` / link flags.
 
-## Types (0.7 surface)
+## Types (as implemented)
 
 | Category | What you can use |
 |----------|------------------|
@@ -193,8 +194,9 @@ See [WRAP.md](WRAP.md) for `extern "c"` and linking.
 - Traits / interfaces / closures / iterators
 - `Option<T>` (use `Result`)
 - Generic `Map` beyond `string→i32` / `string→string`; insertion-order iteration
-- `Vec` index writes; `&mut Vec` as a slice; mut sub-slices
-- Package manager / large application ecosystem
+- Growable `Vec` index-assign that **reallocates** (no-grow `v[i]=x` / `vec_set` are OK); `&mut Vec` as a slice; mut sub-slices
+- Package **registry** / large application ecosystem (offline `fx.mod` / `fx.sum` pin exists)
 - Direct Rust/Go/Zig FFI (C ABI only; others speak C)
+- Lifetime parameters / NLL; optional `loan { }` block sugar (not shipped)
 
 Compact lookup: [REFERENCE.md](REFERENCE.md) · [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [CLI.md](CLI.md)

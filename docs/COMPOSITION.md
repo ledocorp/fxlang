@@ -1,6 +1,6 @@
 # Composition under regions
 
-**Package:** 0.9.1  
+**Package:** 0.9.68  
 
 **Site:** https://www.ledocorp.org/fx/docs/composition/  
 **What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)
@@ -162,8 +162,10 @@ fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
 # default prog: begin → run → end → stale-handle deny
 ```
 
-**NetCap (allowlist only):** `guest.mint_net` / `guest.net_allows` (or C
-`fx_guest_mint_netcap` / `fx_netcap_allows`). **No dial / sockets** — see
+**NetCap (allowlist + TCP dial):** `guest.mint_net` / `guest.net_allows` (or C
+`fx_guest_mint_netcap` / `fx_netcap_allows`) plus `std/net.dial` for allowlisted
+TCP. Language-package `dial_tls` always fails; HTTPS is a separate **fxfetch**
+tool. See
 `examples/dyn_assure/netcap_test.fx` and `examples/wrap_llhttp` host.
 
 **CLI hosts:** shared argv / usage / exit helpers live in `host/cli/fx_cli_host.h`

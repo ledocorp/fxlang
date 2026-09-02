@@ -1,4 +1,4 @@
-// FX-PROD-STD-NET — parse-only HTTP via std/http (no dial).
+// parse-only HTTP via std/http (no dial).
 using core;
 import std/http;
 

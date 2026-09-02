@@ -1,6 +1,6 @@
 # Dual-emit tracking (fx ↔ C)
 
-**Package:** 0.8.0  
+**Package:** 0.9.68  
 **Site:** https://www.ledocorp.org/fx/docs/tracking/
 
 fx promises **readable C** and a way to map failures back to `.fx` sources.

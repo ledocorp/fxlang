@@ -1,6 +1,6 @@
-# Reference (0.7 surface)
+# Reference (as implemented)
 
-Compact lookup for everyday fx in the **0.8.0** package.
+Compact lookup for everyday fx in the **0.9.68** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).
@@ -81,7 +81,7 @@ Details: [REGIONS.md](REGIONS.md)
 
 **Yes** no-grow `v[i] = x` on `Vec` under `mut`. **No** growable realloc under index-assign. Views: arrays + `&mut [T]`.
 
-Also: `fx surface` passport · collection sugar `v.push` / `m.insert` · `@override` / constrained `asm` · SIMD `v4i32` foothold — see [SURFACE.md](SURFACE.md).
+Also: `fx surface` passport · collection sugar `v.push` / `m.insert` · lexical loans (XOR mut / FX0015 / FX0019) · `@override` / constrained `asm` · SIMD `v4i32`/`v4f32`/`v16u8` — see [SURFACE.md](SURFACE.md) · [REGIONS.md](REGIONS.md).
 
 ## Statements
 
@@ -117,16 +117,19 @@ Non-toy compose: `examples/composition_tally`, `examples/composition_reach`.
 | `simple` | Default: region + `std/vec` |
 | `minimal` | Bare `main`; add region yourself |
 | `embedded` | Tiny arena; builtin `vec_*`; no staged std |
+| `cli` | Result library + thin C host for argv |
+| `guest` | Caps-shaped guest + host mint |
 
-## Honesty bound (not in 0.7 yet)
+## Honesty bound (not in everyday dialect)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration (nth is table order)
 - Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as slice; mut sub-slices
-- Package manager; advanced fx Runtime device/capability model
-- Non-C FFI
+- Package **registry**; advanced fx Runtime device/capability model
+- Language-package TLS dial (`dial_tls` always fails here); non-C FFI
+- Lifetime parameters / NLL; optional `loan { }` sugar
 
-Advanced: refinement types (`where` predicates) exist as a verification tier and typically need an external prover pipeline. Not required for everyday 0.7 programs.
+Advanced: refinement types (`where` predicates) exist as a verification tier and typically need an external prover pipeline. Not required for everyday programs.
 
 [LANGUAGE.md](LANGUAGE.md) · [CLI.md](CLI.md) · [SURFACE.md](SURFACE.md) · https://www.ledocorp.org/fx/llms.txt

@@ -1,6 +1,6 @@
 # Editor setup — `fx lsp` + highlighting
 
-**Last updated:** 7 August 2026
+**Last updated:** 2 September 2026  
 
 fx ships a **stdio language server** (`fx lsp`) for diagnostics, go-to-definition,
 find-references, and hover. Pair it with any editor that can run an external LSP.
@@ -11,7 +11,7 @@ Syntax highlighting can use a tree-sitter grammar when you install one separatel
 ## Prerequisites
 
 1. Put the package `bin/` on your `PATH` (or use the full path to `fx` / `fx.exe`).  
-2. Confirm in a terminal: `fx version` (expect **v0.9.1**) and `fx check` on a `.fx` file.
+2. Confirm in a terminal: `fx version` (expect **v0.9.68**) and `fx check` on a `.fx` file.
 
 ---
 

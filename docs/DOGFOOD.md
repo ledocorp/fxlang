@@ -1,12 +1,14 @@
 # Dogfood apps
 
-**Last updated:** 7 August 2026
+**Last updated:** 2 September 2026
 
 fx proves itself by porting **real, small open-source-shaped programs**
 (under about two thousand lines of *our* logic), with upstream tests or goldens
 where possible — not by inventing greenfield toys.
 
-Apps 1–5 are landed in this package under `examples/dogfood_*`.
+Apps 1–5 live under `examples/dogfood_*` in the **monorepo**. The staged public
+package may ship a subset (Path C / tools / composition demos); if a folder is
+missing from your checkout, use the monorepo or the matching GitHub release assets.
 Composition method (SoA, pools, host-minted I/O): [COMPOSITION.md](COMPOSITION.md).
 Agent day-one loop: [AGENT.md](AGENT.md).
 

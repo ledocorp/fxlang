@@ -1,6 +1,6 @@
 # Libraries and C wraps
 
-**Last updated:** 8 August 2026
+**Last updated:** 2 September 2026
 
 fx’s interop story is the **C ABI**: bind or declare, wrap into fx-shaped APIs
 (regions, effects, `Result`), then use from programs.
@@ -9,23 +9,43 @@ fx’s interop story is the **C ABI**: bind or declare, wrap into fx-shaped APIs
 `verify` + `fx.sum` (checksum pin for `std` — compile still uses `std/` / `FX_STD_ROOT`,
 not `vendor/` yet). **Not yet:** download registry or third-party `require`. See [CLI.md](CLI.md).
 
-Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
+Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md) · [SURFACE.md](SURFACE.md).
 
 ---
 
-## Already proven
+## Already proven (language package)
 
 | Surface | Role |
 |---------|------|
-| **cJSON** | Path-get facade + App 2 dogfood CLI |
-| **xxHash** | Integrity helper wrap (`examples/wrap_xxhash`) |
+| **cJSON** | Path-get facade + dogfood JSON CLIs |
+| **xxHash** | Integrity helper wrap (`examples/wrap_xxhash` in monorepo) |
 | **SQLite** | Amalgamation WRAP (`examples/wrap_sqlite` — `:memory:` + file under `FsCap`) |
-| **llhttp** | HTTP parse WRAP foothold (`examples/wrap_llhttp` — Content-Length dual-path) |
+| **llhttp** | HTTP parse WRAP foothold (`examples/wrap_llhttp`) |
+| **BLAKE3** | Integrity wrap (`examples/wrap_blake3` in monorepo) + **fxblake3** tool |
+| **LZ4** | Frame wrap (`examples/wrap_lz4` in monorepo) + **fxlz4** tool |
 | **stb_sprintf** / **stb_image** | Format and image decode wraps |
 | **raylib-class hosts** | GUI / panel examples (host owns `main`) |
-| **QOI / httparse subsets** | Earlier language-floor ports |
 
-“Bind exists” is not the same as “stdlib done.” Pure-fx App 4 shows JSON without a C library for semantics.
+“Bind exists” is not the same as “stdlib done.” Pure-fx JSON validate path also exists without a C library for semantics.
+
+---
+
+## Separate product CLIs (not this language package)
+
+These ship from the monorepo `tools/` tree into their own GitHub packages. They are **not**
+inside `bin/fx` of the language package, but they are first-class fx offerings:
+
+| Tool | Role |
+|------|------|
+| **fxrun** | Task runner (`fxrun.toml`) |
+| **fxql** | SQLite one-shot query CLI + FsCap |
+| **fxfetch** | HTTPS GET under NetCap (links **Mbed TLS**) |
+| **fxpipe** | Parallel BLAKE3 under FsCap / nursery |
+| **fxlz4** | LZ4 pack/unpack + FsCap |
+| **fxblake3** | BLAKE3 hash + FsCap |
+| **fxguest** | Guest/cap speech CLI (allow/deny/budget) |
+
+Language-package `std/net.dial_tls` still **fails** without those extra link units — TCP dial is in-package; HTTPS is **fxfetch**.
 
 ---
 
@@ -33,20 +53,9 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 
 | Priority | Library / area | Why |
 |----------|----------------|-----|
-| 1 | **cJSON deepen** | **Landed** — path API + wrap + App 2 |
-| 2 | **xxHash** | **Landed** — dual-path smoke for integrity helpers |
-| 3 | **SQLite / llhttp footholds** | **Landed** — amalgamation (`:memory:` + file/`FsCap`) + parse-only WRAP |
-| 4 | **Paths + richer file I/O** | `io.read_file` / `write_file`; ROM load |
-| 5 | **CLI args / exit codes** | Thin C hosts + `fx new --scaffold cli` |
-
----
-
-## Soon
-
-| Library | Why |
-|---------|-----|
-| **BLAKE3** | Alternate integrity if manifests demand |
-| **stb** pieces as needed | e.g. image write — not the whole stb tree |
+| 1 | Paths + richer file I/O | `std/path` / `fs` / `fs_walk` already landed — deepen when apps pull |
+| 2 | CLI args / exit codes | `--cli` + `host/cli` + `fx new --scaffold cli` |
+| 3 | Wrap deepen | Pooling / WAL / dial-only when an app demands |
 
 ---
 
@@ -54,36 +63,12 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md).
 
 | Library | Why wait |
 |---------|----------|
-| **lz4**, then **zstd** | Compression CLIs; lz4 first (simpler) |
+| **zstd** | Compression after lz4 |
 | **SQLite deepen** | Pooling / WAL / multi-connection — file+`FsCap` already landed |
-| **llhttp dial / TLS** | Parse foothold landed; dial under NetCap when an app demands |
-
----
-
-## Backlog (powerful, wrong as the next spine)
-
-| Item | Notes |
-|------|--------|
-| **Package manager / registry** | After multi-module dogfood proves modules |
-| **fff** ([file-search SDK](https://github.com/dmtrKovalenko/fff)) | Flagship embed later — not foundation |
-| **tree-sitter as a general app dependency** | fx already has a grammar for *fx*; parsing arbitrary languages is a separate product |
-| **Full stb kitchen sink** | Add headers only when an app needs a specific one |
-| **Huge frameworks / full TLS stacks** | Host demos OK; not “fx std” |
-
----
-
-## Honesty for wraps
-
-- Effects and ownership stay explicit in the fx facade  
-- Prefer `Result` over errno soup at the fx boundary  
-- Dual emission and dual native paths must remain auditable  
-- Do not grow Minimal Core just to avoid wrapping  
+| **llhttp dial** | Parse foothold landed; dial under NetCap when an app demands |
 
 ---
 
 ## Related
 
-- [NEXT.md](NEXT.md)  
-- [DOGFOOD.md](DOGFOOD.md)  
-- [WRAP.md](WRAP.md)  
-- [STD.md](STD.md)  
+[WRAP.md](WRAP.md) · [STD.md](STD.md) · [SURFACE.md](SURFACE.md) · [DOGFOOD.md](DOGFOOD.md) · [CLI.md](CLI.md)

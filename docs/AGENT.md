@@ -1,6 +1,6 @@
 # Agent loop — check, run, emit-C, locate
 
-**Last updated:** 8 August 2026
+**Last updated:** 2 September 2026
 
 fx treats **agents (LLMs) as first-class consumers** of the same contracts humans use:
 diagnostics with spans, path imports, readable emitted C, and a lean MCP server.
@@ -50,7 +50,7 @@ Go-to-definition on **fx** sources uses `fx lsp` in the editor — [EDITOR.md](E
 fx mcp
 ```
 
-Exposes a small tool set (`fx_check`, `fx_locate`, `fx_run`, emit helpers, …). Keep it lean —
+Exposes a small tool set (`fx_check`, `fx_locate`, `fx_run`, `fx_emit_c`, `fx_locate_c`, `fx_surface`, …). Keep it lean —
 add tools only when a concrete agent workflow fails. See [CLI.md](CLI.md).
 
 ---
@@ -58,7 +58,7 @@ add tools only when a concrete agent workflow fails. See [CLI.md](CLI.md).
 ## Editor + tree-sitter
 
 - Wire `fx lsp` for diagnostics, go-to-definition, and find-references — [EDITOR.md](EDITOR.md).  
-- Syntax highlighting via the in-repo tree-sitter grammar (see EDITOR.md install notes).  
+- Syntax highlighting via **tree-sitter-fx** (install separately unless your checkout includes the monorepo grammar) — [EDITOR.md](EDITOR.md).  
 - Debug with `#line` + gdb — [DEBUG.md](DEBUG.md). No DAP required.
 
 ---

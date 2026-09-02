@@ -15,6 +15,8 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | `fx build <file.fx>` | Same backends as run (link; do not run) |
 | `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link); `--surface` also writes `.fxsurface.*` |
 | `fx surface <file.fx> [-o <dir>]` | Static module passport (JSON + Markdown) |
+| `fx test [path…]` | Discover `*_test.fx` / `test_*`; dual-path (`--backend c\|ir\|both`) |
+| `fx fuzz [path…]` | Property / fuzz driver over `std/proptest` |
 | `fx mod vendor\|tidy\|verify` | Offline `vendor/std` + `fx.sum` pin (checksum; see below) |
 | `fx bind <header.h> --out <file.fx>` | Cleaned C header → inspectable `extern "c"` stubs (`[--module name]`) |
 
@@ -65,15 +67,21 @@ Useful flags:
 |------|---------|
 | `--emit-c` | Use emit-C → native instead of IR → native |
 | `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = live `sh_*` first, foundry fallback; `fx cc` defaults foundry) |
+| `--cli` | Auto-link thin CLI host (`host/cli`) for argv/exit — product CLIs |
+| `--guest` / `--no-guest` | Guest ambient-io policy on check/run/build |
+| `--fallback-emit-c` | Prefer emit-C when IR path fails |
 | `-o <dir>` | Output directory (default `out/`) |
 | `--release` | Optimize more; less debug instrumentation |
 | `--watch` | Rebuild when sources change |
 | `--no-zspec` | Do not link zspec (only when appropriate) |
 | `--host <file.c>` | Use this C file as `main`; link fx objects with it |
+| `--link <file.c>` | Extra C translation unit to compile/link |
 | `--link-args-file <path>` | Extra linker args, one per line |
 | `--use <dir>` | Self-linking unit: include+lib dir + optional `dir/link.args` (prefer over inventing `--link-lib` lists) |
 | `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths (escape hatch) |
 | `--backend auto\|ir\|c` | Advanced backend select (`auto` = IR-first with emit-C fallback) |
+
+**Strict live lane:** `--driver sh` does **not** support `--cli` / `--host` (FX0036) — use Auto or foundry for those.
 
 Default linking expects **gcc** and the zspec library that matches your OS (`build/gcc` or `build/gcc-linux`).
 

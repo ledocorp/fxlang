@@ -6,7 +6,8 @@
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
-It includes typed pool **`Id`**, **`map_add_i32`**, and the `composition_*` / `bind_*` examples.
+It includes typed pool **`Id`**, **`map_add_i32`**, lexical loans, concurrency facades, SIMD/`@override`,
+caps/guest/net, and the `composition_*` / `bind_*` / `concur_*` examples.
 Use it as a cheatsheet and as a depth ledger: if something is not listed here, do not assume it exists.
 
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
@@ -151,13 +152,16 @@ Teaching patterns: scaffold let-chains · loop reassignment · `&mut` field upda
 
 ---
 
-## D. `std/` modules
+## D. `std/` modules (complete inventory)
 
 Ordinary fx. Import like any library. Linking still uses zspec for usual alloc paths.
+Detail and examples: [STD.md](STD.md).
+
+### Core collections & helpers
 
 | Module | Role | Notes |
 |--------|------|--------|
-| `vec` | `new` / `push` / `get` / `len` (+ arena variants) | thin `get` oriented to `i32` |
+| `vec` | `new` / `push` / `get` / `set` / `len` (+ arena variants) | thin `get` oriented to `i32` |
 | `string` | compare / concat / builder facades | — |
 | `map` | `Map<string,i32>` + `*_ss` for `Map<string,string>` | not a fully generic map |
 | `set` | presence set over map | — |
@@ -166,11 +170,95 @@ Ordinary fx. Import like any library. Linking still uses zspec for usual alloc p
 | `math` | `abs` `min` `max` `clamp` … | — |
 | `fmt` | integer / tag format helpers | — |
 | `io` | lines + text file read/write | declare `io` (+ `alloc` when needed) |
-| `queue` | bounded queue facade | needs `lib/ring_queue.fx` (shipped; `fx new` stages it) |
-| `pool` | id-pool facade (`make`/`alloc`/`get`/`set`/`len`/`raw`/`from_raw`) | needs `lib/id_pool.fx`; handles are typed **`Id`** (not bare `i32` at get/set); `set` → `vec_set` (D2) |
-| `fx_defaults` | small defaults helpers | — |
+| `queue` | bounded queue facade | needs `lib/ring_queue.fx` |
+| `pool` | id-pool facade | needs `lib/id_pool.fx`; typed **`Id`**; `set` → `vec_set` |
+| `fx_defaults` | arena size / defaults helpers | — |
+
+### Capability / guest / net
+
+| Module | Role | Notes |
+|--------|------|--------|
+| `cap` | `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` | opaque handles |
+| `guest` | begin/end/mint/alloc/burn/net | pair with `host/cap` |
+| `io_cap` | cap-scoped file I/O | — |
+| `net` | TCP `dial` under NetCap | `dial_tls` facade **always fails** in this package (TLS not in default dial) |
+
+### Structured concurrency
+
+| Module | Role | Notes |
+|--------|------|--------|
+| `nursery` | host nursery / `spawn_i32` / `await_i32` / join | link `host/concur` |
+| `chan` | i32/i64 channel facade | — |
+| `select` | wait-any + timeout | — |
+| `mailbox` | i32 mailbox facade | — |
+| `supervise` | supervision policy + apply | — |
+| `sync` | mutex create/lock/unlock | — |
+| `async` | **deprecated stub** — prefer `nursery` | do not use as product API |
+
+### Path, files, encoding, data, time
+
+| Module | Role | Notes |
+|--------|------|--------|
+| `path` | join / parent / basename / ext / is_abs | — |
+| `strutil` | contains / starts_with / ends_with | — |
+| `encoding` | hex + base64 over `Vec<i32>` | — |
+| `fs` | `copy_file` / exists / remove | over `std/io` |
+| `fs_walk` | list immediate directory names | link `host/std_fs_walk` |
+| `log` | tagged stderr helpers | — |
+| `json` | thin cJSON path facade | link cJSON |
+| `json_validate` / `json_full` | fx-native validate path | — |
+| `sqlite` | SQLite WRAP facade | amalgamation + FsCap open |
+| `http` | llhttp parse-only facade | — |
+| `time` | wall clock / sleep / seeded LCG | link `host/std_time` |
+| `env` | getenv / has / get_or | argv stays host/cli; link `host/std_env` |
+
+### Testing
+
+| Module | Role | Notes |
+|--------|------|--------|
+| `testing` | asserts + stderr diagnostics | used by `fx test` |
+| `proptest` | property / checksum helpers | used by `fx fuzz` |
 
 Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the project so imports resolve offline. Or set `FX_STD_ROOT`.
+
+---
+
+## D2. Lexical loans (ownership checker)
+
+Landed checker on existing `&` / `&mut` / `&region` (no lifetime parameters, no NLL):
+
+| Rule | Effect |
+|------|--------|
+| Shared XOR mut | Many `&` **or** one `&mut` of the same place in one epoch — not both |
+| Region epoch | Loan cannot outlive its owner region → **FX0015** |
+| Borrow conflict | Overlapping exclusive/shared loans → **FX0019** |
+| Hylo call-end | Inline `&mut` actuals end at the statement / call return |
+
+Optional `loan { }` block sugar is **not** shipped. Graphs stay typed **`Id` + SoA** — see [COMPOSITION.md](COMPOSITION.md). Detail: [REGIONS.md](REGIONS.md).
+
+---
+
+## D3. SIMD
+
+Portable vector foothold (scalar emit-C SoT; optional SSE/NEON where staged):
+
+| Types | Common ops |
+|-------|------------|
+| `v4i32`, `v4f32`, `v16u8` | add/sub/mul/min/max, broadcast, lane, hadd; load/store for `v4i32` |
+
+Not a full vector ISA product. Prefer scalar SoT for dual-emit readability.
+
+---
+
+## D4. Asm / `@override`
+
+| Surface | Role |
+|---------|------|
+| `@override(target=…)` | Targeted fast path; **portable fx body remains SoT** |
+| Constrained `asm { }` | Inline asm with clobber honesty (diagnostics FX0034/FX0035) |
+| `external = "….s"` | External assembly unit |
+
+IR uses the portable path. Monorepo has an asm-verify harness comparing portable vs override; that harness is **not** a public certification claim.
 
 ---
 
@@ -182,16 +270,21 @@ Caveat: `fx new` (simple) stages `std/` (and `lib/ring_queue.fx`) beside the pro
 | `fx version` | package version |
 | `fx help` | help |
 | `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` / `cli` / `guest` |
-| `fx check` | parse + typecheck |
-| `fx run` / `fx build` | IR → native (default); `--emit-c` for C path; `--release` / `--watch` |
+| `fx check` | parse + typecheck (`--guest` for guest ambient-io policy) |
+| `fx run` / `fx build` | Auto driver; IR → native default; `--emit-c`; `--release` / `--watch` |
 | `fx emit-c` | `.c` / `.h` only (no link); `--surface` also writes passport files |
-| `fx surface` | Static module passport (JSON + Markdown: types, effects, caps/regions) |
+| `fx surface` | Static module passport (JSON + Markdown: types, effects, caps/regions, docs attrs) |
+| `fx test` / `fx fuzz` | Discover `*_test.fx` / property driver; `--backend c\|ir\|both` |
 | `fx cc` | power emit+link path |
 | `fx lsp` | language server (stdio) — basic |
-| `fx mcp` | lean MCP (`check` / `locate` / `run` / `surface`, …) |
+| `fx mcp` | lean MCP (`check` / `locate` / `run` / `surface` / `emit_c`, …) |
 | `fx locate` | C line → fx via `.fxmap` |
+| `fx bind` | C header → `extern "c"` stubs |
+| `fx mod vendor\|tidy\|verify` | offline `vendor/std` + `fx.sum` pin |
 
-Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only** (macOS prebuilt frozen out of this package). `fx run` does **not** forward program argv — use `--host` / `--scaffold cli`.
+Useful product flags: `--cli` (auto-link cli host), `--host`, `--guest` / `--no-guest`, `--driver auto|sh|foundry`, `--fallback-emit-c`. Detail: [CLI.md](CLI.md).
+
+Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only**. `fx run` does **not** forward program argv — use `--cli` / `--host` / `--scaffold cli`.
 
 ---
 
@@ -200,15 +293,15 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 | Capability | As implemented |
 |------------|----------------|
 | Dual native paths | `fx run` / `build` → IR → native; `--emit-c` / `fx emit-c` → readable C on zspec |
-| C owns `main` | `fx run lib.fx --host host.c` |
+| C owns `main` | `fx run lib.fx --host host.c` or `--cli` |
 | Native lib unit | `fx run app.fx --host host.c --use ./libdir` (loads `libdir/link.args`) |
-| Extra link | `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` (escape) |
-| Host+GUI backend | Prefer `--emit-c` until IR host/struct parity is documented |
+| Extra link | `--link` · `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
-| Host spine | `host/cap` (guest session + caps + NetCap) · `host/cli` (argv helpers) · `std/net` TCP dial |
-| Examples | `showcase_*` · `bind_*` · `wrap_sqlite` · `wrap_llhttp` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` |
+| Host spine | `host/cap` · `host/cli` · `host/process` · `host/concur` · `host/std_*` |
+| Net | NetCap TCP `std/net.dial`; language-package TLS **refused** (see honesty) |
+| Examples | `showcase_*` · `bind_*` · `wrap_*` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` · `tool_*` · `pattern_*` |
 
-Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TLS is refused.
+Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpipe, fxlz4, fxblake3, fxguest) live outside this language package — see [LIBRARIES.md](LIBRARIES.md).
 
 ---
 
@@ -218,11 +311,13 @@ Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TL
 
 | Surface | Notes |
 |---------|--------|
-| Collection method sugar | `v.push(x)` / `m.insert(…)` expand to `vec_push` / `map_insert` (all `.fx`) |
-| SIMD foothold | `v4i32` / related helpers on emit-C; optional SSE/NEON where staged — not a full vector ISA product |
-| `@override` + `asm { }` | Portable fx SoT stays; targeted C/`#ifdef` or constrained asm inside override |
-| Guest helpers | Guest-gated `vec_filter` / `vec_map` / `vec_collect` (no lambdas; same region physics) |
+| Collection method sugar | `v.push(x)` / `m.insert(…)` → `vec_push` / `map_insert` |
+| Lexical loans | Shared XOR mut · region escape · Hylo call-end — [REGIONS.md](REGIONS.md) |
+| SIMD | `v4i32` / `v4f32` / `v16u8` + helpers; optional SSE/NEON — not a full vector ISA |
+| `@override` + `asm { }` | Portable SoT + targeted override / constrained asm / external `.s` |
+| Guest helpers | Guest-gated `vec_filter` / `vec_map` / `vec_collect` (no lambdas) |
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
+| Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
 ### Not in the product dialect (as of 0.9.68)
 
@@ -231,19 +326,21 @@ Non-C FFI is **not** shipped. NetCap TCP dial is allowlist-gated (`std/net`); TL
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
 - Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as a mut slice; mut sub-slices
 - Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
-- Full network stack / HTTP client product (TCP + TLS **client** dial under NetCap exists; see `std/net`)
+- Full HTTP client / general TLS stack in the **language package** — TCP dial yes; `std/net.dial_tls` always fails here; HTTPS is a separate **fxfetch** tool that links Mbed TLS
 - Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
 - Advanced fx Runtime (device-aware migration / Soft-fx)
 - Neuton / OS product; Experimental horizon features
 - macOS prebuilt binary (**frozen:** Win/Linux x86_64 package only)
-- `fx run` program-argv passthrough (**frozen:** C host / `--scaffold cli` owns argv)
+- `fx run` program-argv passthrough (**frozen:** C host / `--cli` / `--scaffold cli` owns argv)
+- Optional `loan { }` block sugar (not shipped)
 
 ### Intentionally deferred (architecture, not forgotten)
 
 - Advanced fx Runtime layer (spec Phase 2) — optional  
 - Further zspec modules — **pull when `std/` needs C ABI**, not a checklist  
 - Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist  
-- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)
+- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)  
+- Language-package TLS dial without an extra tool/link unit  
 
 ### Substrate (for linkers / embedders)
 
@@ -258,22 +355,30 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Hello + visible heap | `fx new hello` → `fx run` |
 | Grow collections | value-thread `vec` / `map` / `buf` / `strbuf` |
 | Iterate a map | `map_nth_*` / `std/map.nth_*` (table order) · see `examples/tool_tally` |
-| Tally / accumulate | `map_add_i32` / `std/map.add_i32` · `programs/lv075_map_add.fx` · `examples/tool_tally` · **`examples/composition_tally`** |
+| Tally / accumulate | `map_add_i32` / `std/map.add_i32` · `examples/tool_tally` · **`examples/composition_tally`** |
 | Bytes | `Buf` / `Bytes` + `std/buf` · see `examples/tool_bytes` |
 | Files | `std/io` + `effects { io }` · see `examples/tool_files` |
 | Text path (str↔bytes↔file) | StrBuilder → file → `byte_at` → Buf · see `examples/tool_text` |
-| Map string→string | `map_new_ss()` · `programs/lv073_map_ss.fx` |
+| Map string→string | `map_new_ss()` |
 | Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
-| Vec slot write | `vec_set` / `v[i]=x` (no grow) / `std/vec.set` · `examples/pattern_pool` · `programs/lv074_vec_set.fx` · `programs/lv0965_vec_index_assign.fx` |
-| Record update | `p with { y: 32 }` · `programs/lv_record_update.fx` |
+| Vec slot write | `vec_set` / `v[i]=x` (no grow) / `std/vec.set` · `examples/pattern_pool` |
+| Shared XOR mut / loans | `&` / `&mut` rules · [REGIONS.md](REGIONS.md) |
+| Structured concurrency | `std/nursery` + `host/concur` · `examples/concur_*` |
+| SIMD vectors | `v4i32` / `v4f32` / `v16u8` · §D3 |
+| Asm override | `@override` / `asm { }` · §D4 |
+| Record update | `p with { y: 32 }` |
 | Module passport | `fx surface file.fx` · `fx emit-c --surface` |
-| Graph / IR shape | typed **`Id`** into pool · `examples/pattern_ids` · **`std/pool`** · `examples/pattern_pool` · **`examples/composition_reach`** · `programs/lv075_typed_id.fx` · [COMPOSITION.md](COMPOSITION.md) |
+| Graph / IR shape | typed **`Id`** · `std/pool` · `examples/pattern_ids` · [COMPOSITION.md](COMPOSITION.md) |
+| Caps / guest I/O | `std/cap` + `std/guest` + `host/cap` · `examples/cap_*` |
+| TCP dial | `std/net.dial` under NetCap allowlist |
+| HTTPS GET | separate **fxfetch** tool (not `dial_tls` in this package) |
 | Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |
 | Fixed ring | array + cursors · `examples/pattern_ring` · or `std/queue` |
 | Result / `?` | general emit · see `examples/tool_result` |
-| Embed in C | `--host` + [WRAP.md](WRAP.md) · `examples/showcase_wrap` |
-| C header → stubs | `fx bind` Level 1 · `examples/bind_smoke` · Level 2 `bind_stb_sprintf` · [WRAP.md](WRAP.md) |
-| Inspect lowering | `fx emit-c` (annotate comments) · [TRACKING.md](TRACKING.md) |
+| Native tests | `fx test` / `fx fuzz` · `std/testing` |
+| Embed in C | `--host` / `--cli` + [WRAP.md](WRAP.md) |
+| C header → stubs | `fx bind` · `examples/bind_smoke` · [WRAP.md](WRAP.md) |
+| Inspect lowering | `fx emit-c` · [TRACKING.md](TRACKING.md) |
 | Map C line → fx | `fx emit-c --debug-source` + `fx locate` · [TRACKING.md](TRACKING.md) |
 
 ---

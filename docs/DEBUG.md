@@ -1,6 +1,6 @@
 # Debug with `#line` + gdb (no DAP required)
 
-**Last updated:** 7 August 2026
+**Last updated:** 2 September 2026
 
 You can step and break on **`.fx` lines** using emit-C debug source — without an
 integrated debugger product.

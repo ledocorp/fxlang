@@ -77,14 +77,31 @@ fn main() -> i32 {
 | `&mut T` | Exclusive mutable borrow |
 | `&region r T` | Borrow tied to region `r` |
 
-Inline `&mut` arguments are released at the statement boundary, which makes recursive “thread a cursor / parser state” patterns practical. Two live exclusive borrows of one owner are rejected.
+### Lexical loan checking (landed)
+
+fx checks loans **lexically** on the forms above — no lifetime parameters and no NLL engine.
+
+| Rule | Meaning |
+|------|---------|
+| Shared XOR mut | While any `&mut` of place `p` is live, no other loan of `p`. While any `&` of `p` is live, no `&mut` of `p`. Multiple shared `&` are OK. |
+| Region epoch | A loan must not outlive its owner region / block → **FX0015** (BorrowEscape) |
+| Conflict | Overlapping exclusive/shared loans → **FX0019** (BorrowConflict) |
+| Hylo call-end | Inline `&mut` arguments end at the statement / call return; the owner is usable again afterward unless a named `let p = &mut x` still holds the loan |
 
 ```fx
 fn bump(a: &mut Acc, v: i32) -> i32 {
     a.total = a.total + v;
     return a.total;
 }
+
+fn use_after_call(n: i32) -> i32 {
+    let mut x: i32 = n;
+    bump(&mut x, 1);   // exclusive loan ends here
+    return x;
+}
 ```
+
+Graphs and tables stay **typed `Id` + SoA** — do not weaken loan rules to allow arbitrary C-style pointer meshes. See [COMPOSITION.md](COMPOSITION.md) · [SURFACE.md](SURFACE.md).
 
 ### Guest session (`dynamic region`)
 

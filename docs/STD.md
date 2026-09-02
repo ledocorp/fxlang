@@ -11,28 +11,24 @@ import std/map;
 import std/string;
 ```
 
-## Modules in 0.8.0
+## Modules (0.9.68 inventory)
 
-| Module | Role |
-|--------|------|
-| `vec` | Growable vectors |
-| `string` | Compare / concat / builder helpers |
-| `map` | `Map<string, i32>` dictionary |
-| `set` | Set facade over map (presence = 1) |
-| `box` / `pair` | Generic ownership / pair helpers |
-| `math` | `abs` `min` `max` `clamp` … |
-| `fmt` | Integer / tag formatting helpers |
-| `io` | Lines + minimal file I/O (`effects { io }`) |
-| `queue` | Bounded queue facade (see caveat below) |
-| `pool` | Id-pool facade (`make`/`alloc`/`get`/`set`/`len`/`raw`/`from_raw`) — typed **`Id`**; needs `lib/id_pool` |
-| `buf` | Growable `Buf` + `Bytes` view |
-| `fx_defaults` | Small defaults-related constants/helpers |
+Full cheatsheet table: [SURFACE.md](SURFACE.md) §D. Summary:
+
+| Bucket | Modules |
+|--------|---------|
+| Core | `vec` `string` `map` `set` `buf` `box` `pair` `math` `fmt` `io` `queue` `pool` `fx_defaults` |
+| Caps / guest / net | `cap` `guest` `io_cap` `net` |
+| Concurrency | `nursery` `chan` `select` `mailbox` `supervise` `sync` (`async` = deprecated stub) |
+| Path / data / time | `path` `strutil` `encoding` `fs` `fs_walk` `log` `json` `json_validate` `json_full` `sqlite` `http` `time` `env` |
+| Testing | `testing` `proptest` |
 
 ## Mutation reminder
 
 - Grow: reassign (`vec.push` / `vec_push`)
 - Slot write: `vec_set` / `std/vec.set` under `mut` (no realloc)
-- **No** `v[i] = x` on growable `Vec`
+- **Yes** no-grow `v[i] = x` under `mut` (same as `vec_set`)
+- **No** growable realloc under index-assign
 
 See [COMPOSITION.md](COMPOSITION.md). Library wrap priorities beyond `std/`: [LIBRARIES.md](LIBRARIES.md).
 
@@ -120,7 +116,8 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 - `std/cap` — `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` (allowlist)  
 - `std/guest` — begin/end/`begin_nested`, mint_*, alloc/burn, `mint_net` / `net_allows`  
 - `std/io_cap` — cap-scoped file I/O  
-- `std/net` — TCP + TLS client dial under NetCap (`dial` / `dial_tls`; CA via `set_ca_file` or `FX_TLS_CA_FILE`)  
+- `std/net` — TCP `dial` under NetCap allowlist. `dial_tls` exists as a facade but **always fails** in this language package (default `host/cap` dial has no TLS). HTTPS belongs to the separate **fxfetch** tool (links Mbed TLS).  
+
 - `dynamic region g = guest(n)` — language sugar (emit-C + IR + `host/cap` link)  
 - Soft-fx refused; process-trust ambient `std/io` remains for ordinary tools
 

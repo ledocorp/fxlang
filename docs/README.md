@@ -18,10 +18,10 @@ HTML also on https://www.ledocorp.org/fx/docs/
 | [TRACKING.md](TRACKING.md) | Dual-emit: annotate comments, `.fxmap`, `#line`, `fx locate` |
 | [LANGUAGE.md](LANGUAGE.md) | Language tour (types, Result, collections, modules, …) |
 | [REFERENCE.md](REFERENCE.md) | Compact surface reference |
-| [REGIONS.md](REGIONS.md) | Effects, region kinds, ownership / borrows |
+| [REGIONS.md](REGIONS.md) | Effects, region kinds, ownership / lexical loans |
 | [STD.md](STD.md) | Standard library map and APIs |
 | [WRAP.md](WRAP.md) | C host / `extern "c"` |
-| [CLI.md](CLI.md) | Commands and flags |
+| [CLI.md](CLI.md) | Commands and flags (`test` / `fuzz` / `--cli`) |
 | [SCAFFOLDS.md](SCAFFOLDS.md) | `fx new` templates |
 | [LICENSES.md](LICENSES.md) | Third-party open-source components in this package |
 | [releases/](releases/) | Version release notes |

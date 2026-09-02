@@ -1,4 +1,4 @@
-// FX-PROD-STD-TIME — now_ms / sleep / rand_next.
+// now_ms / sleep / rand_next.
 using core;
 import std/testing;
 import std/time;
