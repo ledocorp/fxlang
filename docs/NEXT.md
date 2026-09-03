@@ -4,7 +4,7 @@
 
 fx **0.9.68** is the current public package: **GPL-3.0** + **native-first Auto**
 driver (live `sh_*` for the supported demo set; honest foundry fallback otherwise),
-lexical loan checking on `&` / `&mut`, Path C no-grow `v[i]=x`, `--cli` auto-host,
+lexical loan checking on `&` / `&mut`, no-grow `v[i]=x`, `--cli` auto-host,
 structured concurrency facades, SIMD/`@override` footholds, and the **0.9.6**
 honesty freeze (argv · platforms · vendor pin).
 
@@ -56,4 +56,4 @@ and host/CLI ergonomics that remove ceremony without soft signatures.
 
 - [DOGFOOD.md](DOGFOOD.md) · [QUALITY.md](QUALITY.md) · [LIBRARIES.md](LIBRARIES.md) · [COMPOSITION.md](COMPOSITION.md) · [SURFACE.md](SURFACE.md)  
 - [releases/0.9.68.md](releases/0.9.68.md) — latest release notes  
-- [releases/0.9.66.md](releases/0.9.66.md) — Path C dogfood  
+- [releases/0.9.66.md](releases/0.9.66.md) — no-grow dogfood  

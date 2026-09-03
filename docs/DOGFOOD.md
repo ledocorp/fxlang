@@ -7,7 +7,7 @@ fx proves itself by porting **real, small open-source-shaped programs**
 where possible — not by inventing greenfield toys.
 
 Apps 1–5 live under `examples/dogfood_*` in the **monorepo**. The staged public
-package may ship a subset (Path C / tools / composition demos); if a folder is
+package may ship a subset (living dogfood / tools / composition demos); if a folder is
 missing from your checkout, use the monorepo or the matching GitHub release assets.
 Composition method (SoA, pools, host-minted I/O): [COMPOSITION.md](COMPOSITION.md).
 Agent day-one loop: [AGENT.md](AGENT.md).

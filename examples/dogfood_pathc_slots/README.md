@@ -1,6 +1,6 @@
-# Path C dogfood - dense slot distances
+# No-grow slot dogfood - dense slot distances
 
-Living Path C sample: **grow once**, then **no-grow** `v[i]=x` slot updates under `effects { mut }`.
+Living dogfood sample: **grow once**, then **no-grow** `v[i]=x` slot updates under `effects { mut }`.
 
 | Phase | API |
 |-------|-----|
