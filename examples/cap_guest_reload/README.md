@@ -10,6 +10,11 @@ Shows the sandbox mental model without a second language:
 
 Guest uses `std/io_cap` only (ambient `std/io` rejected by `--host` / `--guest`).
 
+**Host stay-up** (keep a C window / process while reminting guests) is documented on
+`examples/guest_plugin/README.md` - remint is the semantic reload; rebuilding the guest
+TU + re-link is the default way to pick up edited `.fx`. Shared-lib swap is **not** the
+product default.
+
 ```text
 fx run examples/cap_guest_reload/main.fx          # dual-path score → 42
 fx build examples/cap_guest_reload/guest_lib.fx -o build/cap_guest_reload --emit-c `

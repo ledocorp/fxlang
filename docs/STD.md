@@ -11,7 +11,7 @@ import std/map;
 import std/string;
 ```
 
-## Modules (0.9.68 inventory)
+## Modules (0.9.69 inventory)
 
 Full cheatsheet table: [SURFACE.md](SURFACE.md) §D. Summary:
 

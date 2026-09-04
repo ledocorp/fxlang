@@ -1,6 +1,6 @@
 # Composition under regions
 
-**Package:** 0.9.68  
+**Package:** 0.9.69  
 
 **Site:** https://www.ledocorp.org/fx/docs/composition/  
 **What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)
@@ -153,6 +153,11 @@ softer dialect.
 - Guest code uses `io_cap` only (no ambient `std/io` in that context)
 - After `end`, a second call with the old `FsCap` returns deny (**5**)
 - Starter: `fx new sandbox --scaffold guest`
+- **Reload shape:** begin → mint → work → end, then begin again in the **same** process
+  (stale caps deny). For an interactive window that stays up, remint the guest from the C
+  host; rebuild the guest TU and re-link when `.fx` sources change. Shared-library hot-swap
+  is **not** the default product story for `fx run`.
+- Dogfood: `examples/cap_guest_reload/` · `examples/guest_plugin/` (host stay-up recipe in that README)
 
 ```text
 fx run examples/cap_guest_ctx/main.fx            # dual-path score → 42

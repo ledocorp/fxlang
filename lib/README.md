@@ -1,2 +1,3 @@
-// Public lib modules staged beside projects that need them (e.g. std/queue).
-// SoT for packaging; fixture copies under fx-compiler/tests may mirror for gates.
+# Public lib modules
+
+Staged beside projects that need them (for example `std/queue` helpers). These are ordinary fx sources for the language package — not a private compiler tree.

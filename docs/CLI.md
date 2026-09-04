@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.68`) |
+| `fx version` | Print version (expect `v0.9.69`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -31,6 +31,7 @@ fx new hello
 fx new tiny --scaffold minimal
 fx new firmware --scaffold embedded
 fx new mytool --scaffold cli
+fx new mytool --scaffold tool     # alias for cli
 fx new sandbox --scaffold guest
 ```
 
@@ -39,7 +40,7 @@ fx new sandbox --scaffold guest
 | `simple` (default) | Named region + `import std/vec`; stages `std/` |
 | `minimal` | Bare `main` returning 42 |
 | `embedded` | Tiny arena footprint; builtin `vec_*`; no staged `std/` |
-| `cli` | Result library + thin C host for argv (see `host/cli`) |
+| `cli` / `tool` | Result library; build with **`--cli`** (autohost argv; no author `host_cli.c`) |
 | `guest` | Caps-shaped guest + host `GuestCtx` mint (see `host/cap`) |
 
 → [SCAFFOLDS.md](SCAFFOLDS.md)
@@ -57,7 +58,7 @@ fx run lib.fx --host host.c    # C owns process main / argv (foundry path)
 
 By default, `fx run` / `fx build` use **driver Auto**: try the live `sh_*` path for supported programs; if that cannot serve the program (FX0036 / toolchain), fall back to the **built-in engine** inside `bin/fx` (CLI name: `--driver foundry` — not a separate Rust install). On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C. Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry`.
 
-**Argv (frozen):** `fx run` does **not** forward program arguments into the fx program. The auto-shim is `main(void)`. Product CLIs use **`--scaffold cli`**, **`--host <file.c>`**, and shared helpers in `host/cli/` — C owns argc/argv at the process edge. → [SCAFFOLDS.md](SCAFFOLDS.md) · [WRAP.md](WRAP.md)
+**Argv (frozen):** `fx run` does **not** forward program arguments into the fx program. The auto-shim is `main(void)`. Product CLIs use **`--scaffold cli`** (or `tool`) then **`fx build … --cli`**, or a custom **`--host <file.c>`**. Shared helpers live in `host/cli/`. → [SCAFFOLDS.md](SCAFFOLDS.md) · [WRAP.md](WRAP.md)
 
 **Windows vs Linux IR:** Linux discovers `third_party/qbe/obj/qbe`. Windows discovers `third_party/qbe/windows/qbe.exe` when present and links native PE (`amd64_win`). On that path, the same differential set as Linux is supported (COVER **50** + **24** extras = **74**). Without `qbe.exe`, use `--emit-c`. Emit-C stays first-class on both OSes. Prebuilt compilers in this package are **Windows + Linux x86_64 only** (no macOS binary).
 
@@ -70,9 +71,9 @@ Useful flags:
 | `--cli` | Auto-link thin CLI host (`host/cli`) for argv/exit — product CLIs |
 | `--guest` / `--no-guest` | Guest ambient-io policy on check/run/build |
 | `--fallback-emit-c` | Prefer emit-C when IR path fails |
-| `-o <dir>` | Output directory (default `out/`) |
+| `-o <dir>` | Output directory. **`fx build`** / **`--watch`** default `out/`. **`fx run`** without `-o` uses a per-run scratch under `%TEMP%`/`FXTMPDIR` and deletes it; successful builds populate **FXCACHE** (`$FXCACHE` or `%LOCALAPPDATA%\fx\cache`) so the next identical run can skip rebuild (`FX_CACHE=off` disables). |
 | `--release` | Optimize more; less debug instrumentation |
-| `--watch` | Rebuild when sources change |
+| `--watch` | Rebuild when sources change. Debounces edits (`FX_WATCH_DEBOUNCE_MS`, default 200). Kills the previous run child before rebuild. Reuses **FXCACHE** when the fingerprint matches. `FX_WATCH_MAX=N` exits after N rebuilds (harness / CI). |
 | `--no-zspec` | Do not link zspec (only when appropriate) |
 | `--host <file.c>` | Use this C file as `main`; link fx objects with it |
 | `--link <file.c>` | Extra C translation unit to compile/link |
@@ -94,7 +95,7 @@ fx emit-c main.fx -o out_c --debug-source   # .fxmap + #line
 
 Inspect the generated C without linking. Default emit includes `/* fx: … */` annotate comments.
 `--debug-source` adds a machine map for `fx locate` and debugger `#line`s.
-`--surface` also writes `.fxsurface.json` + `.fxsurface.md` (types, effects, caps, regions).
+`--surface` also writes `.fxsurface.json` + `.fxsurface.md` (types, effects, caps, regions, loan notes, overrides).
 → [TRACKING.md](TRACKING.md)
 
 ### `fx surface`

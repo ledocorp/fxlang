@@ -1,6 +1,7 @@
 // bind stubs → safe wrapper → program (exit 42).
-// Link: --link <repo>/fx-compiler/tests/fixtures/ffi/stb_sprintf_ref.c
-//       --link-include <same ffi dir>
+// Link: --link host/stb_sprintf_ref.c (or your local shim)
+//       --link-include host
+
 using core;
 import stb_safe;
 

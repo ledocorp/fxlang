@@ -1,6 +1,6 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.68  
+**Package version:** 0.9.69  
 
 **Status:** As implemented — not aspirational  
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
@@ -62,6 +62,10 @@ Comments: `//` line comments. Refinement `where` is verification-tier (not requi
 | Generics | type params on functions/structs · **no traits** |
 
 Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** implicit signed↔unsigned or int↔float. Cast: `x as T`.
+
+**Local lets:** `let x = 42;` is allowed when the initializer determines the type. Function **params/returns** stay written. Surface JSON remains an exact API passport (no inferred signature theater). Ambiguous RHS (empty `[]` as array) → annotate.
+
+**Batch Vec init:** `let v: Vec<i32> = [40, 2];` → `vec_new` + pushes (≤32). Not Soft-fx; plain `[i32; N]` stays an array.
 
 **fx ≠ C (agents):** struct literal fields use `,` not `;`; no C compound literals `(T){ .x = … }`; `Result` needs `?` / match; do not invent std APIs — read [STD.md](STD.md).
 
@@ -231,7 +235,8 @@ Landed checker on existing `&` / `&mut` / `&region` (no lifetime parameters, no 
 |------|--------|
 | Shared XOR mut | Many `&` **or** one `&mut` of the same place in one epoch — not both |
 | Region epoch | Loan cannot outlive its owner region → **FX0015** |
-| Borrow conflict | Overlapping exclusive/shared loans → **FX0019** |
+| Borrow conflict | Overlapping exclusive/shared loans → **FX0019** (`= rewrite:` line) |
+| Effect mismatch | Missing `mut`/`alloc` on slot/grow → **FX0023** (`= rewrite:` distinguishes slot vs `v.push` grow) |
 | Hylo call-end | Inline `&mut` actuals end at the statement / call return |
 
 Optional `loan { }` block sugar is **not** shipped. Graphs stay typed **`Id` + SoA** — see [COMPOSITION.md](COMPOSITION.md). Detail: [REGIONS.md](REGIONS.md).
@@ -307,7 +312,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 
 ## G. Honesty bounds & deferred
 
-### Also as implemented (0.9.68 floor)
+### Also as implemented (0.9.69 floor)
 
 | Surface | Notes |
 |---------|--------|
@@ -319,7 +324,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
 | Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
-### Not in the product dialect (as of 0.9.68)
+### Not in the product dialect (as of 0.9.69)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)

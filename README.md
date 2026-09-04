@@ -1,6 +1,6 @@
-﻿# fx
+# fx
 
-**Version:** [0.9.68](VERSION) Â· [Release notes](docs/releases/0.9.68.md) Â· [GitHub](https://github.com/ledocorp/fxlang)
+**Version:** [0.9.69](VERSION) Â· [Release notes](docs/releases/0.9.69.md) Â· [GitHub](https://github.com/ledocorp/fxlang)
 
 **Copyright Â© 2026 Shawn Londono** Â· **LedoCorp** Â· http://www.ledocorp.org  
 **License:** [GNU GPL v3](LICENSE) Â· [NOTICE](NOTICE) Â· [third-party licenses](docs/LICENSES.md)
@@ -25,7 +25,7 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version                 # v0.9.68
+fx version                 # v0.9.69
 fx new hello
 cd hello
 fx run main.fx             # expect exit 42
@@ -84,7 +84,7 @@ Whatâ€™s next (honest): [docs/NEXT.md](docs/NEXT.md).
 
 ---
 
-## Whatâ€™s in 0.9.68
+## Whatâ€™s in 0.9.69
 
 - **GPL-3.0** product license (see [LICENSE](LICENSE) Â· [NOTICE](NOTICE) Â· [docs/LICENSES.md](docs/LICENSES.md))
 - **Native-first Auto driver** â€” live `sh_*` when supported; otherwise fallback engine inside `bin/fx` (CLI flag: `--driver foundry`)
@@ -92,7 +92,7 @@ Whatâ€™s next (honest): [docs/NEXT.md](docs/NEXT.md).
 - Inspectable **`compiler-source/`** (fx modules, read-only â€” not how you rebuild `bin/fx`)
 - On top of **0.9.66** no-grow slot dogfood and **0.9.6** honesty freeze (argv Â· platforms Â· vendor pin)
 
-Full notes: [docs/releases/0.9.68.md](docs/releases/0.9.68.md).
+Full notes: [docs/releases/0.9.69.md](docs/releases/0.9.69.md).
 
 ---
 
@@ -112,4 +112,4 @@ Stewarded by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.68](docs/releases/0.9.68.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.69](docs/releases/0.9.69.md).**

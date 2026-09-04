@@ -2,7 +2,7 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-The **0.9.68** package is a full programming surface, not just “regions + vec.”
+The **0.9.69** package is a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
 typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / no-grow `v[i]=x` / `vec_set` slot writes,
 array-backed `&mut [T]`, lexical loan checking on `&`/`&mut`, structured concurrency facades, SIMD/`@override` footholds,
@@ -58,6 +58,11 @@ Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`,
 - Apps: usually `fn main() -> i32` (exit code). `main` may also return `Result<i32, core_Err>`.
 - Libraries: `module name;` at the top of a `.fx` file.
 - Imports: `import std/vec;` · last path segment is the alias (`vec.push`).
+- **Local lets** may omit the type when the initializer determines it (`let x = 42;`).
+  Function **parameters and returns stay explicit**. Surface JSON stays an exact API passport
+  (no soft inferred signatures). Ambiguous RHS (e.g. empty `[]` as an array) is a loud error — annotate.
+- **Batch Vec init:** `let v: Vec<i32> = [40, 2];` expands to `vec_new(0)` + `vec_push` (same grow
+  physics as `v.push`). Requires a `Vec<T>` annotation (≤32 elems). Plain `[T; N]` arrays are unchanged.
 - Zspec symbols: `using core;` (for idiomatic `Err` / `core_Err`).
 - C FFI: `extern "c" { fn name(…) -> …; }` then link with `--host` / link flags.
 
@@ -126,9 +131,11 @@ b = strbuf_push(b, "hello");
 
 Three teaching patterns (no hidden mutation):
 
-1. **Tutorial let-chains** (scaffolds): `let v2 = vec.push(v, 40);`
+1. **Method sugar / reassign** (default scaffolds): `v.push(40);` or `v = vec.push(v, 40);`
 2. **Loop reassignment**: `v = vec.push(v, n);` inside a `while`
 3. **`&mut` state fields**: `p.nodes = vec.push(p.nodes, x);` instead of rebuilding the whole struct
+
+Tutorial **let-chains** (`let v2 = vec.push(v, …)`) still work and stay honest — they are just not the scaffold default.
 
 Prefer `vec_get(v, i)` or sugar `v[i]` for **reads**. For in-place **slot** writes use `vec_set` / no-grow `v[i]=x` (needs `mut`), or arrays + `&mut [T]`. Growable realloc under index-assign stays refused.
 
@@ -154,9 +161,9 @@ import std/vec;
 fn main() -> i32 effects { alloc, mut } {
     region r = arena(4096);
     let v: Vec<i32> = vec.new(0);
-    let v2: Vec<i32> = vec.push(v, 40);
-    let v3: Vec<i32> = vec.push(v2, 2);
-    return vec.get(v3, 0) + vec.get(v3, 1);
+    v.push(40);
+    v.push(2);
+    return vec.get(v, 0) + vec.get(v, 1);
 }
 ```
 

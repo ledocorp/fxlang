@@ -1,4 +1,4 @@
-﻿// no-grow slot living dogfood (dense SoA distances).
+// Path C living dogfood (dense SoA distances).
 // Grow once with push; relax edges with no-grow `v[i]=x` (MUT-2).
 // Soft-fx / growable index-assign stay refused. Exit 42 on expected sink dist.
 import std/vec;
@@ -47,7 +47,7 @@ fn main() -> i32 effects { alloc, mut } {
         round = round + 1;
     }
 
-    // Best path 0â†’2â†’1â†’3 = 5+3+34 = 42
+    // Best path 0→2→1→3 = 5+3+34 = 42
     if (dist[3] != 42) {
         return 1;
     }

@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.68 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0  
+**Version:** 0.9.69 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0  
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -28,7 +28,7 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.9.68
+fx version                    # expect v0.9.69
 fx doctor
 
 fx new hello
@@ -37,7 +37,7 @@ fx run main.fx                # Auto: live sh_* when supported, else foundry (IR
 fx run main.fx --emit-c       # optional: force emit-C backend (also the fallback if QBE is missing)
 ```
 
-**Argv:** `fx run` does **not** pass program arguments into your fx `main`. For CLIs, use `fx new mytool --scaffold cli` (thin C host) or `fx run lib.fx --host host.c`. → [CLI.md](CLI.md) · [SCAFFOLDS.md](SCAFFOLDS.md)
+**Argv:** `fx run` does **not** pass program arguments into your fx `main`. For CLIs, use `fx new mytool --scaffold cli` then `fx build … --cli` (autohost argv). Or `fx build … --host host.c` for WRAP/GUI. → [CLI.md](CLI.md) · [SCAFFOLDS.md](SCAFFOLDS.md)
 
 **IR on Windows and Linux:** Linux uses `third_party/qbe/obj/qbe`. Windows uses `third_party/qbe/windows/qbe.exe` when that file is in the package (native PE, `amd64_win`). The same everyday programs run on both paths. If `qbe.exe` is absent, pass `--emit-c`. Emit-C stays first-class either way.
 
@@ -61,14 +61,14 @@ cd hello
 
 ### What just happened?
 
-`fx new` wrote a **simple** scaffold: a named `region`, `effects { alloc, mut }`, and `import std/vec`. That is the recommended starting point: Go-feel lifetimes, not a GC.
+`fx new` wrote a **simple** scaffold: a named `region`, `effects { alloc, mut }`, `import std/vec`, and grow via **`v.push`** (same physics as `vec_push` / reassign — not Soft-fx). That is the recommended starting point: Go-feel lifetimes, not a GC.
 
 Try other shapes:
 
 ```text
 fx new tiny --scaffold minimal      # no default region
 fx new firmware --scaffold embedded # small arena, no staged std
-fx new mytool --scaffold cli        # Result library + thin C argv host
+fx new mytool --scaffold cli        # Result library; build with --cli (alias: tool)
 fx new sandbox --scaffold guest     # caps-shaped guest + host session
 ```
 

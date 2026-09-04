@@ -4,7 +4,8 @@ Newest first. Full notes for each language-package tag.
 
 | Version | Notes |
 |---------|--------|
-| **0.9.68** | [0.9.68.md](0.9.68.md) · tag `v0.9.68` (staging ready) |
+| **0.9.69** | [0.9.69.md](0.9.69.md) · tag `v0.9.69` |
+| **0.9.68** | [0.9.68.md](0.9.68.md) · tag `v0.9.68` |
 | **0.9.67** | [0.9.67.md](0.9.67.md) · packaging polish |
 | **0.9.66** | [0.9.66.md](0.9.66.md) · tag `v0.9.66` |
 | **0.9.6** | [0.9.6.md](0.9.6.md) · tag `v0.9.6` |
