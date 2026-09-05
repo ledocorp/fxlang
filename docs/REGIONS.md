@@ -9,7 +9,7 @@ Canonical web copy: https://www.ledocorp.org/fx/docs/regions/
 
 ```fx
 fn work() -> i32 effects { alloc, mut, io } {
-    // may allocate, mutate, and perform I/O
+ // may allocate, mutate, and perform I/O
 }
 ```
 
@@ -35,9 +35,9 @@ Omit effects you do not need. Absence of `alloc` is a feature callers can rely o
 
 ```fx
 fn main() -> i32 effects { alloc, mut } {
-    region r = arena(4096);
-    // heap work associated with r
-    return 0;
+ region r = arena(4096);
+ // heap work associated with r
+ return 0;
 } // r ends: storage released together
 ```
 
@@ -47,11 +47,11 @@ fn main() -> i32 effects { alloc, mut } {
 import std/vec;
 
 fn main() -> i32 effects { alloc, mut } {
-    region r = arena(4096);
-    let v: Vec<i32> = vec.new(0);
-    let v2: Vec<i32> = vec.push(v, 40);
-    let v3: Vec<i32> = vec.push(v2, 2);
-    return vec.get(v3, 0) + vec.get(v3, 1);
+ region r = arena(4096);
+ let v: Vec<i32> = vec.new(0);
+ let v2: Vec<i32> = vec.push(v, 40);
+ let v3: Vec<i32> = vec.push(v2, 2);
+ return vec.get(v3, 0) + vec.get(v3, 1);
 }
 ```
 
@@ -61,10 +61,10 @@ This is the default **simple** scaffold from `fx new`.
 
 ```fx
 fn main() -> i32 {
-    let x: i32 = 42;
-    region r = scope;
-    let p: &region r i32 = &region r x;
-    return *p;
+ let x: i32 = 42;
+ region r = scope;
+ let p: &region r i32 = &region r x;
+ return *p;
 }
 ```
 
@@ -90,14 +90,14 @@ fx checks loans **lexically** on the forms above — no lifetime parameters and 
 
 ```fx
 fn bump(a: &mut Acc, v: i32) -> i32 {
-    a.total = a.total + v;
-    return a.total;
+ a.total = a.total + v;
+ return a.total;
 }
 
 fn use_after_call(n: i32) -> i32 {
-    let mut x: i32 = n;
-    bump(&mut x, 1);   // exclusive loan ends here
-    return x;
+ let mut x: i32 = n;
+ bump(&mut x, 1); // exclusive loan ends here
+ return x;
 }
 ```
 
@@ -110,11 +110,11 @@ import std/guest;
 import std/cap;
 
 fn host() -> Result<i32, core_Err> effects { alloc } {
-    dynamic region g = guest(4096);
-    let ctx = guest.from_handle(g);
-    let fs = guest.mint_fs(ctx, "")?;
-    // … guest work with FsCap …
-    return Ok(0);
+ dynamic region g = guest(4096);
+ let ctx = guest.from_handle(g);
+ let fs = guest.mint_fs(ctx, "")?;
+ // … guest work with FsCap …
+ return Ok(0);
 } // g ends: caps revoked, arena freed
 ```
 
@@ -134,7 +134,7 @@ The **minimal** scaffold has no region. Add one when you need heap:
 
 ```fx
 fn main() -> i32 {
-    return 42;
+ return 42;
 }
 ```
 
@@ -142,8 +142,8 @@ fn main() -> i32 {
 
 - **Local reasoning**: open a function and see what it may do
 - **Batch free**: regions free as a unit when they end
-- **C-friendly**: honesty shows up in emitted C via zspec allocators and errors
+- **C-friendly**: costs show up in emitted C via zspec allocators and errors
 - **Regions ≠ tasks**: “structured” here means lifetimes and batch free — not concurrency.
-  Task nursery / channels live under `std/nursery`, `std/chan`, … (see [STD.md](STD.md)).
+ Task nursery / channels live under `std/nursery`, `std/chan`, … (see [STD.md](STD.md)).
 
 More: [LANGUAGE.md](LANGUAGE.md) · [REFERENCE.md](REFERENCE.md) · [STD.md](STD.md)

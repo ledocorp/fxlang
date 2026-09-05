@@ -11,10 +11,10 @@ Humans remain reviewers and adopters. This is not a mega-IDE product.
 ## Path chooser (before coding)
 
 ```text
-1. Path?   pure fx | --cli | --host + native lib (--use) | guest
+1. Path? pure fx | --cli | --host + native lib (--use) | guest
 2. Syntax? SURFACE — fx ≠ C (struct fields use `,` not `;`; no C compound literals; Result needs `?`)
-3. APIs?   STD / SURFACE only — never invent names (e.g. no string.concat unless listed)
-4. Link?   --use <dir> with dir/link.args — never invent winmm/gdi32 lists
+3. APIs? STD / SURFACE only — never invent names (e.g. no string.concat unless listed)
+4. Link? --use <dir> with dir/link.args — never invent winmm/gdi32 lists
 5. Backend? host+GUI → --emit-c until IR host/struct parity is documented
 ```
 
@@ -57,16 +57,16 @@ add tools only when a concrete agent workflow fails. See [CLI.md](CLI.md).
 
 ## Editor + tree-sitter
 
-- Wire `fx lsp` for diagnostics, go-to-definition, and find-references — [EDITOR.md](EDITOR.md).  
-- Syntax highlighting via **tree-sitter-fx** (install separately unless your checkout includes the monorepo grammar) — [EDITOR.md](EDITOR.md).  
+- Wire `fx lsp` for diagnostics, go-to-definition, and find-references — [EDITOR.md](EDITOR.md). 
+- Syntax highlighting via **tree-sitter-fx** (install separately unless your checkout includes the monorepo grammar) — [EDITOR.md](EDITOR.md). 
 - Debug with `#line` + gdb — [DEBUG.md](DEBUG.md). No DAP required.
 
 ---
 
 ## Composition habits agents should copy
 
-- Parallel `Vec`s + typed ids (SoA), not nested growable structs — [COMPOSITION.md](COMPOSITION.md).  
-- Host mints file authority when it matters: either pass **bytes** only (`examples/cap_host_smoke/`) or pass **`FsCap` / `OutCap`** and use `std/io_cap` (`examples/cap_regions_*`). Deny outside the root is exit **5**.  
+- Parallel `Vec`s + typed ids (SoA), not nested growable structs — [COMPOSITION.md](COMPOSITION.md). 
+- Host mints file authority when it matters: either pass **bytes** only (`examples/cap_host_smoke/`) or pass **`FsCap` / `OutCap`** and use `std/io_cap` (`examples/cap_regions_*`). Deny outside the root is exit **5**. 
 - Keep types and effects visible on purpose.
 
 ---

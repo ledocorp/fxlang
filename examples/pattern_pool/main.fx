@@ -1,4 +1,4 @@
-// typed Id + vec_set/pool.set (stable slot, no rebuild).
+// FX-0.7.5-A1 — typed Id + vec_set/pool.set (stable slot, no rebuild).
 import std/pool;
 import lib/id_pool;
 

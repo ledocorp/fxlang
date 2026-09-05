@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.69 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0  
+**Version:** 0.9.70 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0 
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -10,8 +10,8 @@ Welcome to **fx**: a systems language with visible memory and dual emission to r
 
 ## What you need
 
-1. **This repository** (compiler in `bin/`, plus `std/`, scaffolds, headers).  
-2. A **C toolchain** on your `PATH` for linking. **gcc** is the default today.  
+1. **This repository** (compiler in `bin/`, plus `std/`, scaffolds, headers). 
+2. A **C toolchain** on your `PATH` for linking. **gcc** is the default today. 
 3. **Windows** or **Linux x86_64** for the prebuilt compiler in this release — **macOS is not shipped** as a prebuilt (build from source elsewhere if needed).
 
 No other language toolchain is required to write and run fx programs.
@@ -28,13 +28,13 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version                    # expect v0.9.69
+fx version # expect v0.9.70
 fx doctor
 
 fx new hello
 cd hello
-fx run main.fx                # Auto: live sh_* when supported, else foundry (IR/emit-C); expect exit 42
-fx run main.fx --emit-c       # optional: force emit-C backend (also the fallback if QBE is missing)
+fx run main.fx                # Auto: live sh_* when supported, else built-in engine; expect exit 42
+fx run main.fx --emit-c # optional: force emit-C backend (also the fallback if QBE is missing)
 ```
 
 **Argv:** `fx run` does **not** pass program arguments into your fx `main`. For CLIs, use `fx new mytool --scaffold cli` then `fx build … --cli` (autohost argv). Or `fx build … --host host.c` for WRAP/GUI. → [CLI.md](CLI.md) · [SCAFFOLDS.md](SCAFFOLDS.md)
@@ -47,7 +47,7 @@ Windows without PATH:
 .\bin\fx.exe doctor
 .\bin\fx.exe new hello
 cd hello
-..\bin\fx.exe run main.fx     # or absolute path to bin\fx.exe
+..\bin\fx.exe run main.fx # or absolute path to bin\fx.exe
 ```
 
 Linux without PATH:
@@ -61,15 +61,15 @@ cd hello
 
 ### What just happened?
 
-`fx new` wrote a **simple** scaffold: a named `region`, `effects { alloc, mut }`, `import std/vec`, and grow via **`v.push`** (same physics as `vec_push` / reassign — not Soft-fx). That is the recommended starting point: Go-feel lifetimes, not a GC.
+`fx new` wrote a **simple** scaffold: a named `region`, `effects { alloc, mut }`, `import std/vec`, and grow via **`v.push`** (same as `vec_push` / reassign). That is the recommended starting point: Go-feel lifetimes, not a GC.
 
 Try other shapes:
 
 ```text
-fx new tiny --scaffold minimal      # no default region
+fx new tiny --scaffold minimal # no default region
 fx new firmware --scaffold embedded # small arena, no staged std
-fx new mytool --scaffold cli        # Result library; build with --cli (alias: tool)
-fx new sandbox --scaffold guest     # caps-shaped guest + host session
+fx new mytool --scaffold cli # Result library; build with --cli (alias: tool)
+fx new sandbox --scaffold guest # caps-shaped guest + host session
 ```
 
 → [SCAFFOLDS.md](SCAFFOLDS.md)
@@ -105,7 +105,7 @@ fx new sandbox --scaffold guest     # caps-shaped guest + host session
 
 When `fx run` or `fx build` links:
 
-- Include path: `zspec/include/`  
+- Include path: `zspec/include/` 
 - Library: `build/gcc/libzspec.a` (Windows) or `build/gcc-linux/libzspec.a` (Linux)
 
 If linking fails with “gcc not found,” install a C compiler and ensure it is on your `PATH`. Run `fx doctor` to confirm.

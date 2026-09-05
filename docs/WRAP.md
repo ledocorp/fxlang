@@ -33,14 +33,14 @@ Larger WRAP footholds (dual-path → **42**):
 | `examples/wrap_sqlite/` | SQLite amalgamation — `:memory:` open / exec / query |
 | `examples/wrap_llhttp/` | llhttp — parse-only Content-Length (optional NetCap allow host) |
 
-Priorities and honesty bounds: [LIBRARIES.md](LIBRARIES.md).
+Priorities and limits: [LIBRARIES.md](LIBRARIES.md).
 
 ## Declaring C functions from fx
 
 ```fx
 extern "c" {
-    fn puts(s: string) -> i32;
-    fn sha256_hex_equals(msg: string, expected: string) -> i32;
+ fn puts(s: string) -> i32;
+ fn sha256_hex_equals(msg: string, expected: string) -> i32;
 }
 ```
 
@@ -89,7 +89,7 @@ Produces inspectable `extern "c"` stubs (skips macros / unknown types as comment
 Smoke: `examples/bind_smoke` — `fx run main.fx --link host.c` (exit 42).
 Level 2 (hand-written Result wrapper over real lib): `examples/bind_stb_sprintf` — bind stubs → `stb_safe` → stb_sprintf shim (exit 42).
 
-## Honesty bound
+## Limits
 
 - C FFI works; `fx bind` covers Level 1 raw stubs — ownership policy is not invented for you
 - Level 2 wrappers stay hand-written (see `bind_stb_sprintf/stb_safe.fx`)
@@ -100,8 +100,8 @@ Level 2 (hand-written Result wrapper over real lib): `examples/bind_stb_sprintf`
 
 When you add an `examples/*` tree with `main.fx` that needs C sidecars:
 
-1. Document the exact `fx run` / `fx build` link line in that example’s README.  
-2. Confirm both `fx run` and `fx run --emit-c` when you claim dual-path quality.  
+1. Document the exact `fx run` / `fx build` link line in that example’s README. 
+2. Confirm both `fx run` and `fx run --emit-c` when you claim dual-path quality. 
 3. Keep host/link flags next to the example so strangers can copy them without hunting.
 
 ## What’s next for wraps

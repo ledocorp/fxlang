@@ -318,6 +318,12 @@ fn parse_type_span_inner(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: s
         return Ok(ImpOut { path_off: start_off, path_len: map_span_ln });
     }
     if (sh_lexer.slice_eq(src, start_off, start_ln, "Vec") != 1) {
+        // FX-SH-SOT-FACET-1 - `own T` type span (own is Ident on live lexer).
+        if (sh_lexer.slice_eq(src, start_off, start_ln, "own") == 1) {
+            let inner: ImpOut = parse_type_span_inner(kinds, vals, lens, src, pos)?;
+            let span_ln: i32 = (inner.path_off + inner.path_len) - start_off;
+            return Ok(ImpOut { path_off: start_off, path_len: span_ln });
+        }
         return Ok(ImpOut { path_off: start_off, path_len: start_ln });
     }
     if (*pos >= n) {
@@ -355,9 +361,17 @@ fn parse_type_span(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string,
     if (vec_get(kinds, *pos) != 14) {
         return parse_type_span_inner(kinds, vals, lens, src, pos);
     }
+    let amp_off: i32 = vec_get(vals, *pos);
     *pos = *pos + 1;
     if (*pos >= n) {
         return Err(1);
+    }
+    if (vec_get(kinds, *pos) == 30) {
+        if (sh_lexer.slice_eq(src, vec_get(vals, *pos), vec_get(lens, *pos), "mut") != 1) {
+            let inner_shared: ImpOut = parse_type_span_inner(kinds, vals, lens, src, pos)?;
+            let span_ln_shared: i32 = (inner_shared.path_off + inner_shared.path_len) - amp_off;
+            return Ok(ImpOut { path_off: amp_off, path_len: span_ln_shared });
+        }
     }
     if (vec_get(kinds, *pos) != 30) {
         return Err(1);
@@ -1182,6 +1196,16 @@ fn parse_factor_atom(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, pos: &mut 
         *pos = *pos + 1;
         if (*pos >= n) {
             return Err(1);
+        }
+        if (vec_get(kinds, *pos) == 30) {
+            let name_off: i32 = vec_get(vals, *pos);
+            let name_ln: i32 = vec_get(lens, *pos);
+            *pos = *pos + 1;
+            let start: i32 = name_off - 1;
+            let span_ln: i32 = (name_off + name_ln) - start;
+            let idx: i32 = nodes.len;
+            let nodes2: Vec<Expr> = vec_push(nodes, Ident(start, span_ln));
+            return Ok(ParseOut { idx: idx, nodes: nodes2 });
         }
         if (vec_get(kinds, *pos) != 30) {
             return Err(1);
@@ -2059,6 +2083,19 @@ fn type_span_is_mut_ref(src: string, off: i32, ln: i32) -> i32 {
     return 1;
 }
 
+fn type_span_is_shared_ref(src: string, off: i32, ln: i32) -> i32 {
+    if (ln < 2) {
+        return 0;
+    }
+    if (sh_lexer.slice_eq(src, off, 1, "&") != 1) {
+        return 0;
+    }
+    if (type_span_is_mut_ref(src, off, ln) == 1) {
+        return 0;
+    }
+    return 1;
+}
+
 // FX-SH-NAT-7 - `&mut [T]` mut slice type span.
 fn type_span_is_mut_slice(src: string, off: i32, ln: i32) -> i32 {
     if (type_span_is_mut_ref(src, off, ln) != 1) {
@@ -2194,9 +2231,23 @@ fn map_mut_ref_type_c(mod_slug: string, src: string, off: i32, ln: i32) -> Resul
     return Ok(strbuf_finish(b2));
 }
 
+fn map_shared_ref_type_c(mod_slug: string, src: string, off: i32, ln: i32) -> Result<string, core_Err> effects { alloc, mut } {
+    let inner_off: i32 = off + 1;
+    let inner_ln: i32 = ln - 1;
+    let inner: string = map_type_span_to_c_mod(mod_slug, src, inner_off, inner_ln)?;
+    let b0: StrBuilder = strbuf_new();
+    let b1: StrBuilder = strbuf_push(b0, "const ");
+    let b2: StrBuilder = strbuf_push(b1, inner);
+    let b3: StrBuilder = strbuf_push(b2, "*");
+    return Ok(strbuf_finish(b3));
+}
+
 fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> Result<string, core_Err> effects { alloc, mut } {
     if (type_span_is_mut_ref(src, off, ln) == 1) {
         return map_mut_ref_type_c(mod_slug, src, off, ln);
+    }
+    if (type_span_is_shared_ref(src, off, ln) == 1) {
+        return map_shared_ref_type_c(mod_slug, src, off, ln);
     }
     if (type_span_is_array(src, off, ln) == 1) {
         return map_array_type_c(mod_slug, src, off, ln);
@@ -2247,6 +2298,41 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
     }
     if (sh_lexer.slice_eq(src, off, ln, "Bytes") == 1) {
         return Ok("fx_Bytes");
+    }
+    // FX-SH-SOT-ATOMIC-1 - Atomic / Atomic<i32> → C11 _Atomic int32_t (foothold).
+    if (sh_lexer.slice_eq(src, off, ln, "Atomic") == 1) {
+        return Ok("_Atomic int32_t");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "Atomic<i32>") == 1) {
+        return Ok("_Atomic int32_t");
+    }
+    // FX-SH-SOT-MMIO-1 - MmioCap → fx_MmioCap (volatile window via mint).
+    if (sh_lexer.slice_eq(src, off, ln, "MmioCap") == 1) {
+        return Ok("fx_MmioCap");
+    }
+    // FX-SH-SOT-FACET-1 - own T / File / T / Self (mono File foothold).
+    if (ln >= 5) {
+        if (sh_lexer.slice_eq(src, off, 3, "own") == 1) {
+            if (string.byte_at(src, off + 3) == 32) {
+                return map_type_span_to_c_mod(mod_slug, src, off + 4, ln - 4);
+            }
+        }
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "File") == 1) {
+        return Ok("fx_File");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "T") == 1) {
+        return Ok("fx_File");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "Self") == 1) {
+        return Ok("fx_File");
+    }
+    // FX-SH-SOT-CAPDICT-1 - opaque / WriterDict.
+    if (sh_lexer.slice_eq(src, off, ln, "opaque") == 1) {
+        return Ok("void");
+    }
+    if (sh_lexer.slice_eq(src, off, ln, "WriterDict") == 1) {
+        return Ok("fx_WriterDict");
     }
     if (string.len(mod_slug) == 0) {
         return Err(1);
@@ -2634,6 +2720,27 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
     if (*pos >= n) {
         return Err(1);
     }
+    // FX-SH-SOT-FACET-1 - skip `<T, …>` type params after fn name (mono later).
+    if (vec_get(kinds, *pos) == 15) {
+        let depth_tp: i32 = 1;
+        *pos = *pos + 1;
+        while (*pos < n) {
+            if (depth_tp <= 0) {
+                break;
+            }
+            let tk: i32 = vec_get(kinds, *pos);
+            if (tk == 15) {
+                depth_tp = depth_tp + 1;
+            }
+            if (tk == 16) {
+                depth_tp = depth_tp - 1;
+            }
+            *pos = *pos + 1;
+        }
+        if (*pos >= n) {
+            return Err(1);
+        }
+    }
     if (vec_get(kinds, *pos) != 6) {
         return Err(1);
     }
@@ -2642,6 +2749,24 @@ fn parse_fn_def(kinds: Vec<i32>, vals: Vec<i32>, lens: Vec<i32>, src: string, mo
     let discard_param_m: Map<string, i32> = map_new();
     let params: ParamParseOut = parse_fn_params_c(kinds, vals, lens, src, mod_slug, pos, &mut discard_param_m)?;
     let sig: RetTypeOut = parse_ret_type(kinds, vals, lens, src, pos)?;
+    // FX-SH-SOT-FACET-1 - skip `where T: Facet …` before effects / body.
+    if (*pos < n) {
+        if (vec_get(kinds, *pos) == 30) {
+            if (sh_lexer.slice_eq(src, vec_get(vals, *pos), vec_get(lens, *pos), "where") == 1) {
+                *pos = *pos + 1;
+                while (*pos < n) {
+                    let wk: i32 = vec_get(kinds, *pos);
+                    if (wk == 28) {
+                        break;
+                    }
+                    if (wk == 8) {
+                        break;
+                    }
+                    *pos = *pos + 1;
+                }
+            }
+        }
+    }
     let effect_count: i32 = parse_effects_clause(kinds, vals, lens, pos)?;
     let body_blk: BlockParseOut = parse_block(kinds, vals, lens, src, pos, nodes, stmts)?;
     let body_start: i32 = body_blk.stmts.len - body_blk.count;
@@ -5821,6 +5946,25 @@ fn smoke_tests() -> Result<i32, core_Err> effects { alloc, mut } {
     let want_sig: string = "(int32_t* p)";
     if (sh_lexer.slice_eq(fn_mut.param_sig, 0, string.len(want_sig), want_sig) != 1) {
         return Ok(902);
+    }
+    let shared_c: string = map_type_span_to_c_mod("test", "&i32", 0, 4)?;
+    if (sh_lexer.slice_eq(shared_c, 0, string.len(shared_c), "const int32_t*") != 1) {
+        return Ok(903);
+    }
+    let src_shared: string = "fn main() -> i32 { let x: own i32 = 20; let a: &i32 = &x; return *a; }";
+    let toks_shared: TokBuf = sh_lexer.lex(src_shared);
+    let pos_shared: i32 = 0;
+    let fn_shared: FnOut = parse_fn_def(toks_shared.kinds, toks_shared.vals, toks_shared.lens, src_shared, "test", &mut pos_shared, empty, empty_stmts)?;
+    let shared_ret: i32 = stmt_return_expr(fn_shared.stmts, fn_shared.body_start);
+    if (expr_ty_tag(fn_shared.nodes, shared_ret) != 15) {
+        return Ok(904);
+    }
+    let shared_inner: i32 = expr_deref_inner_idx(fn_shared.nodes, shared_ret);
+    if (loan1_expr_is_shared_borrow_rhs(src_shared, fn_shared.nodes, stmt_let_expr(fn_shared.stmts, fn_shared.body_start + 1)) != 1) {
+        return Ok(905);
+    }
+    if (sh_lexer.slice_eq(src_shared, expr_ident_off(fn_shared.nodes, shared_inner), expr_ident_ln(fn_shared.nodes, shared_inner), "a") != 1) {
+        return Ok(906);
     }
 
     // FX-SH-NAT-10 - glued `v.push` / `vec.push` parse; stmt `v.push(x);` → assign.
@@ -9422,21 +9566,65 @@ fn emit_parser_ident_c(src: string, nodes: Vec<Expr>, idx: i32) -> Result<string
     if (ln >= 5) {
         if (sh_lexer.slice_eq(src, off, 5, "&mut ") == 1) {
             let name: string = sh_lexer.slice_str(src, off + 5, ln - 5)?;
-            let b0: StrBuilder = strbuf_new();
-            let b1: StrBuilder = strbuf_push(b0, "(fx_MutSlice_i32){ .data = (");
-            let b2: StrBuilder = strbuf_push(b1, name);
-            let b3: StrBuilder = strbuf_push(b2, ").data, .len = (size_t)(sizeof((");
-            let b4: StrBuilder = strbuf_push(b3, name);
-            let b5: StrBuilder = strbuf_push(b4, ").data)/sizeof((");
-            let b6: StrBuilder = strbuf_push(b5, name);
-            let b7: StrBuilder = strbuf_push(b6, ").data[0])) }");
-            return Ok(strbuf_finish(b7));
+            if (loan1_src_binding_is_array(src, name) == 1) {
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "(fx_MutSlice_i32){ .data = (");
+                let b2: StrBuilder = strbuf_push(b1, name);
+                let b3: StrBuilder = strbuf_push(b2, ").data, .len = (size_t)(sizeof((");
+                let b4: StrBuilder = strbuf_push(b3, name);
+                let b5: StrBuilder = strbuf_push(b4, ").data)/sizeof((");
+                let b6: StrBuilder = strbuf_push(b5, name);
+                let b7: StrBuilder = strbuf_push(b6, ").data[0])) }");
+                return Ok(strbuf_finish(b7));
+            }
+            let s0: StrBuilder = strbuf_new();
+            let s1: StrBuilder = strbuf_push(s0, "&");
+            let s2: StrBuilder = strbuf_push(s1, name);
+            return Ok(strbuf_finish(s2));
+        }
+    }
+    if (ln >= 2) {
+        if (sh_lexer.slice_eq(src, off, 2, "& ") == 1) {
+            let name: string = sh_lexer.slice_str(src, off + 2, ln - 2)?;
+            let s0: StrBuilder = strbuf_new();
+            let s1: StrBuilder = strbuf_push(s0, "&");
+            let s2: StrBuilder = strbuf_push(s1, name);
+            return Ok(strbuf_finish(s2));
+        }
+    }
+    if (ln >= 1) {
+        if (string.byte_at(src, off) == 38) {
+            let name: string = sh_lexer.slice_str(src, off + 1, ln - 1)?;
+            let s0: StrBuilder = strbuf_new();
+            let s1: StrBuilder = strbuf_push(s0, "&");
+            let s2: StrBuilder = strbuf_push(s1, name);
+            return Ok(strbuf_finish(s2));
         }
     }
     let dot: i32 = slice_dot_pos(src, off, ln);
     if (dot >= 0) {
         let fld_off: i32 = dot + 1;
         let fld_ln: i32 = (off + ln) - fld_off;
+        // FX-SH-SOT-ATOMIC-1 - order.{relaxed,acquire,release,acq_rel,seq_cst} → memory_order_*
+        // Soft-fx refuse: no silent seqcst for unknown fields.
+        if (sh_lexer.slice_eq(src, off, 6, "order.") == 1) {
+            if (sh_lexer.slice_eq(src, fld_off, fld_ln, "relaxed") == 1) {
+                return Ok("memory_order_relaxed");
+            }
+            if (sh_lexer.slice_eq(src, fld_off, fld_ln, "acquire") == 1) {
+                return Ok("memory_order_acquire");
+            }
+            if (sh_lexer.slice_eq(src, fld_off, fld_ln, "release") == 1) {
+                return Ok("memory_order_release");
+            }
+            if (sh_lexer.slice_eq(src, fld_off, fld_ln, "acq_rel") == 1) {
+                return Ok("memory_order_acq_rel");
+            }
+            if (sh_lexer.slice_eq(src, fld_off, fld_ln, "seq_cst") == 1) {
+                return Ok("memory_order_seq_cst");
+            }
+            return Err(1);
+        }
         if (sh_lexer.slice_eq(src, fld_off, fld_ln, "len") == 1) {
             let base_ln: i32 = dot - off;
             let base: string = sh_lexer.slice_str(src, off, base_ln)?;
@@ -9786,6 +9974,13 @@ fn emit_let_bind_type_c_name(mod_slug: string, src: string, fn_out: FnOut, ty_of
         }
         if (sh_lexer.slice_eq(src, ty_off, ty_ln, "string") == 1) {
             return Ok("const char*");
+        }
+        // FX-SH-SOT-LOAN-1 - typed `&T` / `&mut T` let-bind lowers through the ref mapper.
+        if (type_span_is_mut_ref(src, ty_off, ty_ln) == 1) {
+            return map_mut_ref_type_c(mod_slug, src, ty_off, ty_ln);
+        }
+        if (ty_ln >= 1 && sh_lexer.slice_eq(src, ty_off, 1, "&") == 1) {
+            return map_type_span_to_c_mod(mod_slug, src, ty_off, ty_ln);
         }
         // SH-C-73 - TokBuf is the lexer import type, not fx_sh_parse_TokBuf.
         if (sh_lexer.slice_eq(src, ty_off, ty_ln, "TokBuf") == 1) {
@@ -10256,6 +10451,47 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
         let b8: StrBuilder = strbuf_push(b7, vec);
         let b9: StrBuilder = strbuf_push(b8, "))");
         return Ok(strbuf_finish(b9));
+    }
+    // FX-SH-SOT-ATOMIC-1 - Atomic.new(v) → init value (binding typed _Atomic int32_t).
+    if (sh_lexer.slice_eq(src, coff, cln, "Atomic.new") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        return emit_parser_expr_c(mod_slug, src, nodes, a0);
+    }
+    // FX-SH-SOT-MMIO-1 - MmioCap.mint_hosted() → hosted volatile window compound.
+    if (sh_lexer.slice_eq(src, coff, cln, "MmioCap.mint_hosted") == 1) {
+        return Ok("(fx_MmioCap){ .base = (volatile uint8_t *)(void *)fx_mmio_hosted_regs, .width = 4u }");
+    }
+    // FX-SH-SOT-MMIO-1 - mmio_write32(cap, off, val) → volatile store.
+    if (sh_lexer.slice_eq(src, coff, cln, "mmio_write32") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let a2: i32 = expr_call_arg2_idx(nodes, idx);
+        let cap: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let off: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let val: string = emit_parser_expr_c(mod_slug, src, nodes, a2)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "(*(volatile uint32_t *)((");
+        let b2: StrBuilder = strbuf_push(b1, cap);
+        let b3: StrBuilder = strbuf_push(b2, ").base + (");
+        let b4: StrBuilder = strbuf_push(b3, off);
+        let b5: StrBuilder = strbuf_push(b4, ")) = (uint32_t)(");
+        let b6: StrBuilder = strbuf_push(b5, val);
+        let b7: StrBuilder = strbuf_push(b6, "))");
+        return Ok(strbuf_finish(b7));
+    }
+    // FX-SH-SOT-MMIO-1 - mmio_read32(cap, off) → volatile load as i32.
+    if (sh_lexer.slice_eq(src, coff, cln, "mmio_read32") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let a1: i32 = expr_call_arg1_idx(nodes, idx);
+        let cap: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let off: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((int32_t)*(const volatile uint32_t *)((");
+        let b2: StrBuilder = strbuf_push(b1, cap);
+        let b3: StrBuilder = strbuf_push(b2, ").base + (");
+        let b4: StrBuilder = strbuf_push(b3, off);
+        let b5: StrBuilder = strbuf_push(b4, ")))");
+        return Ok(strbuf_finish(b5));
     }
     // FX-SH-NAT-9 - map_add_i32(m, key, delta) → fx_{mod}_map_add_i32(alloc, m, key, delta)
     if (sh_lexer.slice_eq(src, coff, cln, "map_add_i32") == 1) {
@@ -10958,6 +11194,64 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
             is_std = 1;
         }
         if (is_std != 1) {
+            // FX-SH-SOT-ATOMIC-1 - a.load(order) / a.store(v,order) / a.fetch_add(v,order)
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "load") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let ord: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "atomic_load_explicit(&(");
+                let b2: StrBuilder = strbuf_push(b1, recv);
+                let b3: StrBuilder = strbuf_push(b2, "), ");
+                let b4: StrBuilder = strbuf_push(b3, ord);
+                let b5: StrBuilder = strbuf_push(b4, ")");
+                return Ok(strbuf_finish(b5));
+            }
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "store") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let a1: i32 = expr_call_arg1_idx(nodes, idx);
+                let val: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+                let ord: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "atomic_store_explicit(&(");
+                let b2: StrBuilder = strbuf_push(b1, recv);
+                let b3: StrBuilder = strbuf_push(b2, "), ");
+                let b4: StrBuilder = strbuf_push(b3, val);
+                let b5: StrBuilder = strbuf_push(b4, ", ");
+                let b6: StrBuilder = strbuf_push(b5, ord);
+                let b7: StrBuilder = strbuf_push(b6, ")");
+                return Ok(strbuf_finish(b7));
+            }
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "fetch_add") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let a1: i32 = expr_call_arg1_idx(nodes, idx);
+                let val: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+                let ord: string = emit_parser_expr_c(mod_slug, src, nodes, a1)?;
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "atomic_fetch_add_explicit(&(");
+                let b2: StrBuilder = strbuf_push(b1, recv);
+                let b3: StrBuilder = strbuf_push(b2, "), ");
+                let b4: StrBuilder = strbuf_push(b3, val);
+                let b5: StrBuilder = strbuf_push(b4, ", ");
+                let b6: StrBuilder = strbuf_push(b5, ord);
+                let b7: StrBuilder = strbuf_push(b6, ")");
+                return Ok(strbuf_finish(b7));
+            }
+            // FX-SH-SOT-FACET-1 / FX-SH-SOT-CAPDICT-1 - .write → facet mono or capdict invoke.
+            if (sh_lexer.slice_eq(src, meth_off, meth_ln, "write") == 1) {
+                let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
+                let a0: i32 = expr_call_arg0_idx(nodes, idx);
+                let arg0: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+                let b0: StrBuilder = strbuf_new();
+                let b1: StrBuilder = strbuf_push(b0, "fx_facet_Writer_File_write(");
+                let b2: StrBuilder = strbuf_push(b1, recv);
+                let b3: StrBuilder = strbuf_push(b2, ", ");
+                let b4: StrBuilder = strbuf_push(b3, arg0);
+                let b5: StrBuilder = strbuf_push(b4, ")");
+                return Ok(strbuf_finish(b5));
+            }
             if (sh_lexer.slice_eq(src, meth_off, meth_ln, "push") == 1) {
                 let recv: string = sh_lexer.slice_str(src, coff, pfx_ln)?;
                 let a0: i32 = expr_call_arg0_idx(nodes, idx);
@@ -11425,6 +11719,7 @@ fn emit_parser_cond_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx: i32)
 
 fn emit_parser_let_typed_line(mod_slug: string, src: string, fn_out: FnOut, var_off: i32, var_ln: i32, ty_off: i32, ty_ln: i32, nodes: Vec<Expr>, expr_idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let vname: string = sh_lexer.slice_str(src, var_off, var_ln)?;
+    // FX-SH-SOT-BATCH-1 - when ty is Vec and RHS is ArrayLit, prefer vec_new+push (live twin).
     let ty_c: string = emit_let_bind_type_c_name(mod_slug, src, fn_out, ty_off, ty_ln)?;
     let expr: string = emit_parser_expr_c(mod_slug, src, nodes, expr_idx)?;
     let b0: StrBuilder = strbuf_new();
@@ -11452,11 +11747,67 @@ fn emit_parser_let_typed_line(mod_slug: string, src: string, fn_out: FnOut, var_
     return Ok(f);
 }
 
+fn nat7_expr_is_arraylit_rhs(nodes: Vec<Expr>, expr_idx: i32) -> i32 {
+    if (expr_ty_tag(nodes, expr_idx) == 19) {
+        return 1;
+    }
+    return 0;
+}
+
+fn nat7_expr_is_mutslice_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 effects { alloc, mut } {
+    if (expr_ty_tag(nodes, expr_idx) != 3) {
+        return 0;
+    }
+    let off: i32 = expr_ident_off(nodes, expr_idx);
+    let ln: i32 = expr_ident_ln(nodes, expr_idx);
+    if (loan1_ident_is_scalar_mut_borrow(src, off, ln) != 1) {
+        return 0;
+    }
+    let owner_r: Result<string, core_Err> = loan1_borrow_owner_from_ident(src, off, ln);
+    return match owner_r {
+        Ok(owner) => loan1_src_binding_is_array(src, owner),
+        Err(_) => 0,
+    };
+}
+
 fn emit_parser_let_i32_line(mod_slug: string, src: string, var_off: i32, var_ln: i32, nodes: Vec<Expr>, expr_idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let vname: string = sh_lexer.slice_str(src, var_off, var_ln)?;
+    // FX-SH-SOT-BATCH-1 - `let v: Vec<T> = [a,b];` → vec_new + pushes (live residual twin).
+    // (Typed Vec + ArrayLit detected via source `: Vec` after var; foundry desugar mirrors.)
     let expr: string = emit_parser_expr_c(mod_slug, src, nodes, expr_idx)?;
+    let ty_pfx: string = "    int32_t ";
+    // FX-SH-SOT-ATOMIC-1 - Atomic.new RHS → _Atomic int32_t binding.
+    // FX-SH-SOT-MMIO-1 - MmioCap.mint_hosted RHS → fx_MmioCap.
+    // FX-SH-SOT-LET-BRIDGE-1 - ArrayLit / Loan1 / MutSlice on untyped live let (ty spans dropped).
+    if (expr_ty_tag(nodes, expr_idx) == 10) {
+        let coff: i32 = expr_call2_callee_off(nodes, expr_idx);
+        let cln: i32 = expr_call2_callee_ln(nodes, expr_idx);
+        if (sh_lexer.slice_eq(src, coff, cln, "Atomic.new") == 1) {
+            ty_pfx = "    _Atomic int32_t ";
+        }
+        if (sh_lexer.slice_eq(src, coff, cln, "MmioCap.mint_hosted") == 1) {
+            ty_pfx = "    fx_MmioCap ";
+        }
+    }
+    if (nat7_expr_is_arraylit_rhs(nodes, expr_idx) == 1) {
+        let ac: i32 = array_lit_count(nodes, expr_idx);
+        let nstr: string = str_from_i32(ac)?;
+        let a0: StrBuilder = strbuf_new();
+        let a1: StrBuilder = strbuf_push(a0, "    fx_Array_i32_");
+        let a2: StrBuilder = strbuf_push(a1, nstr);
+        ty_pfx = strbuf_finish(strbuf_push(a2, " "));
+    }
+    if (loan1_expr_is_scalar_mut_borrow_rhs(src, nodes, expr_idx) == 1) {
+        ty_pfx = "    int32_t* ";
+    }
+    if (loan1_expr_is_shared_borrow_rhs(src, nodes, expr_idx) == 1) {
+        ty_pfx = "    const int32_t* ";
+    }
+    if (nat7_expr_is_mutslice_rhs(src, nodes, expr_idx) == 1) {
+        ty_pfx = "    fx_MutSlice_i32 ";
+    }
     let b0: StrBuilder = strbuf_new();
-    let b1: StrBuilder = strbuf_push(b0, "    int32_t ");
+    let b1: StrBuilder = strbuf_push(b0, ty_pfx);
     let b2: StrBuilder = strbuf_push(b1, vname);
     let b3: StrBuilder = strbuf_push(b2, " = ");
     let b4: StrBuilder = strbuf_push(b3, expr);
@@ -13427,6 +13778,233 @@ fn expr_binop_r(nodes: Vec<Expr>, idx: i32) -> i32 {
     };
 }
 
+fn loan1_ident_is_scalar_mut_borrow(src: string, off: i32, ln: i32) -> i32 {
+    if (ln < 5) {
+        return 0;
+    }
+    return sh_lexer.slice_eq(src, off, 5, "&mut ");
+}
+
+fn loan1_ident_is_shared_borrow(src: string, off: i32, ln: i32) -> i32 {
+    if (ln >= 2) {
+        if (sh_lexer.slice_eq(src, off, 2, "& ") == 1) {
+            return 1;
+        }
+    }
+    if (ln >= 1) {
+        if (string.byte_at(src, off) == 38) {
+            if (loan1_ident_is_scalar_mut_borrow(src, off, ln) != 1) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+fn loan1_borrow_owner_from_ident(src: string, off: i32, ln: i32) -> Result<string, core_Err> effects { alloc, mut } {
+    if (loan1_ident_is_scalar_mut_borrow(src, off, ln) == 1) {
+        return sh_lexer.slice_str(src, off + 5, ln - 5);
+    }
+    if (loan1_ident_is_shared_borrow(src, off, ln) == 1) {
+        if (ln >= 2) {
+            if (sh_lexer.slice_eq(src, off, 2, "& ") == 1) {
+                return sh_lexer.slice_str(src, off + 2, ln - 2);
+            }
+        }
+        return sh_lexer.slice_str(src, off + 1, ln - 1);
+    }
+    return Err(1);
+}
+
+fn loan1_src_binding_is_array(src: string, name: string) -> i32 {
+    let p0: StrBuilder = strbuf_new();
+    let p1: StrBuilder = strbuf_push(p0, "let ");
+    let p2: StrBuilder = strbuf_push(p1, name);
+    let pat: string = strbuf_finish(strbuf_push(p2, ":"));
+    let plen: i32 = string.len(pat);
+    let slen: i32 = string.len(src);
+    let i: i32 = 0;
+    while (i + plen <= slen) {
+        if (sh_lexer.slice_eq(src, i, plen, pat) == 1) {
+            let j: i32 = i;
+            while (j < slen) {
+                let b: i32 = string.byte_at(src, j);
+                if (b == 91) {
+                    return 1;
+                }
+                if (b == 61 || b == 59) {
+                    break;
+                }
+                j = j + 1;
+            }
+            return 0;
+        }
+        i = i + 1;
+    }
+    return 0;
+}
+
+fn loan1_expr_owner(nodes: Vec<Expr>, idx: i32, src: string) -> Result<string, core_Err> effects { alloc, mut } {
+    if (expr_ty_tag(nodes, idx) != 3) {
+        return Err(1);
+    }
+    let off: i32 = expr_ident_off(nodes, idx);
+    let ln: i32 = expr_ident_ln(nodes, idx);
+    return loan1_borrow_owner_from_ident(src, off, ln);
+}
+
+fn loan1_expr_is_scalar_mut_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 effects { alloc, mut } {
+    if (expr_ty_tag(nodes, expr_idx) != 3) {
+        return 0;
+    }
+    let off: i32 = expr_ident_off(nodes, expr_idx);
+    let ln: i32 = expr_ident_ln(nodes, expr_idx);
+    if (loan1_ident_is_scalar_mut_borrow(src, off, ln) != 1) {
+        return 0;
+    }
+    let owner_r: Result<string, core_Err> = loan1_borrow_owner_from_ident(src, off, ln);
+    return match owner_r {
+        Ok(owner) => loan1_src_binding_is_array(src, owner) == 0,
+        Err(_) => 0,
+    };
+}
+
+fn loan1_expr_is_shared_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 {
+    if (expr_ty_tag(nodes, expr_idx) != 3) {
+        return 0;
+    }
+    let off: i32 = expr_ident_off(nodes, expr_idx);
+    let ln: i32 = expr_ident_ln(nodes, expr_idx);
+    return loan1_ident_is_shared_borrow(src, off, ln);
+}
+
+fn loan1_map_get_or_zero(m: Map<string, i32>, name: string) -> i32 {
+    let got: Result<i32, core_Err> = map_get(m, name);
+    return match got {
+        Ok(v) => v,
+        Err(_) => 0,
+    };
+}
+
+fn loan1_register_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> i32 {
+    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner);
+    let excl: i32 = loan1_map_get_or_zero(*excl_m, owner);
+    if (exclusive == 1) {
+        if (excl != 0 || shared > 0) {
+            return 0;
+        }
+        *excl_m = map_insert(*excl_m, owner, 1);
+        return 1;
+    }
+    if (excl != 0) {
+        return 0;
+    }
+    *shared_m = map_insert(*shared_m, owner, shared + 1);
+    return 1;
+}
+
+fn loan1_release_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> i32 {
+    if (exclusive == 1) {
+        *excl_m = map_insert(*excl_m, owner, 0);
+        return 1;
+    }
+    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner);
+    if (shared > 0) {
+        *shared_m = map_insert(*shared_m, owner, shared - 1);
+    }
+    return 1;
+}
+
+fn loan1_check_expr_use(nodes: Vec<Expr>, idx: i32, src: string, excl_m: Map<string, i32>) -> i32 effects { alloc, mut } {
+    if (idx < 0) {
+        return 1;
+    }
+    let tag: i32 = expr_ty_tag(nodes, idx);
+    if (tag == 15) {
+        return loan1_check_expr_use(nodes, expr_deref_inner_idx(nodes, idx), src, excl_m);
+    }
+    if (tag == 4 || tag == 5 || tag == 6 || tag == 7 || tag == 8 || tag == 13 || tag == 14 || tag == 16) {
+        if (loan1_check_expr_use(nodes, expr_binop_l(nodes, idx), src, excl_m) != 1) {
+            return 0;
+        }
+        return loan1_check_expr_use(nodes, expr_binop_r(nodes, idx), src, excl_m);
+    }
+    if (tag != 3) {
+        return 1;
+    }
+    let off: i32 = expr_ident_off(nodes, idx);
+    let ln: i32 = expr_ident_ln(nodes, idx);
+    if (loan1_ident_is_scalar_mut_borrow(src, off, ln) == 1) {
+        return 1;
+    }
+    if (loan1_ident_is_shared_borrow(src, off, ln) == 1) {
+        return 1;
+    }
+    let name_r: Result<string, core_Err> = sh_lexer.slice_str(src, off, ln);
+    return match name_r {
+        Ok(name) => loan1_map_get_or_zero(excl_m, name) == 0,
+        Err(_) => 1,
+    };
+}
+
+fn loan1_check_fn(fn_out: FnOut, src: string) -> Result<i32, core_Err> effects { alloc, mut } {
+    let shared_m: Map<string, i32> = map_new();
+    let excl_m: Map<string, i32> = map_new();
+    let temp_owner: string = "";
+    let temp_exclusive: i32 = 0;
+    let temp_active: i32 = 0;
+    let stmt_idx: i32 = fn_out.body_start;
+    let end: i32 = fn_out.body_start + fn_out.body_len;
+    while (stmt_idx < end) {
+        if (temp_active == 1) {
+            let _release: i32 = loan1_release_borrow(&mut shared_m, &mut excl_m, temp_owner, temp_exclusive);
+            temp_active = 0;
+        }
+        let tag: i32 = stmt_ty_tag(fn_out.stmts, stmt_idx);
+        if (tag == 1) {
+            let expr_idx: i32 = stmt_let_expr(fn_out.stmts, stmt_idx);
+            let owner_r: Result<string, core_Err> = loan1_expr_owner(fn_out.nodes, expr_idx, src);
+            match owner_r {
+                Ok(owner) => {
+                    let off: i32 = expr_ident_off(fn_out.nodes, expr_idx);
+                    let ln: i32 = expr_ident_ln(fn_out.nodes, expr_idx);
+                    let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
+                    if (loan1_register_borrow(&mut shared_m, &mut excl_m, owner, exclusive) != 1) {
+                        return Ok(0);
+                    }
+                },
+                Err(_) => {}
+            }
+        } else if (tag == 6) {
+            let arg_idx: i32 = stmt_call_first_arg(fn_out.stmts, stmt_idx);
+            if (arg_idx >= 0) {
+                let owner_r: Result<string, core_Err> = loan1_expr_owner(fn_out.nodes, arg_idx, src);
+                match owner_r {
+                    Ok(owner) => {
+                        let off: i32 = expr_ident_off(fn_out.nodes, arg_idx);
+                        let ln: i32 = expr_ident_ln(fn_out.nodes, arg_idx);
+                        let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
+                        if (loan1_register_borrow(&mut shared_m, &mut excl_m, owner, exclusive) != 1) {
+                            return Ok(0);
+                        }
+                        temp_owner = owner;
+                        temp_exclusive = exclusive;
+                        temp_active = 1;
+                    },
+                    Err(_) => {}
+                }
+            }
+        } else if (tag == 2) {
+            let ret_idx: i32 = stmt_return_expr(fn_out.stmts, stmt_idx);
+            if (loan1_check_expr_use(fn_out.nodes, ret_idx, src, excl_m) != 1) {
+                return Ok(0);
+            }
+        }
+        stmt_idx = stmt_idx + 1;
+    }
+    return Ok(1);
+}
+
 fn infer_expr_ty_kind(nodes: Vec<Expr>, idx: i32, src: string, param_env: string, let_env: string, struct_ret_env: string, param_m: Map<string, i32>, let_i32_m: Map<string, i32>, let_struct_m: Map<string, i32>, ret_m: Map<string, i32>) -> Result<i32, core_Err> effects { alloc, mut } {
     let tag: i32 = expr_ty_tag(nodes, idx);
     if (tag == 1) {
@@ -13956,9 +14534,41 @@ fn check_fn_returns(fn_out: FnOut, src: string) -> Result<i32, core_Err> effects
     return check_fn_returns_diag(fn_out, src, "|", ret_m, &mut discard);
 }
 
+fn check_fn_loan1(fn_out: FnOut, src: string) -> Result<i32, core_Err> effects { alloc, mut } {
+    return loan1_check_fn(fn_out, src);
+}
+
 fn check_fn_returns_with_struct_ret(fn_out: FnOut, src: string, struct_ret_env: string, ret_m: Map<string, i32>) -> Result<i32, core_Err> effects { alloc, mut } {
     let discard: TypeDiag = type_diag_empty();
     return check_fn_returns_diag(fn_out, src, struct_ret_env, ret_m, &mut discard);
+}
+
+fn loan1_accepts_shared_many() -> Result<i32, core_Err> effects { alloc, mut } {
+    let src: string = "fn main() -> i32 { let x: own i32 = 20; let a: &i32 = &x; let b: &i32 = &x; return *a + *b; }";
+    let buf = sh_lexer.lex(src);
+    let pos: i32 = 0;
+    let empty: Vec<Expr> = vec_new(0);
+    let empty_stmts: Vec<Stmt> = vec_new(0);
+    let fn_out: FnOut = parse_fn_def(buf.kinds, buf.vals, buf.lens, src, "", &mut pos, empty, empty_stmts)?;
+    let ok: i32 = check_fn_loan1(fn_out, src)?;
+    if (ok != 1) {
+        return Ok(1301);
+    }
+    return Ok(42);
+}
+
+fn loan1_rejects_shared_xor_mut() -> Result<i32, core_Err> effects { alloc, mut } {
+    let src: string = "fn main() -> i32 { let x: own i32 = 1; let a: &i32 = &x; let b: &mut i32 = &mut x; return *b; }";
+    let buf = sh_lexer.lex(src);
+    let pos: i32 = 0;
+    let empty: Vec<Expr> = vec_new(0);
+    let empty_stmts: Vec<Stmt> = vec_new(0);
+    let fn_out: FnOut = parse_fn_def(buf.kinds, buf.vals, buf.lens, src, "", &mut pos, empty, empty_stmts)?;
+    let ok: i32 = check_fn_loan1(fn_out, src)?;
+    if (ok != 0) {
+        return Ok(1302);
+    }
+    return Ok(42);
 }
 
 fn typecheck_rejects_str_return() -> Result<i32, core_Err> effects { alloc, mut } {
@@ -14563,6 +15173,14 @@ fn typecheck_fixture_tests() -> Result<i32, core_Err> effects { alloc, io, mut }
     let ast_ok: i32 = sh_ast_module_tests()?;
     if (ast_ok != 42) {
         return Ok(ast_ok);
+    }
+    let loan_shared_ok: i32 = loan1_accepts_shared_many()?;
+    if (loan_shared_ok != 42) {
+        return Ok(loan_shared_ok);
+    }
+    let loan_conflict_bad: i32 = loan1_rejects_shared_xor_mut()?;
+    if (loan_conflict_bad != 42) {
+        return Ok(loan_conflict_bad);
     }
     let bad: i32 = typecheck_rejects_str_return()?;
     if (bad != 42) {

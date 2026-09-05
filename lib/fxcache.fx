@@ -1,4 +1,4 @@
-// lib/fxcache.fx - fingerprint mix helpers for build cache dogfood.
+// lib/fxcache.fx - FX-ITER-CACHE-1 dogfood helpers (fingerprint mix).
 // Product scratch/FXCACHE orchestration stays in foundry CLI (`fx_cache.rs`).
 module fxcache;
 

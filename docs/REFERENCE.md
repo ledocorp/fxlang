@@ -1,6 +1,6 @@
 # Reference (as implemented)
 
-Compact lookup for everyday fx in the **0.9.69** package.
+Compact lookup for everyday fx in the **0.9.70** package.
 Prefer the [language tour](LANGUAGE.md) when learning.
 This page describes the language *as implemented*, not aspirational north-star ideas.
 For the full inventory (cheatsheet + depth ledger), see [SURFACE.md](SURFACE.md).
@@ -120,12 +120,12 @@ Non-toy compose: `examples/composition_tally`, `examples/composition_reach`.
 | `cli` | Result library + thin C host for argv |
 | `guest` | Caps-shaped guest + host mint |
 
-## Honesty bound (not in everyday dialect)
+## Not in the everyday dialect
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; `Vec<f32>` and many non-everyday element types
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration (nth is table order)
-- Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as slice; mut sub-slices
+- Growable `Vec` index **assign** that reallocates; `&mut Vec` as slice; mut sub-slices
 - Package **registry**; advanced fx Runtime device/capability model
 - Language-package TLS dial (`dial_tls` always fails here); non-C FFI
 - Lifetime parameters / NLL; optional `loan { }` sugar

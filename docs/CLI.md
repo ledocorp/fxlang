@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.69`) |
+| `fx version` | Print version (expect `v0.9.70`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -31,7 +31,7 @@ fx new hello
 fx new tiny --scaffold minimal
 fx new firmware --scaffold embedded
 fx new mytool --scaffold cli
-fx new mytool --scaffold tool     # alias for cli
+fx new mytool --scaffold tool # alias for cli
 fx new sandbox --scaffold guest
 ```
 
@@ -48,12 +48,12 @@ fx new sandbox --scaffold guest
 ### `fx run` / `fx build`
 
 ```text
-fx run main.fx                 # Auto driver: live sh_* when supported, else foundry
+fx run main.fx                 # Auto: live sh_* when supported, else built-in engine
 fx run main.fx --emit-c        # emit-C → native (backend)
-fx run main.fx --driver foundry  # force foundry oracle
+fx run main.fx --driver foundry  # force built-in engine
 fx run main.fx --release
 fx build main.fx -o out
-fx run lib.fx --host host.c    # C owns process main / argv (foundry path)
+fx run lib.fx --host host.c    # C owns process main / argv (built-in engine path)
 ```
 
 By default, `fx run` / `fx build` use **driver Auto**: try the live `sh_*` path for supported programs; if that cannot serve the program (FX0036 / toolchain), fall back to the **built-in engine** inside `bin/fx` (CLI name: `--driver foundry` — not a separate Rust install). On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C. Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry`.
@@ -67,7 +67,7 @@ Useful flags:
 | Flag | Meaning |
 |------|---------|
 | `--emit-c` | Use emit-C → native instead of IR → native |
-| `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = live `sh_*` first, foundry fallback; `fx cc` defaults foundry) |
+| `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = live `sh_*` first, then built-in engine; `fx cc` defaults to foundry) |
 | `--cli` | Auto-link thin CLI host (`host/cli`) for argv/exit — product CLIs |
 | `--guest` / `--no-guest` | Guest ambient-io policy on check/run/build |
 | `--fallback-emit-c` | Prefer emit-C when IR path fails |
@@ -82,7 +82,7 @@ Useful flags:
 | `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths (escape hatch) |
 | `--backend auto\|ir\|c` | Advanced backend select (`auto` = IR-first with emit-C fallback) |
 
-**Strict live lane:** `--driver sh` does **not** support `--cli` / `--host` (FX0036) — use Auto or foundry for those.
+**Strict live lane:** `--driver sh` does **not** support `--cli` / `--host` (FX0036) — use Auto or `--driver foundry` for those.
 
 Default linking expects **gcc** and the zspec library that matches your OS (`build/gcc` or `build/gcc-linux`).
 
@@ -90,7 +90,7 @@ Default linking expects **gcc** and the zspec library that matches your OS (`bui
 
 ```text
 fx emit-c main.fx -o out_c
-fx emit-c main.fx -o out_c --debug-source   # .fxmap + #line
+fx emit-c main.fx -o out_c --debug-source # .fxmap + #line
 ```
 
 Inspect the generated C without linking. Default emit includes `/* fx: … */` annotate comments.
@@ -124,9 +124,9 @@ Same family of flags as run/build, for hosts who want full control over emit + l
 ### `fx mod` (offline std pin)
 
 ```text
-fx mod vendor    # copy std → vendor/std; write fx.sum
-fx mod verify    # check fx.sum against vendor/std
-fx mod tidy      # sync fx.mod require std with import scan
+fx mod vendor # copy std → vendor/std; write fx.sum
+fx mod verify # check fx.sum against vendor/std
+fx mod tidy # sync fx.mod require std with import scan
 ```
 
 **Integrity (frozen):** `vendor/std` + `fx.sum` are a **checksum pin** for reproducibility. Compile still resolves `import std/…` via nearby `std/` or `FX_STD_ROOT` — **not** via `vendor/` yet. This is intentional: edit live `std/` while developing; vendor when you want a pinned tree you can verify. Not a download registry.

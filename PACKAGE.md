@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.69 (see [VERSION](VERSION))  
+**Version:** 0.9.70 (see [VERSION](VERSION))  
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0  
 
@@ -43,4 +43,4 @@ This repository is the **fx language package**: everything you need to install t
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md)
 
-Release notes: [docs/releases/0.9.69.md](docs/releases/0.9.69.md)
+Release notes: [docs/releases/0.9.70.md](docs/releases/0.9.70.md)

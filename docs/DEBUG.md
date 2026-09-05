@@ -61,6 +61,6 @@ If the editor shows nothing, confirm `fx lsp` is wired ([EDITOR.md](EDITOR.md)) 
 
 ## Related
 
-- [TRACKING.md](TRACKING.md) — annotate / `.fxmap` / `#line` overview  
-- [CLI.md](CLI.md) — `emit-c`, `cc`, `locate`  
-- [EDITOR.md](EDITOR.md) — LSP + tree-sitter  
+- [TRACKING.md](TRACKING.md) — annotate / `.fxmap` / `#line` overview 
+- [CLI.md](CLI.md) — `emit-c`, `cc`, `locate` 
+- [EDITOR.md](EDITOR.md) — LSP + tree-sitter 

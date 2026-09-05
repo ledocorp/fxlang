@@ -17,7 +17,7 @@ fx new hello
 fx new tiny --scaffold minimal
 fx new firmware --scaffold embedded
 fx new mytool --scaffold cli
-fx new mytool --scaffold tool     # same as cli
+fx new mytool --scaffold tool # same as cli
 fx new sandbox --scaffold guest
 ```
 
@@ -25,10 +25,10 @@ fx new sandbox --scaffold guest
 
 Open `scaffolds/simple/main.fx` (or your new project’s `main.fx`):
 
-- `effects { alloc, mut }` · heap + mutation are declared  
-- `region r = arena(4096)` · named lifetime  
-- `import std/vec` · portable standard library  
-- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`; not a Soft-fx second model  
+- `effects { alloc, mut }` · heap + mutation are declared 
+- `region r = arena(4096)` · named lifetime 
+- `import std/vec` · portable standard library 
+- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`; not a alternate mutation models second model 
 
 That combination is the recommended first experience: **Go-feel lifetimes, not a GC**.
 
@@ -39,11 +39,11 @@ That combination is the recommended first experience: **Go-feel lifetimes, not a
 ```text
 # cli / tool scaffold
 fx build tool_lib.fx -o out --emit-c --cli
-./out/prog hello                # Ok(42) → exit 42
+./out/prog hello # Ok(42) → exit 42
 
 # guest
 fx build guest_lib.fx -o out --emit-c --host host.c \
-  --link host/cap/fx_cap_runtime.c --link-include . --link-include host/cap
+ --link host/cap/fx_cap_runtime.c --link-include . --link-include host/cap
 ./out/prog
 ```
 

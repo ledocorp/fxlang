@@ -16,9 +16,9 @@ Examples that wrap external C libraries (cJSON, xxHash, stb, raylib, …) may ap
 
 ## Summary for redistributors
 
-1. Keep [LICENSE](../LICENSE) and [NOTICE](../NOTICE).  
-2. Keep [`third_party/qbe/LICENSE`](../third_party/qbe/LICENSE) whenever you ship the QBE binary.  
-3. Do not remove copyright or license notices from source headers.  
+1. Keep [LICENSE](../LICENSE) and [NOTICE](../NOTICE). 
+2. Keep [`third_party/qbe/LICENSE`](../third_party/qbe/LICENSE) whenever you ship the QBE binary. 
+3. Do not remove copyright or license notices from source headers. 
 4. Combined works that include this package must comply with GPL-3.0.
 
 Questions: see [SECURITY.md](../SECURITY.md) / project site http://www.ledocorp.org

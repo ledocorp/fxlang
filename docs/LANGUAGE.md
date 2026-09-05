@@ -2,7 +2,7 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-The **0.9.69** package is a full programming surface, not just “regions + vec.”
+The **0.9.70** package is a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
 typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / no-grow `v[i]=x` / `vec_set` slot writes,
 array-backed `&mut [T]`, lexical loan checking on `&`/`&mut`, structured concurrency facades, SIMD/`@override` footholds,
@@ -26,19 +26,19 @@ Canonical web copy: https://www.ledocorp.org/fx/docs/language/
 
 ```fx
 fn main() -> i32 effects { alloc, mut, io } {
-    // may allocate, mutate, and do I/O
+ // may allocate, mutate, and do I/O
 }
 ```
 
-Implemented effects: `alloc`, `mut`, `io`. Pure functions omit the clause. Callers can see cost before reading the body.
+Implemented effects: `alloc`, `mut`, `io`, `concur`, `atomic`, `mmio`. Pure functions omit the clause. Callers can see cost before reading the body.
 
 ### 2. Named regions
 
 ```fx
-region r = arena(4096);   // heap arena
-region t = temp(1024);    // short-lived heap batch
-region s = scope;         // stack borrow region (no heap)
-region f = fx(4096);      // hierarchical fx region
+region r = arena(4096); // heap arena
+region t = temp(1024); // short-lived heap batch
+region s = scope; // stack borrow region (no heap)
+region f = fx(4096); // hierarchical fx region
 ```
 
 Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`, all region kinds).
@@ -59,10 +59,23 @@ Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`,
 - Libraries: `module name;` at the top of a `.fx` file.
 - Imports: `import std/vec;` · last path segment is the alias (`vec.push`).
 - **Local lets** may omit the type when the initializer determines it (`let x = 42;`).
-  Function **parameters and returns stay explicit**. Surface JSON stays an exact API passport
-  (no soft inferred signatures). Ambiguous RHS (e.g. empty `[]` as an array) is a loud error — annotate.
+ Function **parameters and returns stay explicit**. Surface JSON stays an exact API passport
+ (no soft inferred signatures). Ambiguous RHS (e.g. empty `[]` as an array) is a loud error — annotate.
 - **Batch Vec init:** `let v: Vec<i32> = [40, 2];` expands to `vec_new(0)` + `vec_push` (same grow
-  physics as `v.push`). Requires a `Vec<T>` annotation (≤32 elems). Plain `[T; N]` arrays are unchanged.
+ physics as `v.push`). Requires a `Vec<T>` annotation (≤32 elems). Plain `[T; N]` arrays are unchanged.
+- **Facets (static contracts):** `facet Writer { … }` + `attach Writer for File { … }` + `where T: Writer`
+ on generics. Calls monomorphize to named C (`fx_facet_Writer_File_write`). Not traits / `dyn`.
+ Demo: `examples/facet_writer/`.
+- **Cap dictionaries (dynamic tables):** `capdict WriterDict { … }` + mint with `ctx` + fn slots;
+ invoke `d.write(n)` → visible C vtable. Prefer `--emit-c` / `--fallback-emit-c` (IR out-of-claim).
+ Demo: `examples/capdict_writer/`.
+- **Atomics:** `Atomic<i32>` + `Atomic.new` / `.load` / `.store` / `.fetch_add` with **explicit**
+ `order.{relaxed,acquire,release,acq_rel,seq_cst}` under `effects { atomic }`. emit-C → `<stdatomic.h>`.
+ Prefer `--emit-c` (IR out-of-claim). Demo: `examples/kern_atomic/`.
+- **MMIO:** `MmioCap.mint_hosted()` + `mmio_read32` / `mmio_write32` under `effects { mmio }`.
+ Cap-gated `volatile` in C — no ambient poke. Prefer `--emit-c`. Demo: `examples/kern_mmio/`.
+- **Freestanding compile:** `fx run … --freestanding --emit-c` → `-ffreestanding`; no zspec;
+ hosted CRT still links for exit proof (not `-nostdlib`).
 - Zspec symbols: `using core;` (for idiomatic `Err` / `core_Err`).
 - C FFI: `extern "c" { fn name(…) -> …; }` then link with `--host` / link flags.
 
@@ -92,10 +105,10 @@ Numeric rule of thumb: same-family ops only; `i32↔i64` and `f32↔f64` can wid
 enum Tok { Num(i32), End }
 
 fn value(t: Tok) -> i32 {
-    return match t {
-        Num(n) => n,
-        End => 0,
-    };
+ return match t {
+ Num(n) => n,
+ End => 0,
+ };
 }
 ```
 
@@ -105,15 +118,15 @@ fn value(t: Tok) -> i32 {
 using core;
 
 fn parse_positive(n: i32) -> Result<i32, core_Err> {
-    if (n <= 0) {
-        return Err(CORE_ERR_INVALID_ARG);
-    }
-    return Ok(n);
+ if (n <= 0) {
+ return Err(CORE_ERR_INVALID_ARG);
+ }
+ return Ok(n);
 }
 
 fn main() -> Result<i32, core_Err> {
-    let v = parse_positive(10)?;
-    return Ok(v);
+ let v = parse_positive(10)?;
+ return Ok(v);
 }
 ```
 
@@ -135,11 +148,11 @@ Three teaching patterns (no hidden mutation):
 2. **Loop reassignment**: `v = vec.push(v, n);` inside a `while`
 3. **`&mut` state fields**: `p.nodes = vec.push(p.nodes, x);` instead of rebuilding the whole struct
 
-Tutorial **let-chains** (`let v2 = vec.push(v, …)`) still work and stay honest — they are just not the scaffold default.
+Tutorial **let-chains** (`let v2 = vec.push(v, …)`) still work and still work — they are just not the scaffold default.
 
-Prefer `vec_get(v, i)` or sugar `v[i]` for **reads**. For in-place **slot** writes use `vec_set` / no-grow `v[i]=x` (needs `mut`), or arrays + `&mut [T]`. Growable realloc under index-assign stays refused.
+Prefer `vec_get(v, i)` or sugar `v[i]` for **reads**. For in-place **slot** writes use `vec_set` / no-grow `v[i]=x` (needs `mut`), or arrays + `&mut [T]`. Growable realloc under index-assign stays (not supported).
 
-Record update (new value, not Soft-fx): `let p2 = p with { y: 32 };`
+Record update (new value, ): `let p2 = p with { y: 32 };`
 
 ## First programs
 
@@ -147,7 +160,7 @@ Record update (new value, not Soft-fx): `let p2 = p with { y: 32 };`
 
 ```fx
 fn main() -> i32 {
-    return 42;
+ return 42;
 }
 ```
 
@@ -159,11 +172,11 @@ fn main() -> i32 {
 import std/vec;
 
 fn main() -> i32 effects { alloc, mut } {
-    region r = arena(4096);
-    let v: Vec<i32> = vec.new(0);
-    v.push(40);
-    v.push(2);
-    return vec.get(v, 0) + vec.get(v, 1);
+ region r = arena(4096);
+ let v: Vec<i32> = vec.new(0);
+ v.push(40);
+ v.push(2);
+ return vec.get(v, 0) + vec.get(v, 1);
 }
 ```
 
@@ -173,18 +186,18 @@ fn main() -> i32 effects { alloc, mut } {
 
 ```fx
 fn sum(s: &[i32]) -> i32 {
-    let mut acc: i32 = 0;
-    for (let i: i32 = 0; i < s.len; i = i + 1) {
-        acc = acc + s[i];
-    }
-    return acc;
+ let mut acc: i32 = 0;
+ for (let i: i32 = 0; i < s.len; i = i + 1) {
+ acc = acc + s[i];
+ }
+ return acc;
 }
 
 fn main() -> i32 {
-    let table: [i32; 3] = [10, 20, 12];
-    let view: &[i32] = &table;
-    let mid: &[i32] = table[0..2];  // exclusive end → [10, 20]
-    return sum(view);  // 42
+ let table: [i32; 3] = [10, 20, 12];
+ let view: &[i32] = &table;
+ let mid: &[i32] = table[0..2]; // exclusive end → [10, 20]
+ return sum(view); // 42
 }
 ```
 

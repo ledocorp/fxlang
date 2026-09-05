@@ -1,8 +1,8 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.69  
+**Package version:** 0.9.70 
 
-**Status:** As implemented — not aspirational  
+**Status:** As implemented — not aspirational 
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
@@ -15,7 +15,7 @@ Prefer [COMPOSITION.md](COMPOSITION.md) when asking “how do I build a graph / 
 Prefer [TRACKING.md](TRACKING.md) when asking “how does emitted C map back to fx?”
 
 **Short paths:** Vec read `v[i]` · slot write `vec_set` / no-grow `v[i]=x` (needs `mut`) · grow `push`.
-Same physics — Soft-fx refused. See [COMPOSITION.md](COMPOSITION.md).
+See [COMPOSITION.md](COMPOSITION.md).
 
 ---
 
@@ -65,7 +65,11 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 
 **Local lets:** `let x = 42;` is allowed when the initializer determines the type. Function **params/returns** stay written. Surface JSON remains an exact API passport (no inferred signature theater). Ambiguous RHS (empty `[]` as array) → annotate.
 
-**Batch Vec init:** `let v: Vec<i32> = [40, 2];` → `vec_new` + pushes (≤32). Not Soft-fx; plain `[i32; N]` stays an array.
+**Batch Vec init:** `let v: Vec<i32> = [40, 2];` → `vec_new` + pushes (≤32). plain `[i32; N]` stays an array.
+
+**Facets:** `facet` / `attach` / `where T: Facet` → static mono named C. See [LANGUAGE.md](LANGUAGE.md) · `examples/facet_writer/`.
+
+**CapDict:** `capdict` mint + `d.write(n)` → visible C vtable (`void* ctx` + fn ptrs). Prefer `--emit-c`. See `examples/capdict_writer/`.
 
 **fx ≠ C (agents):** struct literal fields use `,` not `;`; no C compound literals `(T){ .x = … }`; `Result` needs `?` / match; do not invent std APIs — read [STD.md](STD.md).
 
@@ -87,7 +91,7 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 
 **Yes** no-grow `v[i] = x` on `Vec` under `mut` (same as `vec_set`). **No** growable index-assign.
 
-**Record update:** `let p2 = p with { y: 32 };` builds a new struct value (not shared mut / Soft-fx).
+**Record update:** `let p2 = p with { y: 32 };` builds a new struct value (not shared mut).
 
 ### Result / ?
 
@@ -260,7 +264,7 @@ Not a full vector ISA product. Prefer scalar SoT for dual-emit readability.
 | Surface | Role |
 |---------|------|
 | `@override(target=…)` | Targeted fast path; **portable fx body remains SoT** |
-| Constrained `asm { }` | Inline asm with clobber honesty (diagnostics FX0034/FX0035) |
+| Constrained `asm { }` | Inline asm with clobber checks (diagnostics FX0034/FX0035) |
 | `external = "….s"` | External assembly unit |
 
 IR uses the portable path. Monorepo has an asm-verify harness comparing portable vs override; that harness is **not** a public certification claim.
@@ -303,16 +307,16 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 | Extra link | `--link` · `--link-args-file` · `--link-include` / `--link-dir` / `--link-lib` |
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
 | Host spine | `host/cap` · `host/cli` · `host/process` · `host/concur` · `host/std_*` |
-| Net | NetCap TCP `std/net.dial`; language-package TLS **refused** (see honesty) |
+| Net | NetCap TCP `std/net.dial`; TLS not in this package (use **fxfetch** for HTTPS) |
 | Examples | `showcase_*` · `bind_*` · `wrap_*` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` · `tool_*` · `pattern_*` |
 
 Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpipe, fxlz4, fxblake3, fxguest) live outside this language package — see [LIBRARIES.md](LIBRARIES.md).
 
 ---
 
-## G. Honesty bounds & deferred
+## G. Limits & deferred
 
-### Also as implemented (0.9.69 floor)
+### Also as implemented (0.9.70 floor)
 
 | Surface | Notes |
 |---------|--------|
@@ -324,28 +328,28 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
 | Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
-### Not in the product dialect (as of 0.9.69)
+### Not in the product dialect (as of 0.9.70)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
 - Generic maps beyond `string → i32` / `string → string`; insertion-order map iteration
-- Growable `Vec` index **assign** that reallocates; Soft-fx; `&mut Vec` as a mut slice; mut sub-slices
+- Growable `Vec` index **assign** that reallocates; `&mut Vec` as a mut slice; mut sub-slices
 - Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
 - Full HTTP client / general TLS stack in the **language package** — TCP dial yes; `std/net.dial_tls` always fails here; HTTPS is a separate **fxfetch** tool that links Mbed TLS
 - Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
-- Advanced fx Runtime (device-aware migration / Soft-fx)
-- Neuton / OS product; Experimental horizon features
+- Advanced runtime layers (device-aware migration, alternate mutation models)
+- OS product / experimental horizon features
 - macOS prebuilt binary (**frozen:** Win/Linux x86_64 package only)
 - `fx run` program-argv passthrough (**frozen:** C host / `--cli` / `--scaffold cli` owns argv)
 - Optional `loan { }` block sugar (not shipped)
 
 ### Intentionally deferred (architecture, not forgotten)
 
-- Advanced fx Runtime layer (spec Phase 2) — optional  
-- Further zspec modules — **pull when `std/` needs C ABI**, not a checklist  
-- Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist  
-- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)  
-- Language-package TLS dial without an extra tool/link unit  
+- Advanced fx Runtime layer (spec Phase 2) — optional 
+- Further zspec modules — **pull when `std/` needs C ABI**, not a checklist 
+- Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist 
+- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`) 
+- Language-package TLS dial without an extra tool/link unit 
 
 ### Substrate (for linkers / embedders)
 

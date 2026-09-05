@@ -7,6 +7,8 @@ Optional demos. **Not** required to install fx or create apps.
 | [showcase_core/](showcase_core/) | fx-only: region + `std/vec` → exit 42 |
 | [showcase_wrap/](showcase_wrap/) | C `main` + fx library → exit 42 |
 | [showcase_072/](showcase_072/) | 0.7.2: Map iterate + Vec `v[i]` → exit 42 |
+| [facet_writer/](facet_writer/) | Season F: facet + `where T: Writer` → exit 42 |
+| [capdict_writer/](capdict_writer/) | Season F: CapDict mint + invoke → exit 42 (`--fallback-emit-c`) |
 | [tool_files/](tool_files/) | Week-two: file write/append/rename/delete |
 | [tool_bytes/](tool_bytes/) | Week-two: `Buf` / `Bytes` sum |
 | [tool_tally/](tool_tally/) | Week-two: Map tally + StrBuilder report |

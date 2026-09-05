@@ -1,6 +1,6 @@
 # Dual-emit tracking (fx ↔ C)
 
-**Package:** 0.9.69  
+**Package:** 0.9.70 
 **Site:** https://www.ledocorp.org/fx/docs/tracking/
 
 fx promises **readable C** and a way to map failures back to `.fx` sources.
@@ -50,11 +50,11 @@ Granularity is per **statement / significant fragment**, not every physical C li
 
 ## Tips
 
-- Keep annotate mode on when reading emitted C with an agent.  
-- Use `--debug-source` when chasing a gcc error or stepping in a debugger.  
+- Keep annotate mode on when reading emitted C with an agent. 
+- Use `--debug-source` when chasing a gcc error or stepping in a debugger. 
 - Layer 1 (`fx check`) before layer 2 — most mistakes never need C.
 
 ## Related
 
-- [DEBUG.md](DEBUG.md) — step-by-step `#line` + gdb  
+- [DEBUG.md](DEBUG.md) — step-by-step `#line` + gdb 
 - [CLI.md](CLI.md) · [WRAP.md](WRAP.md) · [LANGUAGE.md](LANGUAGE.md)
