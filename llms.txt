@@ -1,10 +1,10 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.9.70).
+> Canonical public docs for the fx systems language (package version 0.9.71).
 > Package: https://github.com/ledocorp/fxlang (GPL-3.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.70.md`
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.71.md`
 
 ## Product
 
@@ -66,8 +66,8 @@ fx mcp
 
 Wrap: https://www.ledocorp.org/fx/docs/wrap/ · Std: https://www.ledocorp.org/fx/docs/std/
 
-## As of 0.9.70 — can / cannot (agents)
+## As of 0.9.71 — can / cannot (agents)
 
-**Can:** scratch `fx run` + FXCACHE + `--watch`; local let elision + batch Vec init; facets / capdicts; `--freestanding` (hosted CRT for exit-code proof); `Atomic<i32>` + explicit orders (`effects { atomic }`); `MmioCap` + mmio read/write (`effects { mmio }`); native-first Auto `fx run` (live `sh_*` for supported demos; built-in fallback otherwise); IR→native when QBE staged (Atomic/MMIO IR out-of-claim — use `--emit-c`); emit readable C; regions/effects; lexical loans; SoA + pools; no-grow `v[i]=x`; `--cli` / `--scaffold tool`; `fx lsp` / lean MCP; `fx surface` / `fx test` / `fx fuzz`; inspect `compiler-source/` (read-only).
+**Can:** scratch `fx run` + FXCACHE + `--watch`; local let elision + batch Vec init; facets / capdicts; `--freestanding` (hosted CRT for exit-code proof); `Atomic<i32>` + explicit orders (`effects { atomic }`); `MmioCap` + mmio read/write (`effects { mmio }`); native-first Auto `fx run` (live `sh_*` for supported demos; built-in fallback otherwise); IR→native when QBE staged (incl. Atomic / MMIO / CapDict / Facet); emit readable C; regions/effects; lexical loans; SoA + pools; no-grow `v[i]=x`; `--cli` / `--scaffold tool`; `fx lsp` / lean MCP; `fx surface` / `fx test` / `fx fuzz`; inspect `compiler-source/` (read-only).
 
-**Cannot / not claimed:** growable `v[i]=x` that reallocates; alternate mutation models; ambient MMIO without MmioCap; silent seqcst defaults; `-nostdlib` / custom CRT0 as product claim; package registry; `fx run` program argv (use `--cli` / `--host`); every program on live `sh_*` without fallback; language-package TLS dial; DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`); rebuild `bin/fx` from `compiler-source/` alone; calling this release **v1.0**.
+**Cannot / not claimed:** growable `v[i]=x` that reallocates; alternate mutation models; ambient MMIO without MmioCap; silent seqcst defaults; IRQ on IR (use `--emit-c`); `-nostdlib` / custom CRT0 as product claim; package registry; `fx run` program argv (use `--cli` / `--host`); every program on live `sh_*` without fallback; language-package TLS dial; DAP debugger product; language-wide formal certification; “IR-only Windows” when `qbe.exe` is absent (use `--emit-c`); rebuild `bin/fx` from `compiler-source/` alone; calling this release **v1.0**.

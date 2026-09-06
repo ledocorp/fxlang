@@ -1,6 +1,6 @@
 # Composition under regions
 
-**Package:** 0.9.70 
+**Package:** 0.9.71 
 
 **Site:** https://www.ledocorp.org/fx/docs/composition/ 
 **What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)

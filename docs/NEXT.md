@@ -1,12 +1,13 @@
 # What’s next for fx
 
-**Last updated:** 5 September 2026
+**Last updated:** 6 September 2026
 
-fx **0.9.70** is the current public package: **GPL-3.0**, **native-first Auto**
+fx **0.9.71** is the current public package: **GPL-3.0**, **native-first Auto**
 `fx run` (live `sh_*` for the supported demo set; built-in fallback otherwise),
-iterate ergonomics (scratch `fx run`, FXCACHE, `--watch`), local let elision + batch
-Vec init, lexical loans, no-grow `v[i]=x`, `--cli` auto-host, plus the **0.9.6**
-platform freezes (argv · platforms · vendor pin).
+IR coverage for Atomic · MMIO · CapDict when QBE is staged, iterate ergonomics
+(scratch `fx run`, FXCACHE, `--watch`), local let elision + batch Vec init, lexical loans,
+no-grow `v[i]=x`, `--cli` auto-host, plus the **0.9.6** platform freezes
+(argv · platforms · vendor pin).
 
 **Product focus:** sharp rules, short paths, and real tools — not a package registry
 first, and not a heavy debugger as the bar for “tooling.”
@@ -16,7 +17,7 @@ batch `let v: Vec<T> = […]` · local `let x = …` when the RHS determines the
 Loans: shared XOR mut · call-end · diagnostics FX0015/FX0019.
 See [COMPOSITION.md](COMPOSITION.md), [REGIONS.md](REGIONS.md), and [SURFACE.md](SURFACE.md).
 
-**0.9.70** is not **v1.0**.
+**0.9.71** is not **v1.0**.
 
 ---
 

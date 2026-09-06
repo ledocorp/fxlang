@@ -2,7 +2,7 @@
 
 fx is a systems language built for locality of reasoning: allocation, mutation, ownership, and I/O
 show up in the source, then lower to readable C on a small zspec substrate.
-The **0.9.70** package is a full programming surface, not just “regions + vec.”
+The **0.9.71** package is a full programming surface, not just “regions + vec.”
 It includes Buf/Bytes, sub-slices, Map iterate (`string→i32` / `string→string`), **`map_add_i32`** accumulate,
 typed **`Id`** pools (`std/pool`), grow ergonomics, Vec `v[i]` reads / no-grow `v[i]=x` / `vec_set` slot writes,
 array-backed `&mut [T]`, lexical loan checking on `&`/`&mut`, structured concurrency facades, SIMD/`@override` footholds,
@@ -67,13 +67,13 @@ Full walkthrough: [REGIONS.md](REGIONS.md) (ownership, `&` / `&mut` / `&region`,
  on generics. Calls monomorphize to named C (`fx_facet_Writer_File_write`). Not traits / `dyn`.
  Demo: `examples/facet_writer/`.
 - **Cap dictionaries (dynamic tables):** `capdict WriterDict { … }` + mint with `ctx` + fn slots;
- invoke `d.write(n)` → visible C vtable. Prefer `--emit-c` / `--fallback-emit-c` (IR out-of-claim).
- Demo: `examples/capdict_writer/`.
+  invoke `d.write(n)` → visible C vtable. Dual-path: emit-C and IR when QBE is staged.
+  Demo: `examples/capdict_writer/`.
 - **Atomics:** `Atomic<i32>` + `Atomic.new` / `.load` / `.store` / `.fetch_add` with **explicit**
- `order.{relaxed,acquire,release,acq_rel,seq_cst}` under `effects { atomic }`. emit-C → `<stdatomic.h>`.
- Prefer `--emit-c` (IR out-of-claim). Demo: `examples/kern_atomic/`.
+  `order.{relaxed,acquire,release,acq_rel,seq_cst}` under `effects { atomic }`. emit-C → `<stdatomic.h>`.
+  Dual-path IR when QBE is staged. Demo: `examples/kern_atomic/`.
 - **MMIO:** `MmioCap.mint_hosted()` + `mmio_read32` / `mmio_write32` under `effects { mmio }`.
- Cap-gated `volatile` in C — no ambient poke. Prefer `--emit-c`. Demo: `examples/kern_mmio/`.
+  Cap-gated `volatile` in C — no ambient poke. Dual-path IR when QBE is staged. Demo: `examples/kern_mmio/`.
 - **Freestanding compile:** `fx run … --freestanding --emit-c` → `-ffreestanding`; no zspec;
  hosted CRT still links for exit proof (not `-nostdlib`).
 - Zspec symbols: `using core;` (for idiomatic `Err` / `core_Err`).

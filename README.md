@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.9.70](VERSION) · [Release notes](docs/releases/0.9.70.md) · [GitHub](https://github.com/ledocorp/fxlang)
+**Version:** [0.9.71](VERSION) · [Release notes](docs/releases/0.9.71.md) · [GitHub](https://github.com/ledocorp/fxlang)
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org 
 **License:** [GNU GPL v3](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
@@ -25,7 +25,7 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version # v0.9.70
+fx version # v0.9.71
 fx new hello
 cd hello
 fx run main.fx # expect exit 42
@@ -84,14 +84,15 @@ What’s next: [docs/NEXT.md](docs/NEXT.md).
 
 ---
 
-## What’s in 0.9.70
+## What’s in 0.9.71
 
-- **Systems footing** — `--freestanding` (hosted CRT for exit-code proof), `Atomic<i32>` + explicit orders, `MmioCap` + `mmio_read32`/`mmio_write32`
-- Examples: `examples/kern_atomic/`, `examples/kern_mmio/` (exit **42**; prefer `--emit-c`)
-- **GPL-3.0** · **native-first Auto** · facets / cap dictionaries from **0.9.69**
-- MMIO needs a minted `MmioCap`; atomics require an explicit order (no silent defaults)
+- **IR coverage** — Atomic · MMIO · CapDict on IR → native when QBE is staged (emit-C still first-class)
+- **Systems footing** from **0.9.70** — `--freestanding`, `Atomic<i32>` + explicit orders, `MmioCap` + mmio ops
+- Examples: `examples/kern_atomic/`, `examples/kern_mmio/`, `examples/capdict_writer/` (exit **42** dual-path)
+- **GPL-3.0** · **native-first Auto** · facets from **0.9.69+**
+- IRQ IR still out of claim — prefer `--emit-c` for IRQ demos
 
-Full notes: [docs/releases/0.9.70.md](docs/releases/0.9.70.md).
+Full notes: [docs/releases/0.9.71.md](docs/releases/0.9.71.md).
 
 ---
 
@@ -111,4 +112,4 @@ Stewarded by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.70](docs/releases/0.9.70.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.71](docs/releases/0.9.71.md).**

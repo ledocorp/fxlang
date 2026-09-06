@@ -1,6 +1,6 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.70 
+**Package version:** 0.9.71 
 
 **Status:** As implemented — not aspirational 
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
@@ -69,7 +69,7 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 
 **Facets:** `facet` / `attach` / `where T: Facet` → static mono named C. See [LANGUAGE.md](LANGUAGE.md) · `examples/facet_writer/`.
 
-**CapDict:** `capdict` mint + `d.write(n)` → visible C vtable (`void* ctx` + fn ptrs). Prefer `--emit-c`. See `examples/capdict_writer/`.
+**CapDict:** `capdict` mint + `d.write(n)` → visible C vtable (`void* ctx` + fn ptrs). Dual-path: emit-C and IR when QBE is staged. See `examples/capdict_writer/`.
 
 **fx ≠ C (agents):** struct literal fields use `,` not `;`; no C compound literals `(T){ .x = … }`; `Result` needs `?` / match; do not invent std APIs — read [STD.md](STD.md).
 
@@ -316,7 +316,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 
 ## G. Limits & deferred
 
-### Also as implemented (0.9.70 floor)
+### Also as implemented (0.9.71 floor)
 
 | Surface | Notes |
 |---------|--------|
@@ -328,7 +328,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
 | Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
-### Not in the product dialect (as of 0.9.70)
+### Not in the product dialect (as of 0.9.71)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)

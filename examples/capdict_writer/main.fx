@@ -1,7 +1,7 @@
 // examples/capdict_writer - CapDict mint + invoke (Season F).
-// Run: fx run examples/capdict_writer/main.fx --driver sh --emit-c
-// Expect exit 42. CapDict IR is out-of-claim (use --emit-c / --fallback-emit-c).
-// Live: FX-SH-LIVE-CAPDICT-CONV-1.
+// Run: fx run examples/capdict_writer/main.fx --emit-c
+//      fx run examples/capdict_writer/main.fx --backend ir
+// Expect exit 42 (emit-C and IR when QBE is staged).
 capdict WriterDict {
     fn write(_ctx: &mut opaque, n: i32) -> i32
         effects { mut };

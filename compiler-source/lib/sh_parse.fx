@@ -2310,6 +2310,10 @@ fn map_type_span_to_c_mod(mod_slug: string, src: string, off: i32, ln: i32) -> R
     if (sh_lexer.slice_eq(src, off, ln, "MmioCap") == 1) {
         return Ok("fx_MmioCap");
     }
+    // FX-KERN-IRQ-1 - IrqCap -> fx_IrqCap (hosted vector + enter/exit).
+    if (sh_lexer.slice_eq(src, off, ln, "IrqCap") == 1) {
+        return Ok("fx_IrqCap");
+    }
     // FX-SH-SOT-FACET-1 - own T / File / T / Self (mono File foothold).
     if (ln >= 5) {
         if (sh_lexer.slice_eq(src, off, 3, "own") == 1) {
@@ -10461,6 +10465,30 @@ fn emit_parser_call_expr_c(mod_slug: string, src: string, nodes: Vec<Expr>, idx:
     if (sh_lexer.slice_eq(src, coff, cln, "MmioCap.mint_hosted") == 1) {
         return Ok("(fx_MmioCap){ .base = (volatile uint8_t *)(void *)fx_mmio_hosted_regs, .width = 4u }");
     }
+    // FX-KERN-IRQ-1 - IrqCap.mint_hosted() -> hosted vector cap.
+    if (sh_lexer.slice_eq(src, coff, cln, "IrqCap.mint_hosted") == 1) {
+        return Ok("(fx_IrqCap){ .vector = 1 }");
+    }
+    // FX-KERN-IRQ-1 - irq_enter(cap) -> hosted depth bump.
+    if (sh_lexer.slice_eq(src, coff, cln, "irq_enter") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let cap: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((void)(");
+        let b2: StrBuilder = strbuf_push(b1, cap);
+        let b3: StrBuilder = strbuf_push(b2, "), (void)(++fx_irq_hosted_depth))");
+        return Ok(strbuf_finish(b3));
+    }
+    // FX-KERN-IRQ-1 - irq_exit(cap) -> hosted depth decrement.
+    if (sh_lexer.slice_eq(src, coff, cln, "irq_exit") == 1) {
+        let a0: i32 = expr_call_arg0_idx(nodes, idx);
+        let cap: string = emit_parser_expr_c(mod_slug, src, nodes, a0)?;
+        let b0: StrBuilder = strbuf_new();
+        let b1: StrBuilder = strbuf_push(b0, "((void)(");
+        let b2: StrBuilder = strbuf_push(b1, cap);
+        let b3: StrBuilder = strbuf_push(b2, "), (void)(fx_irq_hosted_depth > 0 ? --fx_irq_hosted_depth : 0))");
+        return Ok(strbuf_finish(b3));
+    }
     // FX-SH-SOT-MMIO-1 - mmio_write32(cap, off, val) → volatile store.
     if (sh_lexer.slice_eq(src, coff, cln, "mmio_write32") == 1) {
         let a0: i32 = expr_call_arg0_idx(nodes, idx);
@@ -11754,22 +11782,18 @@ fn nat7_expr_is_arraylit_rhs(nodes: Vec<Expr>, expr_idx: i32) -> i32 {
     return 0;
 }
 
-fn nat7_expr_is_mutslice_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 effects { alloc, mut } {
+fn nat7_expr_is_mutslice_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> Result<i32, core_Err> effects { alloc, mut } {
     if (expr_ty_tag(nodes, expr_idx) != 3) {
-        return 0;
+        return Ok(0);
     }
     let off: i32 = expr_ident_off(nodes, expr_idx);
     let ln: i32 = expr_ident_ln(nodes, expr_idx);
     if (loan1_ident_is_scalar_mut_borrow(src, off, ln) != 1) {
-        return 0;
+        return Ok(0);
     }
-    let owner_r: Result<string, core_Err> = loan1_borrow_owner_from_ident(src, off, ln);
-    return match owner_r {
-        Ok(owner) => loan1_src_binding_is_array(src, owner),
-        Err(_) => 0,
-    };
+    let owner: string = loan1_borrow_owner_from_ident(src, off, ln)?;
+    return Ok(loan1_src_binding_is_array(src, owner));
 }
-
 fn emit_parser_let_i32_line(mod_slug: string, src: string, var_off: i32, var_ln: i32, nodes: Vec<Expr>, expr_idx: i32) -> Result<string, core_Err> effects { alloc, mut } {
     let vname: string = sh_lexer.slice_str(src, var_off, var_ln)?;
     // FX-SH-SOT-BATCH-1 - `let v: Vec<T> = [a,b];` → vec_new + pushes (live residual twin).
@@ -11788,6 +11812,9 @@ fn emit_parser_let_i32_line(mod_slug: string, src: string, var_off: i32, var_ln:
         if (sh_lexer.slice_eq(src, coff, cln, "MmioCap.mint_hosted") == 1) {
             ty_pfx = "    fx_MmioCap ";
         }
+        if (sh_lexer.slice_eq(src, coff, cln, "IrqCap.mint_hosted") == 1) {
+            ty_pfx = "    fx_IrqCap ";
+        }
     }
     if (nat7_expr_is_arraylit_rhs(nodes, expr_idx) == 1) {
         let ac: i32 = array_lit_count(nodes, expr_idx);
@@ -11797,13 +11824,13 @@ fn emit_parser_let_i32_line(mod_slug: string, src: string, var_off: i32, var_ln:
         let a2: StrBuilder = strbuf_push(a1, nstr);
         ty_pfx = strbuf_finish(strbuf_push(a2, " "));
     }
-    if (loan1_expr_is_scalar_mut_borrow_rhs(src, nodes, expr_idx) == 1) {
+    if (loan1_expr_is_scalar_mut_borrow_rhs(src, nodes, expr_idx)? == 1) {
         ty_pfx = "    int32_t* ";
     }
     if (loan1_expr_is_shared_borrow_rhs(src, nodes, expr_idx) == 1) {
         ty_pfx = "    const int32_t* ";
     }
-    if (nat7_expr_is_mutslice_rhs(src, nodes, expr_idx) == 1) {
+    if (nat7_expr_is_mutslice_rhs(src, nodes, expr_idx)? == 1) {
         ty_pfx = "    fx_MutSlice_i32 ";
     }
     let b0: StrBuilder = strbuf_new();
@@ -13816,7 +13843,7 @@ fn loan1_borrow_owner_from_ident(src: string, off: i32, ln: i32) -> Result<strin
     return Err(1);
 }
 
-fn loan1_src_binding_is_array(src: string, name: string) -> i32 {
+fn loan1_src_binding_is_array(src: string, name: string) -> i32 effects { alloc, mut } {
     let p0: StrBuilder = strbuf_new();
     let p1: StrBuilder = strbuf_push(p0, "let ");
     let p2: StrBuilder = strbuf_push(p1, name);
@@ -13853,22 +13880,21 @@ fn loan1_expr_owner(nodes: Vec<Expr>, idx: i32, src: string) -> Result<string, c
     return loan1_borrow_owner_from_ident(src, off, ln);
 }
 
-fn loan1_expr_is_scalar_mut_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 effects { alloc, mut } {
+fn loan1_expr_is_scalar_mut_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> Result<i32, core_Err> effects { alloc, mut } {
     if (expr_ty_tag(nodes, expr_idx) != 3) {
-        return 0;
+        return Ok(0);
     }
     let off: i32 = expr_ident_off(nodes, expr_idx);
     let ln: i32 = expr_ident_ln(nodes, expr_idx);
     if (loan1_ident_is_scalar_mut_borrow(src, off, ln) != 1) {
-        return 0;
+        return Ok(0);
     }
-    let owner_r: Result<string, core_Err> = loan1_borrow_owner_from_ident(src, off, ln);
-    return match owner_r {
-        Ok(owner) => loan1_src_binding_is_array(src, owner) == 0,
-        Err(_) => 0,
-    };
+    let owner: string = loan1_borrow_owner_from_ident(src, off, ln)?;
+    if (loan1_src_binding_is_array(src, owner) == 0) {
+        return Ok(1);
+    }
+    return Ok(0);
 }
-
 fn loan1_expr_is_shared_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32) -> i32 {
     if (expr_ty_tag(nodes, expr_idx) != 3) {
         return 0;
@@ -13878,73 +13904,90 @@ fn loan1_expr_is_shared_borrow_rhs(src: string, nodes: Vec<Expr>, expr_idx: i32)
     return loan1_ident_is_shared_borrow(src, off, ln);
 }
 
-fn loan1_map_get_or_zero(m: Map<string, i32>, name: string) -> i32 {
-    let got: Result<i32, core_Err> = map_get(m, name);
-    return match got {
-        Ok(v) => v,
-        Err(_) => 0,
-    };
+fn loan1_map_get_or_zero(m: Map<string, i32>, name: string) -> Result<i32, core_Err> effects { alloc, mut } {
+    if (map_contains(m, name) != 1) {
+        return Ok(0);
+    }
+    return map_get(m, name);
 }
 
-fn loan1_register_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> i32 {
-    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner);
-    let excl: i32 = loan1_map_get_or_zero(*excl_m, owner);
+fn loan1_register_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> Result<i32, core_Err> effects { alloc, mut } {
+    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner)?;
+    let excl: i32 = loan1_map_get_or_zero(*excl_m, owner)?;
     if (exclusive == 1) {
         if (excl != 0 || shared > 0) {
-            return 0;
+            return Ok(0);
         }
         *excl_m = map_insert(*excl_m, owner, 1);
-        return 1;
+        return Ok(1);
     }
     if (excl != 0) {
-        return 0;
+        return Ok(0);
     }
     *shared_m = map_insert(*shared_m, owner, shared + 1);
-    return 1;
+    return Ok(1);
 }
 
-fn loan1_release_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> i32 {
+fn loan1_release_borrow(shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>, owner: string, exclusive: i32) -> Result<i32, core_Err> effects { alloc, mut } {
     if (exclusive == 1) {
         *excl_m = map_insert(*excl_m, owner, 0);
-        return 1;
+        return Ok(1);
     }
-    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner);
+    let shared: i32 = loan1_map_get_or_zero(*shared_m, owner)?;
     if (shared > 0) {
         *shared_m = map_insert(*shared_m, owner, shared - 1);
     }
-    return 1;
+    return Ok(1);
 }
 
-fn loan1_check_expr_use(nodes: Vec<Expr>, idx: i32, src: string, excl_m: Map<string, i32>) -> i32 effects { alloc, mut } {
+fn loan1_maybe_reg_expr(nodes: Vec<Expr>, expr_idx: i32, src: string, shared_m: &mut Map<string, i32>, excl_m: &mut Map<string, i32>) -> Result<i32, core_Err> effects { alloc, mut } {
+    if (expr_ty_tag(nodes, expr_idx) != 3) {
+        return Ok(1);
+    }
+    let off: i32 = expr_ident_off(nodes, expr_idx);
+    let ln: i32 = expr_ident_ln(nodes, expr_idx);
+    let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
+    if (exclusive != 1) {
+        if (loan1_ident_is_shared_borrow(src, off, ln) != 1) {
+            return Ok(1);
+        }
+    }
+    let owner: string = loan1_borrow_owner_from_ident(src, off, ln)?;
+    return loan1_register_borrow(shared_m, excl_m, owner, exclusive);
+}
+
+fn loan1_check_expr_use(nodes: Vec<Expr>, idx: i32, src: string, excl_m: Map<string, i32>) -> Result<i32, core_Err> effects { alloc, mut } {
     if (idx < 0) {
-        return 1;
+        return Ok(1);
     }
     let tag: i32 = expr_ty_tag(nodes, idx);
     if (tag == 15) {
         return loan1_check_expr_use(nodes, expr_deref_inner_idx(nodes, idx), src, excl_m);
     }
     if (tag == 4 || tag == 5 || tag == 6 || tag == 7 || tag == 8 || tag == 13 || tag == 14 || tag == 16) {
-        if (loan1_check_expr_use(nodes, expr_binop_l(nodes, idx), src, excl_m) != 1) {
-            return 0;
+        let left_ok: i32 = loan1_check_expr_use(nodes, expr_binop_l(nodes, idx), src, excl_m)?;
+        if (left_ok != 1) {
+            return Ok(0);
         }
         return loan1_check_expr_use(nodes, expr_binop_r(nodes, idx), src, excl_m);
     }
     if (tag != 3) {
-        return 1;
+        return Ok(1);
     }
     let off: i32 = expr_ident_off(nodes, idx);
     let ln: i32 = expr_ident_ln(nodes, idx);
     if (loan1_ident_is_scalar_mut_borrow(src, off, ln) == 1) {
-        return 1;
+        return Ok(1);
     }
     if (loan1_ident_is_shared_borrow(src, off, ln) == 1) {
-        return 1;
+        return Ok(1);
     }
-    let name_r: Result<string, core_Err> = sh_lexer.slice_str(src, off, ln);
-    return match name_r {
-        Ok(name) => loan1_map_get_or_zero(excl_m, name) == 0,
-        Err(_) => 1,
-    };
+    let name: string = sh_lexer.slice_str(src, off, ln)?;
+    let excl: i32 = loan1_map_get_or_zero(excl_m, name)?;
+    if (excl != 0) {
+        return Ok(0);
+    }
+    return Ok(1);
 }
 
 fn loan1_check_fn(fn_out: FnOut, src: string) -> Result<i32, core_Err> effects { alloc, mut } {
@@ -13957,46 +14000,45 @@ fn loan1_check_fn(fn_out: FnOut, src: string) -> Result<i32, core_Err> effects {
     let end: i32 = fn_out.body_start + fn_out.body_len;
     while (stmt_idx < end) {
         if (temp_active == 1) {
-            let _release: i32 = loan1_release_borrow(&mut shared_m, &mut excl_m, temp_owner, temp_exclusive);
+            let _release: i32 = loan1_release_borrow(&mut shared_m, &mut excl_m, temp_owner, temp_exclusive)?;
             temp_active = 0;
         }
         let tag: i32 = stmt_ty_tag(fn_out.stmts, stmt_idx);
         if (tag == 1) {
             let expr_idx: i32 = stmt_let_expr(fn_out.stmts, stmt_idx);
-            let owner_r: Result<string, core_Err> = loan1_expr_owner(fn_out.nodes, expr_idx, src);
-            match owner_r {
-                Ok(owner) => {
-                    let off: i32 = expr_ident_off(fn_out.nodes, expr_idx);
-                    let ln: i32 = expr_ident_ln(fn_out.nodes, expr_idx);
-                    let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
-                    if (loan1_register_borrow(&mut shared_m, &mut excl_m, owner, exclusive) != 1) {
-                        return Ok(0);
-                    }
-                },
-                Err(_) => {}
+            let reg: i32 = loan1_maybe_reg_expr(fn_out.nodes, expr_idx, src, &mut shared_m, &mut excl_m)?;
+            if (reg != 1) {
+                return Ok(0);
             }
-        } else if (tag == 6) {
+        }
+        if (tag == 6) {
             let arg_idx: i32 = stmt_call_first_arg(fn_out.stmts, stmt_idx);
             if (arg_idx >= 0) {
-                let owner_r: Result<string, core_Err> = loan1_expr_owner(fn_out.nodes, arg_idx, src);
-                match owner_r {
-                    Ok(owner) => {
-                        let off: i32 = expr_ident_off(fn_out.nodes, arg_idx);
-                        let ln: i32 = expr_ident_ln(fn_out.nodes, arg_idx);
-                        let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
-                        if (loan1_register_borrow(&mut shared_m, &mut excl_m, owner, exclusive) != 1) {
+                if (expr_ty_tag(fn_out.nodes, arg_idx) == 3) {
+                    let off: i32 = expr_ident_off(fn_out.nodes, arg_idx);
+                    let ln: i32 = expr_ident_ln(fn_out.nodes, arg_idx);
+                    let exclusive: i32 = loan1_ident_is_scalar_mut_borrow(src, off, ln);
+                    let is_borrow: i32 = exclusive;
+                    if (is_borrow != 1) {
+                        is_borrow = loan1_ident_is_shared_borrow(src, off, ln);
+                    }
+                    if (is_borrow == 1) {
+                        let owner: string = loan1_borrow_owner_from_ident(src, off, ln)?;
+                        let reg: i32 = loan1_register_borrow(&mut shared_m, &mut excl_m, owner, exclusive)?;
+                        if (reg != 1) {
                             return Ok(0);
                         }
                         temp_owner = owner;
                         temp_exclusive = exclusive;
                         temp_active = 1;
-                    },
-                    Err(_) => {}
+                    }
                 }
             }
-        } else if (tag == 2) {
+        }
+        if (tag == 2) {
             let ret_idx: i32 = stmt_return_expr(fn_out.stmts, stmt_idx);
-            if (loan1_check_expr_use(fn_out.nodes, ret_idx, src, excl_m) != 1) {
+            let use_ok: i32 = loan1_check_expr_use(fn_out.nodes, ret_idx, src, excl_m)?;
+            if (use_ok != 1) {
                 return Ok(0);
             }
         }
@@ -14550,8 +14592,8 @@ fn loan1_accepts_shared_many() -> Result<i32, core_Err> effects { alloc, mut } {
     let empty: Vec<Expr> = vec_new(0);
     let empty_stmts: Vec<Stmt> = vec_new(0);
     let fn_out: FnOut = parse_fn_def(buf.kinds, buf.vals, buf.lens, src, "", &mut pos, empty, empty_stmts)?;
-    let ok: i32 = check_fn_loan1(fn_out, src)?;
-    if (ok != 1) {
+    let loan_ok: i32 = check_fn_loan1(fn_out, src)?;
+    if (loan_ok != 1) {
         return Ok(1301);
     }
     return Ok(42);
@@ -14564,8 +14606,8 @@ fn loan1_rejects_shared_xor_mut() -> Result<i32, core_Err> effects { alloc, mut 
     let empty: Vec<Expr> = vec_new(0);
     let empty_stmts: Vec<Stmt> = vec_new(0);
     let fn_out: FnOut = parse_fn_def(buf.kinds, buf.vals, buf.lens, src, "", &mut pos, empty, empty_stmts)?;
-    let ok: i32 = check_fn_loan1(fn_out, src)?;
-    if (ok != 0) {
+    let loan_ok: i32 = check_fn_loan1(fn_out, src)?;
+    if (loan_ok != 0) {
         return Ok(1302);
     }
     return Ok(42);
