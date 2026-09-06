@@ -1,6 +1,6 @@
 // reload-shaped guest under a host GuestCtx.
 // Session 1 and session 2 are independent: end revokes; begin mints fresh caps.
-// Authority = minted FsCap only (no ambient std/io). Same physics; no Soft-fx.
+// Authority = minted FsCap only (no ambient std/io). Same region physics.
 using core;
 import std/cap;
 import std/io_cap;

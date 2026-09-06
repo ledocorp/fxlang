@@ -3,7 +3,7 @@
 **Last updated:** 6 September 2026
 
 fx **0.9.71** is the current public package: **GPL-3.0**, **native-first Auto**
-`fx run` (live `sh_*` for the supported demo set; built-in fallback otherwise),
+`fx run` (the primary compiler path for the supported demo set; built-in fallback otherwise),
 IR coverage for Atomic · MMIO · CapDict when QBE is staged, iterate ergonomics
 (scratch `fx run`, FXCACHE, `--watch`), local let elision + batch Vec init, lexical loans,
 no-grow `v[i]=x`, `--cli` auto-host, plus the **0.9.6** platform freezes

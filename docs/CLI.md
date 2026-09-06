@@ -11,7 +11,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
-| `fx run <file.fx>` | **Auto** driver: live `sh_*` when the program fits; otherwise the built-in fallback engine (IR → native by default). Link and run (**does not forward program argv**) |
+| `fx run <file.fx>` | **Auto** driver: the primary compiler path when the program fits; otherwise the built-in fallback engine (IR → native by default). Link and run (**does not forward program argv**) |
 | `fx build <file.fx>` | Same backends as run (link; do not run) |
 | `fx emit-c <file.fx> -o <dir>` | Emit `.c` / `.h` only (no link); `--surface` also writes `.fxsurface.*` |
 | `fx surface <file.fx> [-o <dir>]` | Static module passport (JSON + Markdown) |
@@ -48,15 +48,17 @@ fx new sandbox --scaffold guest
 ### `fx run` / `fx build`
 
 ```text
-fx run main.fx                 # Auto: live sh_* when supported, else built-in engine
+fx run main.fx                 # Auto: the primary compiler path when supported, else built-in engine
 fx run main.fx --emit-c        # emit-C → native (backend)
-fx run main.fx --driver foundry  # force built-in engine
+fx run main.fx --driver foundry  # built-in engine only
 fx run main.fx --release
 fx build main.fx -o out
 fx run lib.fx --host host.c    # C owns process main / argv (built-in engine path)
 ```
 
-By default, `fx run` / `fx build` use **driver Auto**: try the live `sh_*` path for supported programs; if that cannot serve the program (FX0036 / toolchain), fall back to the **built-in engine** inside `bin/fx` (CLI name: `--driver foundry` — not a separate Rust install). On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C. Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry`.
+By default, `fx run` / `fx build` use **driver Auto**: try the primary compiler path for supported programs; if that cannot serve the program, fall back to the **built-in engine** inside `bin/fx`. On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C.
+
+Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry` (`foundry` = force the built-in engine; `sh` = primary path only, no fallback).
 
 **Argv (frozen):** `fx run` does **not** forward program arguments into the fx program. The auto-shim is `main(void)`. Product CLIs use **`--scaffold cli`** (or `tool`) then **`fx build … --cli`**, or a custom **`--host <file.c>`**. Shared helpers live in `host/cli/`. → [SCAFFOLDS.md](SCAFFOLDS.md) · [WRAP.md](WRAP.md)
 
@@ -67,7 +69,7 @@ Useful flags:
 | Flag | Meaning |
 |------|---------|
 | `--emit-c` | Use emit-C → native instead of IR → native |
-| `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = live `sh_*` first, then built-in engine; `fx cc` defaults to foundry) |
+| `--driver auto\|sh\|foundry` | Parse/emit driver (`auto` = the primary compiler path first, then built-in engine; `fx cc` defaults to the built-in engine) |
 | `--cli` | Auto-link thin CLI host (`host/cli`) for argv/exit — product CLIs |
 | `--guest` / `--no-guest` | Guest ambient-io policy on check/run/build |
 | `--fallback-emit-c` | Prefer emit-C when IR path fails |
@@ -82,7 +84,7 @@ Useful flags:
 | `--link-include` / `--link-dir` / `--link-lib` | Extra include/lib paths (escape hatch) |
 | `--backend auto\|ir\|c` | Advanced backend select (`auto` = IR-first with emit-C fallback) |
 
-**Strict live lane:** `--driver sh` does **not** support `--cli` / `--host` (FX0036) — use Auto or `--driver foundry` for those.
+**Strict `--driver sh`:** does **not** support `--cli` / `--host` — use Auto or `--driver foundry` for those.
 
 Default linking expects **gcc** and the zspec library that matches your OS (`build/gcc` or `build/gcc-linux`).
 

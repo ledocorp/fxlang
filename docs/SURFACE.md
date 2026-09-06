@@ -1,8 +1,8 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.71 
+**Package version:** 0.9.71
 
-**Status:** As implemented — not aspirational 
+**Status:** As implemented — not aspirational
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
@@ -267,7 +267,7 @@ Not a full vector ISA product. Prefer scalar SoT for dual-emit readability.
 | Constrained `asm { }` | Inline asm with clobber checks (diagnostics FX0034/FX0035) |
 | `external = "….s"` | External assembly unit |
 
-IR uses the portable path. Monorepo has an asm-verify harness comparing portable vs override; that harness is **not** a public certification claim.
+IR uses the portable path. An optional asm-verify harness can compare portable vs override; that harness is **not** a public certification claim.
 
 ---
 
@@ -337,7 +337,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 - Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
 - Full HTTP client / general TLS stack in the **language package** — TCP dial yes; `std/net.dial_tls` always fails here; HTTPS is a separate **fxfetch** tool that links Mbed TLS
 - Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
-- Advanced runtime layers (device-aware migration, alternate mutation models)
+- Advanced runtime layers (device-aware migration, hidden shared mutation models)
 - OS product / experimental horizon features
 - macOS prebuilt binary (**frozen:** Win/Linux x86_64 package only)
 - `fx run` program-argv passthrough (**frozen:** C host / `--cli` / `--scaffold cli` owns argv)
@@ -345,11 +345,11 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 
 ### Intentionally deferred (architecture, not forgotten)
 
-- Advanced fx Runtime layer (spec Phase 2) — optional 
-- Further zspec modules — **pull when `std/` needs C ABI**, not a checklist 
-- Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist 
-- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`) 
-- Language-package TLS dial without an extra tool/link unit 
+- Advanced fx Runtime layer (spec Phase 2) — optional
+- Further zspec modules — **pull when `std/` needs C ABI**, not a checklist
+- Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist
+- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)
+- Language-package TLS dial without an extra tool/link unit
 
 ### Substrate (for linkers / embedders)
 

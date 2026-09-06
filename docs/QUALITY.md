@@ -16,8 +16,8 @@ effects/regions, and dogfood CLIs with clear exit codes on stderr.
 
 ## What this is not
 
-- A certification claim (DO-178 or otherwise) 
-- A promise that every OOM path is already surfaced as `Result` Err in every lowering 
-- A package registry or alternate mutation models sandbox story 
+- A certification claim (DO-178 or otherwise)
+- A promise that every OOM path is already surfaced as `Result` Err in every lowering
+- A package registry or hidden shared mutation models sandbox story
 
 Dogfood evidence: [DOGFOOD.md](DOGFOOD.md). What’s next: [NEXT.md](NEXT.md).

@@ -1,15 +1,13 @@
-// Verification campaign / Wave B - LEB128 variable-length integers.
-// A full fx rewrite of the Rust `leb128` crate's core: unsigned encode/decode over
-// a byte `Vec<i32>`, plus signed <-> unsigned via zigzag. A genuine self-hosting
-// primitive (varints for any bytecode/IR a self-hosted fx would emit) and the
-// campaign's designated Rust-rewrite target.
+// Verification campaign - LEB128 variable-length integers.
+// Unsigned encode/decode over a byte `Vec<i32>`, plus signed <-> unsigned via zigzag.
+// Useful for any bytecode / IR that uses varints.
 //
 // Values are `i32` because the builtin `Vec` element type is currently `i32`
-// (widening the byte buffer to `Vec<i64>` is the tracked follow-up VEC-I64); the
-// algorithm is width-agnostic. Canonical: unsigned(624485) -> [0xE5, 0x8E, 0x26].
+// (widening the byte buffer is a later follow-up); the algorithm is width-agnostic.
+// Canonical: unsigned(624485) -> [0xE5, 0x8E, 0x26].
 // All shifts are applied only to non-negative values (zigzag guards the sign), so
-// the emitted C is free of signed-shift/overflow UB. Round-trip is proven in fx
-// (programs/p2_leb128.fx), emitted C, OCaml, Haskell, and a Rust proptest.
+// the emitted C is free of signed-shift/overflow UB. Round-trip proven in fx and
+// cross-checked against independent oracles.
 module leb128;
 
 // Encode a non-negative value as LEB128 bytes (7 data bits per byte, high bit =

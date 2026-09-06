@@ -25,10 +25,10 @@ fx new sandbox --scaffold guest
 
 Open `scaffolds/simple/main.fx` (or your new project’s `main.fx`):
 
-- `effects { alloc, mut }` · heap + mutation are declared 
-- `region r = arena(4096)` · named lifetime 
-- `import std/vec` · portable standard library 
-- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`; not a alternate mutation models second model 
+- `effects { alloc, mut }` · heap + mutation are declared
+- `region r = arena(4096)` · named lifetime
+- `import std/vec` · portable standard library
+- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`; not a hidden shared mutation models second model
 
 That combination is the recommended first experience: **Go-feel lifetimes, not a GC**.
 

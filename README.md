@@ -2,7 +2,7 @@
 
 **Version:** [0.9.71](VERSION) · [Release notes](docs/releases/0.9.71.md) · [GitHub](https://github.com/ledocorp/fxlang)
 
-**Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org 
+**Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org
 **License:** [GNU GPL v3](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
 
 ---
@@ -11,10 +11,10 @@
 
 **fx is a systems language with visible control.**
 
-Named **regions** + **effects** in signatures. **Native-first** `fx run` (live `sh_*` when the program fits; otherwise a built-in fallback engine inside `bin/fx`). **IR → native** on that fallback path when QBE is present. **Emit-C** stays first-class and readable. Wrap mature C libraries instead of rewriting them.
+Named **regions** + **effects** in signatures. **Native-first** `fx run` (the primary compiler path when the program fits; otherwise a built-in fallback engine inside `bin/fx`). **IR → native** on that fallback path when QBE is present. **Emit-C** stays first-class and readable. Wrap mature C libraries instead of rewriting them.
 
-This repo is the **language package**: put `bin/` on your `PATH` and write fx. 
-**License:** GNU GPL v3 — see [LICENSE](LICENSE). No Rust toolchain required.
+This repo is the **language package**: put `bin/` on your `PATH` and write fx.
+**License:** GNU GPL v3 — see [LICENSE](LICENSE).
 
 ---
 
@@ -36,8 +36,8 @@ fx run main.fx # expect exit 42
 | Windows | [`bin/fx.exe`](bin/fx.exe) | `third_party/qbe/windows/qbe.exe` |
 | Linux | [`bin/fx`](bin/fx) | `third_party/qbe/obj/qbe` |
 
-Without QBE, use `fx run main.fx --emit-c`. Layout: [PACKAGE.md](PACKAGE.md). 
-**Argv:** `fx run` does not forward program args — use `--scaffold cli` / `--host`. 
+Without QBE, use `fx run main.fx --emit-c`. Layout: [PACKAGE.md](PACKAGE.md).
+**Argv:** `fx run` does not forward program args — use `--scaffold cli` / `--host`.
 **Vendor:** `fx mod` pins checksums; compile still uses `std/` / `FX_STD_ROOT`.
 
 ---
@@ -105,7 +105,7 @@ Full notes: [docs/releases/0.9.71.md](docs/releases/0.9.71.md).
 
 ## Contributing & security
 
-Stewarded by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs. 
+Maintained by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bugs.
 [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
 
 ---

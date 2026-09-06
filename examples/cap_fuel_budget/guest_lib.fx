@@ -1,5 +1,5 @@
 // guest burns units only through a minted FuelCap.
-// Soft-fx refused: same physics; authority = fuel token.
+// Same physics; authority = fuel token.
 using core;
 import std/cap;
 import std/guest;

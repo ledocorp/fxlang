@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.71 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0 
+**Version:** 0.9.71 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -10,11 +10,11 @@ Welcome to **fx**: a systems language with visible memory and dual emission to r
 
 ## What you need
 
-1. **This repository** (compiler in `bin/`, plus `std/`, scaffolds, headers). 
-2. A **C toolchain** on your `PATH` for linking. **gcc** is the default today. 
+1. **This repository** (compiler in `bin/`, plus `std/`, scaffolds, headers).
+2. A **C toolchain** on your `PATH` for linking. **gcc** is the default today.
 3. **Windows** or **Linux x86_64** for the prebuilt compiler in this release — **macOS is not shipped** as a prebuilt (build from source elsewhere if needed).
 
-No other language toolchain is required to write and run fx programs.
+You need a C compiler to link; no other language install is required to write and run fx programs.
 
 Check your machine:
 
@@ -33,7 +33,7 @@ fx doctor
 
 fx new hello
 cd hello
-fx run main.fx                # Auto: live sh_* when supported, else built-in engine; expect exit 42
+fx run main.fx                # Auto: the primary compiler path when supported, else built-in engine; expect exit 42
 fx run main.fx --emit-c # optional: force emit-C backend (also the fallback if QBE is missing)
 ```
 
@@ -105,7 +105,7 @@ fx new sandbox --scaffold guest # caps-shaped guest + host session
 
 When `fx run` or `fx build` links:
 
-- Include path: `zspec/include/` 
+- Include path: `zspec/include/`
 - Library: `build/gcc/libzspec.a` (Windows) or `build/gcc-linux/libzspec.a` (Linux)
 
 If linking fails with “gcc not found,” install a C compiler and ensure it is on your `PATH`. Run `fx doctor` to confirm.

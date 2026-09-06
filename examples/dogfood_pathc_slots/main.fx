@@ -1,6 +1,6 @@
-// Path C living dogfood (dense SoA distances).
-// Grow once with push; relax edges with no-grow `v[i]=x` (MUT-2).
-// Soft-fx / growable index-assign stay refused. Exit 42 on expected sink dist.
+// Living dogfood (dense SoA distances).
+// Grow once with push; relax edges with no-grow `v[i]=x`.
+// Growable index-assign stays unsupported. Exit 42 on expected sink dist.
 import std/vec;
 
 fn main() -> i32 effects { alloc, mut } {

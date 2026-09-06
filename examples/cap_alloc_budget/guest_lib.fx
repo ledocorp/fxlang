@@ -1,5 +1,5 @@
 // guest allocates only through a minted AllocCap.
-// Soft-fx refused: same bump arena; authority = budget token.
+// Same bump arena; authority = budget token.
 using core;
 import std/cap;
 import std/guest;

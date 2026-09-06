@@ -1,12 +1,12 @@
 # Package contents
 
-**Version:** 0.9.71 (see [VERSION](VERSION))  
+**Version:** 0.9.71 (see [VERSION](VERSION))
 
-**Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0  
+**Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0
 
 This repository is the **fx language package**: everything you need to install the compiler and write programs.
 
-**No Rust source is shipped here.** The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `compiler-source/*.fx`). Users need **gcc**, not a Rust toolchain.
+The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `compiler-source/*.fx`). Users need **gcc** (or another C compiler) to link.
 
 **Prebuilt platforms:** Windows + Linux **x86_64** only. There is **no** macOS `bin/fx` in this package.
 
@@ -37,8 +37,8 @@ This repository is the **fx language package**: everything you need to install t
 
 ## How to use it
 
-1. Put `bin/` on your `PATH` (or invoke `bin/fx` / `bin/fx.exe` directly).  
-2. Run `fx doctor`, then install **gcc** if needed.  
+1. Put `bin/` on your `PATH` (or invoke `bin/fx` / `bin/fx.exe` directly).
+2. Run `fx doctor`, then install **gcc** if needed.
 3. `fx new hello` → `fx run main.fx`.
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md)

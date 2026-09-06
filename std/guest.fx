@@ -1,7 +1,7 @@
 // Host-owned guest context.
 // Session = bump arena + cap set; end revokes caps and frees arena.
-// Soft-fx refused: same region / slot-mut physics inside the guest.
-// B.2: `dynamic region g = guest(N);` lowers to fx_guest_begin / end.
+// Same region / slot-mut physics inside the guest.
+// `dynamic region g = guest(N);` lowers to fx_guest_begin / end.
 module guest;
 
 using core;

@@ -1,6 +1,6 @@
 // Week-two tool: file lifecycle without Result/? (general emit).
 // write → exists → append → rename → delete → exit 42
-// Content-verified read+? is proven in monorepo programs/p2_file_io (fx-owned bridge).
+// Content-verified read+? is proven on the file I/O path.
 import std/io;
 
 fn main() -> i32 effects { alloc, io } {

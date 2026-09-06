@@ -21,4 +21,4 @@ fx build examples/cap_guest_ctx/guest_lib.fx -o build/cap_guest_ctx --emit-c `
 ```
 
 API: `std/guest.fx` + `examples/cap_runtime` (`fx_guest_begin` / `mint_*` / `end`).
-See `docs/specs/CAPABILITY_REGIONS_LITE.md` Phase B.
+See package docs/REGIONS.md for capability regions.

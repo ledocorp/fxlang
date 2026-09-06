@@ -107,37 +107,37 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 
 ## Testing (native culture)
 
-- `std/testing`, `std/proptest` — asserts with stderr diagnostics, property helpers 
-- `fx test` / `fx fuzz` — discover `*_test.fx`, named `test_*`, dual-path (`--backend c|ir|both`); fuzz runs an fx-compiled driver 
+- `std/testing`, `std/proptest` — asserts with stderr diagnostics, property helpers
+- `fx test` / `fx fuzz` — discover `*_test.fx`, named `test_*`, dual-path (`--backend c|ir|both`); fuzz runs an fx-compiled driver
 - Shared corpora live under `validation/reference/`; assure dogfood under `examples/assure/`
 
 ## Capability / guest sessions
 
-- `std/cap` — `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` (allowlist) 
-- `std/guest` — begin/end/`begin_nested`, mint_*, alloc/burn, `mint_net` / `net_allows` 
-- `std/io_cap` — cap-scoped file I/O 
-- `std/net` — TCP `dial` under NetCap allowlist. `dial_tls` exists as a facade but **always fails** in this language package (default `host/cap` dial has no TLS). HTTPS belongs to the separate **fxfetch** tool (links Mbed TLS). 
+- `std/cap` — `FsCap` / `OutCap` / `AllocCap` / `FuelCap` / `NetCap` (allowlist)
+- `std/guest` — begin/end/`begin_nested`, mint_*, alloc/burn, `mint_net` / `net_allows`
+- `std/io_cap` — cap-scoped file I/O
+- `std/net` — TCP `dial` under NetCap allowlist. `dial_tls` exists as a facade but **always fails** in this language package (default `host/cap` dial has no TLS). HTTPS belongs to the separate **fxfetch** tool (links Mbed TLS).
 
-- `dynamic region g = guest(n)` — language sugar (emit-C + IR + `host/cap` link) 
+- `dynamic region g = guest(n)` — language sugar (emit-C + IR + `host/cap` link)
 - process-trust ambient `std/io` remains for ordinary tools
 
 ## Concurrency (synthesis product)
 
-- `std/nursery`, `std/chan`, `std/select`, `std/mailbox`, `std/supervise` — structured nursery, i32/i64 channels, select timeout, mailboxes, supervision apply 
-- `nursery.spawn_i32` / `await_i32` — production API (keyword `nursery`/`spawn`/`await` later) 
-- Host runtime under the std APIs; emit-C + IR dual-path for linked `concur_*` 
+- `std/nursery`, `std/chan`, `std/select`, `std/mailbox`, `std/supervise` — structured nursery, i32/i64 channels, select timeout, mailboxes, supervision apply
+- `nursery.spawn_i32` / `await_i32` — production API (keyword `nursery`/`spawn`/`await` later)
+- Host runtime under the std APIs; emit-C + IR dual-path for linked `concur_*`
 - Not a Go/Erlang/BEAM runtime identity claim
 
 ## Path, encoding, fs, log, json, sqlite (0.9.x production)
 
-- `std/path` — join, parent_len, basename_off, ext_off, is_abs, has_double_sep 
-- `std/strutil` — contains / starts_with / ends_with 
-- `std/encoding` — hex + base64 over `Vec<i32>` byte codes 
-- `std/fs` — `copy_file`; `std/fs_walk.list_names` for directory names 
-- `std/log` — thin tagged stderr helpers 
-- `std/json` — thin cJSON path facade (link cJSON) 
-- `std/json_validate` / `std/json_full` — fx-native validate path 
-- `std/sqlite` — SQLite WRAP facade (link amalgamation; FsCap path available) 
+- `std/path` — join, parent_len, basename_off, ext_off, is_abs, has_double_sep
+- `std/strutil` — contains / starts_with / ends_with
+- `std/encoding` — hex + base64 over `Vec<i32>` byte codes
+- `std/fs` — `copy_file`; `std/fs_walk.list_names` for directory names
+- `std/log` — thin tagged stderr helpers
+- `std/json` — thin cJSON path facade (link cJSON)
+- `std/json_validate` / `std/json_full` — fx-native validate path
+- `std/sqlite` — SQLite WRAP facade (link amalgamation; FsCap path available)
 - Also: `std/time`, `std/env` (argv stays host/cli), `std/http` (llhttp parse), `std/sync` mutex
 
 ## Growth

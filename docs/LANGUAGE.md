@@ -216,7 +216,7 @@ See [WRAP.md](WRAP.md) for `extern "c"` and linking.
 - Generic `Map` beyond `string→i32` / `string→string`; insertion-order iteration
 - Growable `Vec` index-assign that **reallocates** (no-grow `v[i]=x` / `vec_set` are OK); `&mut Vec` as a slice; mut sub-slices
 - Package **registry** / large application ecosystem (offline `fx.mod` / `fx.sum` pin exists)
-- Direct Rust/Go/Zig FFI (C ABI only; others speak C)
+- Direct FFI to other languages (C ABI only; other languages speak C on their side)
 - Lifetime parameters / NLL; optional `loan { }` block sugar (not shipped)
 
 Compact lookup: [REFERENCE.md](REFERENCE.md) · [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [CLI.md](CLI.md)

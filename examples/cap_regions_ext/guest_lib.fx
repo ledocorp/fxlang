@@ -1,5 +1,5 @@
 // extension surface: guest calls io_cap read/write under host caps.
-// Deny outside root → Err(5). Same region physics; no Soft-fx.
+// Deny outside root → Err(5). Same region physics.
 using core;
 import std/cap;
 import std/io_cap;

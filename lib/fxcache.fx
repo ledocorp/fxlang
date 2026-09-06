@@ -1,5 +1,5 @@
-// lib/fxcache.fx - FX-ITER-CACHE-1 dogfood helpers (fingerprint mix).
-// Product scratch/FXCACHE orchestration stays in foundry CLI (`fx_cache.rs`).
+// lib/fxcache.fx - fingerprint helpers for FXCACHE.
+// Product scratch/FXCACHE orchestration lives in the `fx` binary.
 module fxcache;
 
 fn seed() -> i32 {

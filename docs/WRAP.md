@@ -93,15 +93,15 @@ Level 2 (hand-written Result wrapper over real lib): `examples/bind_stb_sprintf`
 
 - C FFI works; `fx bind` covers Level 1 raw stubs — ownership policy is not invented for you
 - Level 2 wrappers stay hand-written (see `bind_stb_sprintf/stb_safe.fx`)
-- There is no direct Rust/Go/Zig FFI · those ecosystems speak C on their side
+- There is no direct FFI to other languages · they speak C on their side
 - `std/io` itself uses `extern "c"` for host puts / file ops
 
 ## Checklist: new `--link` example
 
 When you add an `examples/*` tree with `main.fx` that needs C sidecars:
 
-1. Document the exact `fx run` / `fx build` link line in that example’s README. 
-2. Confirm both `fx run` and `fx run --emit-c` when you claim dual-path quality. 
+1. Document the exact `fx run` / `fx build` link line in that example’s README.
+2. Confirm both `fx run` and `fx run --emit-c` when you claim dual-path quality.
 3. Keep host/link flags next to the example so strangers can copy them without hunting.
 
 ## What’s next for wraps

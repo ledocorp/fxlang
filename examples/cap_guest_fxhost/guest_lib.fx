@@ -1,5 +1,5 @@
-// Phase B.1 - guest under a host GuestCtx.
-// Authority = minted FsCap only (no ambient std/io). Same physics; no Soft-fx.
+// Guest under a host GuestCtx.
+// Authority = minted FsCap only (no ambient std/io). Same region physics.
 using core;
 import std/cap;
 import std/io_cap;

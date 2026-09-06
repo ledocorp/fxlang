@@ -1,6 +1,6 @@
 // fx-hosted guest session (no C host driver).
 // begin → mint FsCap → guest run → end → stale deny (5).
-// Soft-fx refused: same physics; B.2 keyword comes later.
+// Same region physics.
 using core;
 import std/guest;
 import std/cap;

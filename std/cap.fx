@@ -1,7 +1,7 @@
 // Opaque capability handles - minted only by host/C.
 // Teaching names: FsCap / OutCap · AllocCap.
 // ABI: `handle` is the bit-pattern of a host `void*` / `Fx*Cap*` (copyable; teardown invalidates).
-// Soft-fx refused: same region/slot-mut physics; dynamic = which caps exist at runtime.
+// Same region/slot-mut physics; dynamic = which caps exist at runtime.
 module cap;
 
 /// Filesystem capability (copyable opaque handle).

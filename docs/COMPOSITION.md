@@ -1,11 +1,11 @@
 # Composition under regions
 
-**Package:** 0.9.71 
+**Package:** 0.9.71
 
-**Site:** https://www.ledocorp.org/fx/docs/composition/ 
+**Site:** https://www.ledocorp.org/fx/docs/composition/
 **What’s next:** [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md) · [AGENT.md](AGENT.md)
 
-How to build **real programs** in fx without treating it as incomplete Rust — and without an unsafe dialect.
+How to build **real programs** in fx with visible control — and without an unsafe dialect.
 
 ---
 
@@ -26,8 +26,8 @@ Region-local **slot** mutation is part of the language method today.
 What we are **not** adding:
 
 - Growable-`Vec` index-assign that **reallocates** (no-grow `v[i]=x` / `vec_set` are OK)
-- Rust-style `Cell` / hidden shared interior mutability
-- A “soft” dialect where scripts get different mutability physics
+- Hidden shared interior mutability (`Cell`-style)
+- A second dialect where scripts get different mutability physics
 
 | Kind | How |
 |------|-----|
@@ -214,9 +214,9 @@ See [DOGFOOD.md](DOGFOOD.md) for the larger dogfood apps.
 
 ## Related
 
-- [NEXT.md](NEXT.md) — what’s next 
-- [DOGFOOD.md](DOGFOOD.md) — CHIP‑8, JSON CLIs, textdiff 
-- [LIBRARIES.md](LIBRARIES.md) — C wrap priorities 
-- [SURFACE.md](SURFACE.md) — what exists today 
-- [REGIONS.md](REGIONS.md) — effects and region kinds 
-- [LANGUAGE.md](LANGUAGE.md) — language tour 
+- [NEXT.md](NEXT.md) — what’s next
+- [DOGFOOD.md](DOGFOOD.md) — CHIP‑8, JSON CLIs, textdiff
+- [LIBRARIES.md](LIBRARIES.md) — C wrap priorities
+- [SURFACE.md](SURFACE.md) — what exists today
+- [REGIONS.md](REGIONS.md) — effects and region kinds
+- [LANGUAGE.md](LANGUAGE.md) — language tour

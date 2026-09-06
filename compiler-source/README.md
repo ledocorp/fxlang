@@ -1,6 +1,6 @@
 # Compiler source (read-only / inspectable)
 
-**Status:** Educational snapshot for humans who want to *read* how fx’s frontend is expressed in fx.  
+**Status:** Educational snapshot for humans who want to *read* how fx’s frontend is expressed in fx.
 **Not** the supported way to run or rebuild the compiler.
 
 ## How to use fx
@@ -18,7 +18,7 @@ This folder does **not** replace `bin/fx`.
 
 ## What this is
 
-Copies of the **fx-authored compiler modules** (lexer, parse, AST, diagnostics, emit). They show the self-host direction: important compiler logic lives as ordinary `.fx` you can open in an editor.
+Copies of the **fx-authored compiler modules** (lexer, parse, AST, diagnostics, emit). They show the fx-authored compiler direction: important compiler logic lives as ordinary `.fx` you can open in an editor.
 
 | Path | Role |
 |------|------|
@@ -32,9 +32,9 @@ File headers in these copies are cleaned for reading. Some body comments and str
 
 ## What this is not
 
-- A turnkey “build fx from source” SDK  
-- The private test harness, goldens, or CI  
-- A promise that every line here is the only code the shipping binary contains  
+- A turnkey “build fx from source” SDK
+- The private test harness, goldens, or CI
+- A promise that every line here is the only code the shipping binary contains
 
 ## Why ship it
 

@@ -18,11 +18,11 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md) · [SURF
 | Surface | Role |
 |---------|------|
 | **cJSON** | Path-get facade + dogfood JSON CLIs |
-| **xxHash** | Integrity helper wrap (`examples/wrap_xxhash` in monorepo) |
+| **xxHash** | Integrity helper wrap (see companion packages / wraps) |
 | **SQLite** | Amalgamation WRAP (`examples/wrap_sqlite` — `:memory:` + file under `FsCap`) |
 | **llhttp** | HTTP parse WRAP foothold (`examples/wrap_llhttp`) |
-| **BLAKE3** | Integrity wrap (`examples/wrap_blake3` in monorepo) + **fxblake3** tool |
-| **LZ4** | Frame wrap (`examples/wrap_lz4` in monorepo) + **fxlz4** tool |
+| **BLAKE3** | Integrity wrap + **fxblake3** tool |
+| **LZ4** | Frame wrap + **fxlz4** tool |
 | **stb_sprintf** / **stb_image** | Format and image decode wraps |
 | **raylib-class hosts** | GUI / panel examples (host owns `main`) |
 
@@ -32,7 +32,7 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md) · [SURF
 
 ## Separate product CLIs (not this language package)
 
-These ship from the monorepo `tools/` tree into their own GitHub packages. They are **not**
+These ship from the `tools/` tree into their own GitHub packages. They are **not**
 inside `bin/fx` of the language package, but they are first-class fx offerings:
 
 | Tool | Role |
