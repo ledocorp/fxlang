@@ -1,24 +1,25 @@
-# Project scaffolds (`fx new`)
+# Project starters (`fx new`)
 
-Scaffolds are starter programs under [`scaffolds/`](../scaffolds/). `fx new` copies one into a new directory.
+Starter trees live under [`scaffolds/`](../scaffolds/) (repo folder name). Product speech is just **`fx new`** — same idea as **`cargo new`**, with an optional **kind**.
+
+Not `go mod init` (module path only). Not Rails “scaffold” (CRUD generators).
 
 ## Kinds
 
-| Kind | Flag | When to use it |
-|------|------|----------------|
-| **simple** | `--scaffold simple` (default) | Everyday apps: named region + `import std/vec`; stages `std/` into the project |
-| **minimal** | `--scaffold minimal` | Smallest possible `main`; add region/effects yourself |
-| **embedded** | `--scaffold embedded` | Tiny arena footprint; builtin `vec_*`; no staged `std/` |
-| **cli** | `--scaffold cli` (alias: `tool`) | Result library + **`--cli`** autohost for argv (product CLIs) |
-| **guest** | `--scaffold guest` | Caps-shaped guest + host `GuestCtx` mint session |
+| Kind | Example | When to use it |
+|------|---------|----------------|
+| **simple** (default) | `fx new hello` | Everyday apps: named region + `import std/vec`; stages `std/` |
+| **minimal** | `fx new tiny minimal` | Smallest possible `main` |
+| **embedded** | `fx new firmware embedded` | Tiny arena; builtin `vec_*`; no staged `std/` |
+| **cli** | `fx new mytool cli` | Result library + **`--cli`** autohost (`tool` alias) |
+| **guest** | `fx new sandbox guest` | Caps-shaped guest + host `GuestCtx` |
+| **web** | `fx new mysite web` | Static HTML/CSS/JS for local **fxserve** |
 
 ```text
 fx new hello
-fx new tiny --scaffold minimal
-fx new firmware --scaffold embedded
-fx new mytool --scaffold cli
-fx new mytool --scaffold tool # same as cli
-fx new sandbox --scaffold guest
+fx new tiny minimal
+fx new mytool cli
+fx new mysite web
 ```
 
 ## What “simple” teaches
@@ -28,16 +29,12 @@ Open `scaffolds/simple/main.fx` (or your new project’s `main.fx`):
 - `effects { alloc, mut }` · heap + mutation are declared
 - `region r = arena(4096)` · named lifetime
 - `import std/vec` · portable standard library
-- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`; not a hidden shared mutation models second model
+- **Grow** via `v.push(x)` (or `v = vec.push(v, x)`) — same physics as `vec_push`
 
-That combination is the recommended first experience: **Go-feel lifetimes, not a GC**.
-
-## CLI / guest
-
-`fx run` does not pass program argv. For product CLIs, use **`--cli`** (no author `host_cli.c`). For custom WRAP/GUI hosts, use `--host`.
+## CLI / guest / web
 
 ```text
-# cli / tool scaffold
+# cli
 fx build tool_lib.fx -o out --emit-c --cli
 ./out/prog hello # Ok(42) → exit 42
 
@@ -45,6 +42,9 @@ fx build tool_lib.fx -o out --emit-c --cli
 fx build guest_lib.fx -o out --emit-c --host host.c \
  --link host/cap/fx_cap_runtime.c --link-include . --link-include host/cap
 ./out/prog
+
+# web
+fxserve ./site --port 8765
 ```
 
 Related: [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [LANGUAGE.md](LANGUAGE.md) · [WRAP.md](WRAP.md) · [CLI.md](CLI.md)

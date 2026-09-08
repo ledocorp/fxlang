@@ -10,8 +10,8 @@ Canonical web copy: https://www.ledocorp.org/fx/docs/wrap/
 - **fx owns main** · normal `fx run main.fx` (scaffolds)
 - **C owns main** · `fx run lib.fx --host host.c` · fx exports functions C calls
 
-For argv CLIs, prefer the shared helpers in `examples/cli_host/fx_cli_host.h`
-(fx owns logic; C owns argv / usage / stderr / exit). See dogfood App 2/4/5 hosts.
+For argv CLIs, prefer the shared helpers in `host/cli/`
+(fx owns logic; C owns argv / usage / stderr / exit).
 
 ## Bundled demos
 
@@ -26,14 +26,13 @@ Expected exit code **42**.
 | `examples/showcase_wrap/compute.fx` | fx functions (`score`, `clamp01`) |
 | `examples/showcase_wrap/host.c` | C `main` that calls into fx |
 
-Larger WRAP footholds (dual-path → **42**):
+Teaching wrap demo (dual-path → **42**):
 
-| Example | What it wraps |
+| Example | What it shows |
 |---------|----------------|
-| `examples/wrap_sqlite/` | SQLite amalgamation — `:memory:` open / exec / query |
-| `examples/wrap_llhttp/` | llhttp — parse-only Content-Length (optional NetCap allow host) |
+| `examples/showcase_wrap/` | C `main` calls into fx library |
 
-Priorities and limits: [LIBRARIES.md](LIBRARIES.md).
+Larger WRAP footholds (SQLite, llhttp, …) and product CLIs live in companion / tool packs — not every wrap is mirrored under `examples/` in this language package.
 
 ## Declaring C functions from fx
 

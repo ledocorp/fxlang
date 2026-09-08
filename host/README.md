@@ -6,6 +6,7 @@ Packageable host-side C that is **not** inside `libzspec.a`:
 |------|------|
 | [`cap/`](cap/) | Guest / capability session runtime (`fx_cap_runtime`) + NetCap TCP dial (`fx_net_dial.c`; TLS not in default dial) |
 | [`cli/`](cli/) | Shared argv / stdio helpers (`fx_cli_host.h`) - used by `--cli` |
+| [`serve/`](serve/) | Static HTTP listen (`fx_http_static`) for **fxserve** - FX-SERVE-1 |
 | [`concur/`](concur/) | Nursery, chan, select, mailbox, supervise, mutex (`fx_task_nursery`, …) |
 | [`process/`](process/) | OS process edge (spawn / mkdir / cwd) for product CLIs |
 | [`std_env/`](std_env/) | Thin getenv shim for `std/env` |

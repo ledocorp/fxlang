@@ -1,0 +1,13 @@
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  margin: 2rem;
+  background: #f7f4ef;
+  color: #1a1a1a;
+}
+h1 {
+  font-weight: normal;
+  letter-spacing: 0.02em;
+}
+code {
+  font-family: Consolas, "Courier New", monospace;
+}

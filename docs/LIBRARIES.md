@@ -17,14 +17,12 @@ Mechanics today: [WRAP.md](WRAP.md). Standard modules: [STD.md](STD.md) · [SURF
 
 | Surface | Role |
 |---------|------|
-| **cJSON** | Path-get facade + dogfood JSON CLIs |
-| **xxHash** | Integrity helper wrap (see companion packages / wraps) |
-| **SQLite** | Amalgamation WRAP (`examples/wrap_sqlite` — `:memory:` + file under `FsCap`) |
-| **llhttp** | HTTP parse WRAP foothold (`examples/wrap_llhttp`) |
+| **cJSON** / **xxHash** / **stb_*** | Wraps proven in-tree; deep demos stay with wraps/tools (not all staged as examples) |
+| **SQLite** | Amalgamation WRAP + **fxql** tool (CLI samples in the tool pack) |
+| **llhttp** | HTTP parse WRAP foothold (`std/http`); serve via **fxserve** when published |
 | **BLAKE3** | Integrity wrap + **fxblake3** tool |
 | **LZ4** | Frame wrap + **fxlz4** tool |
-| **stb_sprintf** / **stb_image** | Format and image decode wraps |
-| **raylib-class hosts** | GUI / panel examples (host owns `main`) |
+| **raylib-class hosts** | GUI hosts (monorepo / companion packs — not language T0) |
 
 “Bind exists” is not the same as “stdlib done.” Pure-fx JSON validate path also exists without a C library for semantics.
 
@@ -44,6 +42,7 @@ inside `bin/fx` of the language package, but they are first-class fx offerings:
 | **fxlz4** | LZ4 pack/unpack + FsCap |
 | **fxblake3** | BLAKE3 hash + FsCap |
 | **fxguest** | Guest/cap speech CLI (allow/deny/budget) |
+| **fxserve** | Local static HTTP (when published; sibling tool) |
 
 Language-package `std/net.dial_tls` still **fails** without those extra link units — TCP dial is in-package; HTTPS is **fxfetch**.
 

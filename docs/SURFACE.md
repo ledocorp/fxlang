@@ -1,13 +1,13 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.71
+**Package version:** 0.9.72
 
 **Status:** As implemented — not aspirational
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
 
 This page is the **complete inventory of shipped functionality** in the public language package.
 It includes typed pool **`Id`**, **`map_add_i32`**, lexical loans, concurrency facades, SIMD/`@override`,
-caps/guest/net, and the `composition_*` / `bind_*` / `concur_*` examples.
+caps/guest/net, and the T0 teaching examples (see `examples/README.md`).
 Use it as a cheatsheet and as a depth ledger: if something is not listed here, do not assume it exists.
 
 Prefer the [language tour](LANGUAGE.md) when learning. Prefer this page when asking “does fx have X?”
@@ -308,15 +308,15 @@ Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers
 | Header → stubs | `fx bind header.h --out stubs.fx` (Level 1; see WRAP) |
 | Host spine | `host/cap` · `host/cli` · `host/process` · `host/concur` · `host/std_*` |
 | Net | NetCap TCP `std/net.dial`; TLS not in this package (use **fxfetch** for HTTPS) |
-| Examples | `showcase_*` · `bind_*` · `wrap_*` · `wasm_smoke` · `composition_*` · `cap_*` · `concur_*` · `tool_*` · `pattern_*` |
+| Examples | **T0 only** — `showcase_*` · `tool_*` · `pattern_*` · `composition_*` · `bind_smoke` · `wasm_smoke` · `cap_host_smoke` · `concur_nursery_smoke` · … (see `examples/README.md`) |
 
-Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpipe, fxlz4, fxblake3, fxguest) live outside this language package — see [LIBRARIES.md](LIBRARIES.md).
+Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpipe, fxlz4, fxblake3, fxguest, fxserve) live outside this language package — see [LIBRARIES.md](LIBRARIES.md).
 
 ---
 
 ## G. Limits & deferred
 
-### Also as implemented (0.9.71 floor)
+### Also as implemented (0.9.72 floor)
 
 | Surface | Notes |
 |---------|--------|
@@ -328,7 +328,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
 | Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
-### Not in the product dialect (as of 0.9.71)
+### Not in the product dialect (as of 0.9.72)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)
@@ -372,13 +372,13 @@ zspec **Minimal Core** (allocator, error, string, debug, platform) + `core_fx_re
 | Mut slice write | `&mut [T]` on arrays · `examples/pattern_mut_table` |
 | Vec slot write | `vec_set` / `v[i]=x` (no grow) / `std/vec.set` · `examples/pattern_pool` |
 | Shared XOR mut / loans | `&` / `&mut` rules · [REGIONS.md](REGIONS.md) |
-| Structured concurrency | `std/nursery` + `host/concur` · `examples/concur_*` |
+| Structured concurrency | `std/nursery` + `host/concur` · `examples/concur_nursery_smoke` |
 | SIMD vectors | `v4i32` / `v4f32` / `v16u8` · §D3 |
 | Asm override | `@override` / `asm { }` · §D4 |
 | Record update | `p with { y: 32 }` |
 | Module passport | `fx surface file.fx` · `fx emit-c --surface` |
 | Graph / IR shape | typed **`Id`** · `std/pool` · `examples/pattern_ids` · [COMPOSITION.md](COMPOSITION.md) |
-| Caps / guest I/O | `std/cap` + `std/guest` + `host/cap` · `examples/cap_*` |
+| Caps / guest I/O | `std/cap` + `std/guest` + `host/cap` · `examples/cap_host_smoke` |
 | TCP dial | `std/net.dial` under NetCap allowlist |
 | HTTPS GET | separate **fxfetch** tool (not `dial_tls` in this package) |
 | Grow then read-only | freeze-by-convention · `examples/pattern_grow_freeze` |

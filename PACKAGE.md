@@ -1,10 +1,10 @@
 # Package contents
 
-**Version:** 0.9.71 (see [VERSION](VERSION))
+**Version:** 0.9.72 (see [VERSION](VERSION))
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0
 
-This repository is the **fx language package**: everything you need to install the compiler and write programs.
+This repository is the **fx language package**: everything you need to install the compiler and write programs. Product CLIs (fxrun, fxfetch, fxserve, …) ship in **separate LedoCorp repos**.
 
 The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `compiler-source/*.fx`). Users need **gcc** (or another C compiler) to link.
 
@@ -27,7 +27,7 @@ The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `com
 | `host/concur/` | Structured concurrency substrate (nursery, chan, select, …) |
 | `host/std_time/` · `host/std_env/` · `host/std_fs_walk/` | Thin host shims for time / env / walk |
 | `docs/` | User documentation (incl. `docs/releases/`) |
-| `examples/` | Optional demos (caps, concur, assure, wraps, …) |
+| `examples/` | **T0 teaching** demos only (see [examples/README.md](examples/README.md)); season proofs stay private |
 | `compiler-source/` | Inspectable fx compiler modules (read-only; not how you run fx) |
 | `third_party/qbe/obj/qbe` | Linux QBE (IR → native on Linux) |
 | `third_party/qbe/windows/qbe.exe` | Windows QBE when staged (IR → PE, `amd64_win`); if missing, use `--emit-c` |
@@ -43,4 +43,4 @@ The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `com
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md)
 
-Release notes: [docs/releases/0.9.71.md](docs/releases/0.9.71.md)
+Release notes: [docs/releases/0.9.72.md](docs/releases/0.9.72.md)

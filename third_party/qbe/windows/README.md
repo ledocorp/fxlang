@@ -2,7 +2,7 @@
 
 Native QBE binary for IR → PE on Windows (`amd64_win`).
 
-## Build
+## Build (monorepo)
 
 With MinGW `gcc` on `PATH`:
 
