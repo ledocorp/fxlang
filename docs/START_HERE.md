@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.72 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0
+**Version:** 0.9.73 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -28,7 +28,7 @@ fx doctor
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version # expect v0.9.72
+fx version # expect v0.9.73
 fx doctor
 
 fx new hello
@@ -76,13 +76,26 @@ fx new sandbox --scaffold guest # caps-shaped guest + host session
 
 ---
 
+## Weekend path (hello → CLI → fxserve)
+
+One stranger path using **public** releases only:
+
+→ **[WEEKEND.md](WEEKEND.md)**
+
+Backends (Auto / emit-C / IR / `--driver sh`): **[DRIVERS.md](DRIVERS.md)**
+
+---
+
 ## Where things live
 
 | You want… | Look here |
 |-----------|-----------|
+| **Weekend path** | [WEEKEND.md](WEEKEND.md) |
+| **How compile works** | [DRIVERS.md](DRIVERS.md) |
+| **Companion CLIs** (fxrun, fxql, fxserve, …) | [LIBRARIES.md](LIBRARIES.md) · https://www.ledocorp.org/fx/tools/ |
 | **What’s next** | [NEXT.md](NEXT.md) |
 | **Quality habits** | [QUALITY.md](QUALITY.md) |
-| **Planned dogfood apps** | [DOGFOOD.md](DOGFOOD.md) |
+| **Dogfood / teaching demos** | [DOGFOOD.md](DOGFOOD.md) · [../examples/](../examples/) |
 | **C library wrap priorities** | [LIBRARIES.md](LIBRARIES.md) |
 | **Everything that exists (cheatsheet)** | [SURFACE.md](SURFACE.md) |
 | **How to compose hard programs** | [COMPOSITION.md](COMPOSITION.md) |

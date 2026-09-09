@@ -47,4 +47,11 @@ fx build guest_lib.fx -o out --emit-c --host host.c \
 fxserve ./site --port 8765
 ```
 
-Related: [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [LANGUAGE.md](LANGUAGE.md) · [WRAP.md](WRAP.md) · [CLI.md](CLI.md)
+Related: [REGIONS.md](REGIONS.md) · [STD.md](STD.md) · [LANGUAGE.md](LANGUAGE.md) · [WRAP.md](WRAP.md) · [CLI.md](CLI.md) · [WEEKEND.md](WEEKEND.md)
+
+## Package pin (`fx.mod`)
+
+Every `fx new` writes an initial **`fx.mod`** (module path + `require std <version>`).
+
+That file is for **checksum integrity** with `fx mod vendor` / `verify`. It does **not**
+mean compile reads `vendor/` — imports still use nearby `std/` / `FX_STD_ROOT`. See [CLI.md](CLI.md).

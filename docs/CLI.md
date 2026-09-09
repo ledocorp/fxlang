@@ -7,7 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
-| `fx version` | Print version (expect `v0.9.72`) |
+| `fx version` | Print version (expect `v0.9.73`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
 | `fx check <file.fx>` | Parse and typecheck |
@@ -57,6 +57,8 @@ fx run lib.fx --host host.c    # C owns process main / argv (built-in engine pat
 ```
 
 By default, `fx run` / `fx build` use **driver Auto**: try the primary compiler path for supported programs; if that cannot serve the program, fall back to the **built-in engine** inside `bin/fx`. On that path, lowering defaults to **IR → native** when QBE is staged. Pass **`--emit-c`** for readable C.
+
+**One-screen map:** [DRIVERS.md](DRIVERS.md).
 
 Advanced: `--backend auto|ir|c` · `--driver auto|sh|foundry` (`foundry` = force the built-in engine; `sh` = primary path only, no fallback).
 
@@ -131,7 +133,12 @@ fx mod verify # check fx.sum against vendor/std
 fx mod tidy # sync fx.mod require std with import scan
 ```
 
-**Integrity (frozen):** `vendor/std` + `fx.sum` are a **checksum pin** for reproducibility. Compile still resolves `import std/…` via nearby `std/` or `FX_STD_ROOT` — **not** via `vendor/` yet. This is intentional: edit live `std/` while developing; vendor when you want a pinned tree you can verify. Not a download registry.
+**Package pin:** `vendor/std` + `fx.sum` are an optional **checksum** of `std` for
+reproducibility. Compile still resolves `import std/…` via the `std/` next to your
+project or `FX_STD_ROOT` — **not** via `vendor/`. Edit live `std/` while developing;
+run `fx mod vendor` + `verify` when you want a checksummed copy. Not a download registry.
+
+`fx new` writes an initial `fx.mod` that records the package `std` version.
 
 ---
 

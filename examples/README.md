@@ -2,7 +2,8 @@
 
 **Teaching set (T0)** for the fx language package. Optional - not required to install or use fx.
 
-Policy: season proofs and tool demos are **not** mirrored here. Full rules live in the monorepo as `PACKAGING_EXAMPLES_LITE` (private); public speech: thin language package + separate tool repos.
+Policy: this package ships a **thin teaching set**. Product CLIs and larger demos live in
+separate LedoCorp repos. Public speech: thin language package + separate tool repos.
 
 | Path | Description |
 |------|-------------|

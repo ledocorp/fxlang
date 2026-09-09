@@ -6,10 +6,12 @@ HTML also on https://www.ledocorp.org/fx/docs/
 | Doc | Topic |
 |-----|--------|
 | [START_HERE.md](START_HERE.md) | Install, `fx doctor`, five-minute hello |
+| [WEEKEND.md](WEEKEND.md) | **Weekend path** — hello → CLI → fxserve |
+| [DRIVERS.md](DRIVERS.md) | **Backends** — Auto / emit-C / IR / `--driver sh` |
 | [NEXT.md](NEXT.md) | **What’s next** — product-facing sequence |
-| [DOGFOOD.md](DOGFOOD.md) | Real apps (CHIP‑8, JSON wrap + pure, textdiff) |
+| [DOGFOOD.md](DOGFOOD.md) | Teaching demos + historical dogfood themes |
 | [QUALITY.md](QUALITY.md) | Dual-path and CLI quality habits |
-| [LIBRARIES.md](LIBRARIES.md) | C wrap priorities (now / soon / backlog) |
+| [LIBRARIES.md](LIBRARIES.md) | C wrap priorities + companion tools |
 | [SURFACE.md](SURFACE.md) | **As-implemented surface map** (cheatsheet + depth ledger) |
 | [EDITOR.md](EDITOR.md) | Day-one `fx lsp` + tree-sitter |
 | [DEBUG.md](DEBUG.md) | `#line` + gdb recipe (no DAP required) |

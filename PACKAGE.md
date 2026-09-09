@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.72 (see [VERSION](VERSION))
+**Version:** 0.9.73 (see [VERSION](VERSION))
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0
 
@@ -41,6 +41,6 @@ The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `com
 2. Run `fx doctor`, then install **gcc** if needed.
 3. `fx new hello` → `fx run main.fx`.
 
-Start here: [docs/START_HERE.md](docs/START_HERE.md)
+Start here: [docs/START_HERE.md](docs/START_HERE.md) · Weekend path: [docs/WEEKEND.md](docs/WEEKEND.md)
 
-Release notes: [docs/releases/0.9.72.md](docs/releases/0.9.72.md)
+Release notes: [docs/releases/0.9.73.md](docs/releases/0.9.73.md)

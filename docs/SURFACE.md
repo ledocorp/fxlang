@@ -1,6 +1,6 @@
 # fx surface map (as implemented)
 
-**Package version:** 0.9.72
+**Package version:** 0.9.73
 
 **Status:** As implemented — not aspirational
 **Canonical web copy:** https://www.ledocorp.org/fx/docs/surface/
@@ -291,7 +291,7 @@ IR uses the portable path. An optional asm-verify harness can compare portable v
 | `fx bind` | C header → `extern "c"` stubs |
 | `fx mod vendor\|tidy\|verify` | offline `vendor/std` + `fx.sum` pin |
 
-Useful product flags: `--cli` (auto-link cli host), `--host`, `--guest` / `--no-guest`, `--driver auto|sh|foundry`, `--fallback-emit-c`. Detail: [CLI.md](CLI.md).
+Useful product flags: `--cli` (auto-link cli host), `--host`, `--guest` / `--no-guest`, `--driver auto|sh|foundry`, `--fallback-emit-c`. Detail: [CLI.md](CLI.md) · one-screen: [DRIVERS.md](DRIVERS.md).
 
 Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only**. `fx run` does **not** forward program argv — use `--cli` / `--host` / `--scaffold cli`.
 
@@ -316,7 +316,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 
 ## G. Limits & deferred
 
-### Also as implemented (0.9.72 floor)
+### Also as implemented (0.9.73 floor)
 
 | Surface | Notes |
 |---------|--------|
@@ -328,7 +328,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 | Surface attrs | `///` docs + `#[…]` data-only attributes on the passport |
 | Structured concurrency | `std/nursery`… + `host/concur` (no lexer keywords) |
 
-### Not in the product dialect (as of 0.9.72)
+### Not in the product dialect (as of 0.9.73)
 
 - Traits, closures, iterators, `Option`
 - Nested `Vec<Vec<T>>`; many non-everyday `Vec` element types (e.g. casual `Vec<f32>`)

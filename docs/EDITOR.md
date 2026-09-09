@@ -11,7 +11,7 @@ Syntax highlighting can use a tree-sitter grammar when you install one separatel
 ## Prerequisites
 
 1. Put the package `bin/` on your `PATH` (or use the full path to `fx` / `fx.exe`).
-2. Confirm in a terminal: `fx version` (expect **v0.9.72**) and `fx check` on a `.fx` file.
+2. Confirm in a terminal: `fx version` (expect **v0.9.73**) and `fx check` on a `.fx` file.
 
 ---
 
@@ -65,21 +65,20 @@ grammar pointed at `*.fx` files. The language package does **not** require tree-
 to edit or run programs.
 
 Good first file: `fx new hello` → open `hello/main.fx`, or
-`examples/dogfood_fxjson/main.fx` from the package.
+`examples/showcase_core/main.fx` / `examples/tool_result/main.fx` from the package.
 
 ---
 
 ## Good first files
 
 - Scaffold: `fx new hello` → open `hello/main.fx`
-- Multi-file dogfood: `examples/dogfood_fxjson/main.fx` — F12 on imports
+- Teaching demos: `examples/showcase_core/main.fx`, `examples/tool_result/main.fx` — see [examples/README.md](../examples/README.md)
 
 CLI check without the editor:
 
 ```text
-fx check examples/dogfood_fxjson/main.fx
+fx check examples/showcase_core/main.fx
 ```
-
 ---
 
 ## Related
