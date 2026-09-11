@@ -8,6 +8,8 @@ HTML also on https://www.ledocorp.org/fx/docs/
 | [START_HERE.md](START_HERE.md) | Install, `fx doctor`, five-minute hello |
 | [WEEKEND.md](WEEKEND.md) | **Weekend path** — hello → CLI → fxserve |
 | [DRIVERS.md](DRIVERS.md) | **Backends** — Auto / emit-C / IR / `--driver sh` |
+| [GAPS.md](GAPS.md) | **Never / may** — integrity contract (not a wishlist) |
+| [TRAP.md](TRAP.md) | Trap / abort / arena failure policy |
 | [NEXT.md](NEXT.md) | **What’s next** — product-facing sequence |
 | [DOGFOOD.md](DOGFOOD.md) | Teaching demos + historical dogfood themes |
 | [QUALITY.md](QUALITY.md) | Dual-path and CLI quality habits |

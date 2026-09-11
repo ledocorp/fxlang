@@ -7,6 +7,6 @@
 
 Put this directory on your `PATH`, then run `fx version` (expect **v0.9.6**).
 
-**Platforms:** Windows + Linux x86_64 only in this package (no macOS prebuilt).
+**Platforms:** Windows + Linux x86_64 only in this package (no macOS / no aarch64 prebuilt). `fx target` lists **linux-aarch64** as an emit-C recipe only.
 
 These are the compilers for this package. You write `.fx` programs against the rest of the repository (`std/`, scaffolds, zspec headers).

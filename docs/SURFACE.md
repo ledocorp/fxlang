@@ -109,7 +109,9 @@ Numeric rule: same-family ops; `i32↔i64` and `f32↔f64` can widen; **no** imp
 |--------|---------|
 | `alloc` | Heap / arena allocation |
 | `mut` | Mutation / exclusive borrows as required |
-| `io` | Host I/O (stdout, files, …) |
+| `io` | Host I/O alias (`fs` \| `net` \| `time`) — still accepted |
+| `fs` / `net` / `time` | Split I/O kinds (**FX-EFF-SPLIT-1a**); explicit `net`/`fs` need Cap params (**FX0038**) |
+| `concur` / `atomic` / `mmio` / `irq` | Structured concurrency / KERN |
 
 Omit the clause when pure. Callers see cost before reading the body.
 
@@ -201,7 +203,7 @@ Detail and examples: [STD.md](STD.md).
 | `mailbox` | i32 mailbox facade | — |
 | `supervise` | supervision policy + apply | — |
 | `sync` | mutex create/lock/unlock | — |
-| `async` | **deprecated stub** — prefer `nursery` | do not use as product API |
+| `async` | **tombstone** — not a product API; prefer `std/nursery` | do not import; agents must not generate `async`/`await` |
 
 ### Path, files, encoding, data, time
 
@@ -210,6 +212,7 @@ Detail and examples: [STD.md](STD.md).
 | `path` | join / parent / basename / ext / is_abs | — |
 | `strutil` | contains / starts_with / ends_with | — |
 | `encoding` | hex + base64 over `Vec<i32>` | — |
+| `wire` | endian u16/u32 load/store + consume-or-Err | foothold; prefer `--emit-c` until IR parity |
 | `fs` | `copy_file` / exists / remove | over `std/io` |
 | `fs_walk` | list immediate directory names | link `host/std_fs_walk` |
 | `log` | tagged stderr helpers | — |
@@ -276,6 +279,7 @@ IR uses the portable path. An optional asm-verify harness can compare portable v
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | C toolchain + zspec paths |
+| `fx target` | Prebuilt hosts + emit-C recipes (**linux-aarch64** recipe; no aarch64 zip; IR aarch64 out-of-claim) |
 | `fx version` | package version |
 | `fx help` | help |
 | `fx new <name>` | scaffolds: `simple` / `minimal` / `embedded` / `cli` / `guest` |
@@ -293,7 +297,7 @@ IR uses the portable path. An optional asm-verify harness can compare portable v
 
 Useful product flags: `--cli` (auto-link cli host), `--host`, `--guest` / `--no-guest`, `--driver auto|sh|foundry`, `--fallback-emit-c`. Detail: [CLI.md](CLI.md) · one-screen: [DRIVERS.md](DRIVERS.md).
 
-Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only**. `fx run` does **not** forward program argv — use `--cli` / `--host` / `--scaffold cli`.
+Default link: **gcc** + OS-matched `libzspec` under `build/`. Prebuilt compilers: **Windows + Linux x86_64 only**. **linux-aarch64** is an emit-C recipe via `fx target` (not a prebuilt; IR/QBE aarch64 out-of-claim). `fx run` does **not** forward program argv — use `--cli` / `--host` / `--scaffold cli`.
 
 ---
 
@@ -337,6 +341,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 - Package **registry** (offline `fx.mod` / `fx.sum` / `fx mod vendor` for **std** exists; not a download registry)
 - Full HTTP client / general TLS stack in the **language package** — TCP dial yes; `std/net.dial_tls` always fails here; HTTPS is a separate **fxfetch** tool that links Mbed TLS
 - Lexer keywords `nursery` / `spawn` / `await` (use `nursery.spawn_i32` / `await_i32`)
+- Product `async` / `await` API (`std/async` is a **tombstone** — prefer `std/nursery`)
 - Advanced runtime layers (device-aware migration, hidden shared mutation models)
 - OS product / experimental horizon features
 - macOS prebuilt binary (**frozen:** Win/Linux x86_64 package only)

@@ -7,6 +7,7 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 | Command | Purpose |
 |---------|---------|
 | `fx doctor` | Check C toolchain + zspec paths |
+| `fx target` | List prebuilt hosts + emit-C recipes (**linux-aarch64** recipe; no aarch64 zip) |
 | `fx version` | Print version (expect `v0.9.73`) |
 | `fx help` | Show help |
 | `fx new <name>` | Create a project from a scaffold |
@@ -23,6 +24,10 @@ The `fx` binary in [`bin/`](../bin/) is the compiler and driver for this package
 ### `fx doctor`
 
 Reports C toolchains on `PATH`, zspec include/library discovery, and whether `std/` facades resolve (`FX_STD_ROOT` or nearby `std/`). Exit **1** if there is no C toolchain or zspec is incomplete (link would fail). Exit **0** with an explicit hint if std is missing but CC+zspec are ok.
+
+### `fx target`
+
+Lists **prebuilt** compilers (**Windows + Linux x86_64** only) and **emit-C recipes**, including **linux-aarch64** (cross/native aarch64 gcc). Probes for `aarch64-*-gcc` on `PATH` and prints **skip** when absent — that is intentional honesty, not a failed install. **IR/QBE aarch64** is out-of-claim. Do **not** read this as “the zip runs on aarch64.”
 
 ### `fx new`
 

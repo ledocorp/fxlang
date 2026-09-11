@@ -20,7 +20,7 @@ Full cheatsheet table: [SURFACE.md](SURFACE.md) §D. Summary:
 | Core | `vec` `string` `map` `set` `buf` `box` `pair` `math` `fmt` `io` `queue` `pool` `fx_defaults` |
 | Caps / guest / net | `cap` `guest` `io_cap` `net` |
 | Concurrency | `nursery` `chan` `select` `mailbox` `supervise` `sync` (`async` = deprecated stub) |
-| Path / data / time | `path` `strutil` `encoding` `fs` `fs_walk` `log` `json` `json_validate` `json_full` `sqlite` `http` `time` `env` |
+| Path / data / time | `path` `strutil` `encoding` `wire` `fs` `fs_walk` `log` `json` `json_validate` `json_full` `sqlite` `http` `time` `env` |
 | Testing | `testing` `proptest` |
 
 ## Mutation reminder
@@ -133,6 +133,7 @@ fn main() -> Result<i32, core_Err> effects { alloc, mut } {
 - `std/path` — join, parent_len, basename_off, ext_off, is_abs, has_double_sep
 - `std/strutil` — contains / starts_with / ends_with
 - `std/encoding` — hex + base64 over `Vec<i32>` byte codes
+- `std/wire` — endian `u16`/`u32` load/store + consume-or-Err over `Vec<i32>` (foothold; prefer `--emit-c`)
 - `std/fs` — `copy_file`; `std/fs_walk.list_names` for directory names
 - `std/log` — thin tagged stderr helpers
 - `std/json` — thin cJSON path facade (link cJSON)

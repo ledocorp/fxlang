@@ -12,4 +12,4 @@ fx run examples/tool_text/fail_write.fx  # 2
 
 Regression: `.\scripts\test-week2-tools.ps1` (uses packaged `public/bin/fx` when present).
 
-See [TEXT_PATH_LITE.md](../../docs/specs/TEXT_PATH_LITE.md).
+See the composition / wrap guides.

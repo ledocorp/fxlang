@@ -1,4 +1,4 @@
-// FX-0.8-STD-1 — file + text helpers over std/io + std/string (no new zspec Core).
+// file + text helpers over std/io + std/string (no new zspec Core).
 module file_text;
 
 using core;

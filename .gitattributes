@@ -1,0 +1,3 @@
+# Map *.fx to Fx (avoid GitHub Linguist HLSL / FLUX misdetect).
+# Host *_ref.c stays classified as C -- intentional wrap edge, not hidden.
+*.fx linguist-language=Fx

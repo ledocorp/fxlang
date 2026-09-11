@@ -13,7 +13,7 @@ Ordinary `.fx` modules for applications. Copyright Shawn Londono · GPL-3.0
 | `cap` / `guest` / `io_cap` / `net` | Caps, guest sessions, cap I/O, TCP dial |
 | `nursery` / `chan` / `select` / `mailbox` / `supervise` / `sync` | Structured concurrency |
 | `async` | Deprecated stub — prefer `nursery` |
-| `path` / `strutil` / `encoding` / `fs` / `fs_walk` | Paths, strings, bytes, files, walk |
+| `path` / `strutil` / `encoding` / `wire` / `fs` / `fs_walk` | Paths, strings, bytes, endian wire, files, walk |
 | `log` / `json` / `json_validate` / `json_full` / `sqlite` / `http` | Log, JSON, SQLite, HTTP parse |
 | `time` / `env` | Clock / sleep / getenv (argv stays host/cli) |
 | `testing` / `proptest` | Native asserts + property helpers |

@@ -110,7 +110,10 @@ Backends (Auto / emit-C / IR / `--driver sh`): **[DRIVERS.md](DRIVERS.md)**
 | Copy-paste demos | [../examples/](../examples/) |
 | What’s in the repo | [../PACKAGE.md](../PACKAGE.md) |
 | Web docs (same content) | https://www.ledocorp.org/fx/docs/ |
-| Read compiler modules (fx) | [../compiler-source/](../compiler-source/) |
+| Never / may contract | [GAPS.md](GAPS.md) |
+| Read compiler modules (fx) | [../compiler-source/](../compiler-source/) — **inspect only**; rebuild `bin/fx` from this tree is **not** supported |
+
+Use the prebuilt [`bin/fx`](../bin/) binary for everyday work. See [`compiler-source/README.md`](../compiler-source/README.md).
 
 ---
 

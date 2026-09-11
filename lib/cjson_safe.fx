@@ -1,4 +1,4 @@
-// FX-WF-3/5 — Level 2 cJSON facade (repo lib; link cjson_ref.c + cJSON.c).
+// /5 - Level 2 cJSON facade (repo lib; link cjson_ref.c + cJSON.c).
 // Opaque trees stay in C; fx sees Result / i32 only.
 module cjson_safe;
 
@@ -36,7 +36,7 @@ fn path_exists(json: string, path: string) -> Result<i32, core_Err> {
     return Ok(1);
 }
 
-/// 1 if path resolves, 0 if missing (no Err — for negative checks).
+/// 1 if path resolves, 0 if missing (no Err - for negative checks).
 fn path_resolved(json: string, path: string) -> i32 {
     return cjson_ref_path_exists(json, path);
 }

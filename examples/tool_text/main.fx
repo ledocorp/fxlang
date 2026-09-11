@@ -1,4 +1,4 @@
-// FX-0.7.3-M3a: one taught path — StrBuilder → string → file → byte walk → Buf.
+// : one taught path - StrBuilder → string → file → byte walk → Buf.
 // No Result/? (general emit). Exit 42.
 import std/string;
 import std/buf;

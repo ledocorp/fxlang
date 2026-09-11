@@ -21,4 +21,17 @@ Examples that wrap external C libraries (cJSON, xxHash, stb, raylib, …) may ap
 3. Do not remove copyright or license notices from source headers.
 4. Combined works that include this package must comply with GPL-3.0.
 
+## Linking emitted C into other programs (steward opinion)
+
+**Not legal advice.** Short product posture so embedding questions have an answer:
+
+| Situation | Opinion |
+|-----------|---------|
+| You ship **`bin/fx`**, `std/`, zspec, or other package sources with your product | Treat the combined work under **GPL-3.0** (keep LICENSE/NOTICE; offer corresponding source as GPL requires). |
+| You run `fx emit-c` / `--emit-c` and **link that generated C with GPL-covered package code** (typical `fx build`) | Same: the linked program is a **combined work** under GPL-3.0. |
+| You want emit-C output alone inside a **permissive (e.g. MIT) server** without GPL obligations on that server | **Not offered today.** There is **no** std exception / linking exception for generated C in this package. Either keep the larger work GPL-compatible, keep the wrap as a separate GPL process, or wait for a future dual-license / exception cut (not promised). |
+| QBE (MIT) alone | Remains MIT; redistributing the QBE binary still needs its LICENSE file. |
+
+Xorg/XLibre-style “MIT host embeds generated C from this GPL tree” is therefore **blocked by license posture**, not by missing `Map<K,V>`. See also [GAPS.md](GAPS.md).
+
 Questions: see [SECURITY.md](../SECURITY.md) / project site http://www.ledocorp.org

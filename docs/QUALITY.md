@@ -10,6 +10,7 @@ effects/regions, and dogfood CLIs with clear exit codes on stderr.
 | Habit | Meaning |
 |-------|---------|
 | Dual paths | Prefer programs that stay green on both `fx run` and `fx run --emit-c` |
+| Equivalence gate | IR exit must match emit-C on the standing dual-path corpus |
 | Clear exits | Tool CLIs document process codes (usage / IO / parse / …) separately from language errors |
 | Thin C hosts | Product argv CLIs may use a small C `main`; fx owns the logic — see [WRAP.md](WRAP.md) |
 | Language package | What you clone is the installable tree (binary, `std/`, docs, examples) |

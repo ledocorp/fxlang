@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.73 (see [VERSION](VERSION))
+**Version:** 0.9.74 (see [VERSION](VERSION))
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0
 
@@ -8,7 +8,7 @@ This repository is the **fx language package**: everything you need to install t
 
 The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `compiler-source/*.fx`). Users need **gcc** (or another C compiler) to link.
 
-**Prebuilt platforms:** Windows + Linux **x86_64** only. There is **no** macOS `bin/fx` in this package.
+**Prebuilt platforms:** Windows + Linux **x86_64** only. There is **no** macOS `bin/fx` and **no** aarch64 prebuilt in this package. `fx target` lists **linux-aarch64** as an **emit-C recipe** only (IR/QBE aarch64 out-of-claim).
 
 ## Layout
 
@@ -43,4 +43,4 @@ The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `com
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md) · Weekend path: [docs/WEEKEND.md](docs/WEEKEND.md)
 
-Release notes: [docs/releases/0.9.73.md](docs/releases/0.9.73.md)
+Release notes: [docs/releases/0.9.74.md](docs/releases/0.9.74.md)
