@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.9.73](VERSION) · [Release notes](docs/releases/0.9.73.md) · [GitHub](https://github.com/ledocorp/fxlang)
+**Version:** [0.9.75](VERSION) · [Release notes](docs/releases/0.9.75.md) · [GitHub](https://github.com/ledocorp/fxlang)
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org
 **License:** [GNU GPL v3](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
@@ -25,11 +25,13 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version # v0.9.73
+fx version # v0.9.75
 fx new hello
 cd hello
 fx run main.fx # expect exit 42
 ```
+
+Prove the package: `./scripts/verify-pack.sh` (or `.\scripts\verify-pack.ps1` on Windows) — [docs/QUALITY.md](docs/QUALITY.md).
 
 | OS | Binary | IR (when staged) |
 |----|--------|------------------|
@@ -74,14 +76,19 @@ Also on the web: https://www.ledocorp.org/fx/docs/
 | 1 Install | [docs/START_HERE.md](docs/START_HERE.md) |
 | 2 Weekend path | [docs/WEEKEND.md](docs/WEEKEND.md) — hello → CLI → fxserve |
 | 3 Backends | [docs/DRIVERS.md](docs/DRIVERS.md) — Auto / emit-C / IR / `--driver sh` |
-| 4 Language | [docs/LANGUAGE.md](docs/LANGUAGE.md) |
-| 5 Composition | [docs/COMPOSITION.md](docs/COMPOSITION.md) |
-| 6 Regions / caps | [docs/REGIONS.md](docs/REGIONS.md) |
-| 7 Wrap / C host | [docs/WRAP.md](docs/WRAP.md) |
-| 8 CLI | [docs/CLI.md](docs/CLI.md) |
+| 4 Ship a tool | [docs/SHIP.md](docs/SHIP.md) — pins, `--cli`/`--host`, dual-path before claim |
+| 5 C shape | [docs/C_SHAPE.md](docs/C_SHAPE.md) — how regions / Result / Vec look in emit-C |
+| 6 Patterns | [docs/PATTERNS.md](docs/PATTERNS.md) — SoA / Result / caps / wire recipes |
+| 7 Language | [docs/LANGUAGE.md](docs/LANGUAGE.md) |
+| 8 Composition | [docs/COMPOSITION.md](docs/COMPOSITION.md) |
+| 9 Regions / caps | [docs/REGIONS.md](docs/REGIONS.md) |
+| 10 Wrap / C host | [docs/WRAP.md](docs/WRAP.md) |
+| 11 CLI | [docs/CLI.md](docs/CLI.md) |
 | Map | [docs/SURFACE.md](docs/SURFACE.md) — as-implemented cheatsheet |
 | Tracking | [docs/TRACKING.md](docs/TRACKING.md) |
 | Std / Reference | [docs/STD.md](docs/STD.md) · [docs/REFERENCE.md](docs/REFERENCE.md) |
+| Quality | [docs/QUALITY.md](docs/QUALITY.md) — verify-pack |
+| Never / may | [docs/GAPS.md](docs/GAPS.md) |
 
 What’s next: [docs/NEXT.md](docs/NEXT.md).
 
@@ -89,7 +96,7 @@ What’s next: [docs/NEXT.md](docs/NEXT.md).
 
 ## Companion tools (separate packs)
 
-Install from GitHub Releases (Win + Linux x86_64). Requires fx **0.9.6+** (prefer **0.9.73+**). **GPL-3.0**.
+Install from GitHub Releases (Win + Linux x86_64). Requires fx **0.9.6+** (prefer **0.9.75+**). **GPL-3.0**.
 
 | Tool | Role | Repo |
 |------|------|------|
@@ -106,17 +113,15 @@ Site index: https://www.ledocorp.org/fx/tools/ · Detail: [docs/LIBRARIES.md](do
 
 ---
 
-## What’s in 0.9.73
+## What’s in 0.9.75
 
-- **Stable baseline** for building real tools (platforms, argv, package pins locked; not labeled v1.0)
-- **Weekend path** — [docs/WEEKEND.md](docs/WEEKEND.md) · compile map — [docs/DRIVERS.md](docs/DRIVERS.md)
-- **`fx new` writes `fx.mod`** — optional `fx mod vendor` / `verify` for checksums
-- **Thin teaching examples** — language-focused demos only
-- **Web scaffold** — `fx new mysite web`
-- **Companion tools** — fxserve and other CLIs in separate GitHub releases
-- Carry-forward: GPL-3.0, default Auto `fx run`, `--emit-c`, IR when QBE is present
+- **Trust / teach surface** — [C_SHAPE.md](docs/C_SHAPE.md) · [SHIP.md](docs/SHIP.md) · [PATTERNS.md](docs/PATTERNS.md)
+- **`scripts/verify-pack`** — doctor + exit-42 smokes (+ Auto when QBE present)
+- **`examples/wire_smoke`** in the T0 teaching set
+- **Linux CI** — dual-path showcase + verify-pack
+- Carry-forward: GPL-3.0, default Auto `fx run`, `--emit-c`, IR when QBE is present, pin-only `fx.mod`
 
-Full notes: [docs/releases/0.9.73.md](docs/releases/0.9.73.md).
+Full notes: [docs/releases/0.9.75.md](docs/releases/0.9.75.md). Prior: [0.9.74](docs/releases/0.9.74.md) · [0.9.73](docs/releases/0.9.73.md).
 
 ---
 
@@ -136,4 +141,4 @@ Maintained by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bug
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.73](docs/releases/0.9.73.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.75](docs/releases/0.9.75.md).**
