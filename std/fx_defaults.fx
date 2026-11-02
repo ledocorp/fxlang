@@ -1,4 +1,4 @@
-// SH-ERG-2 — minimal bootstrap defaults (allocator sizes; `core_Err` via `using core`).
+// SH-ERG-2 - minimal bootstrap defaults (allocator sizes; `core_Err` via `using core`).
 // Reference doc artifact: validation/reference/fx_defaults/fx-defaults.fx
 // Note: Result helpers must stay module-local until cross-module Result ABI unifies.
 module fx_defaults;

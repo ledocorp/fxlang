@@ -28,8 +28,8 @@ cd mytool
 fx mod verify          # when you use checksum pins
 ```
 
-Compile resolves `import std/…` from nearby `std/` / `FX_STD_ROOT`.
-**Pin-only** is the v1 promise; vendor-first compile is a later pull.
+Compile resolves `import std/…` from verified **`vendor/std` first** when present,
+else nearby `std/` / `FX_STD_ROOT`.
 See [CLI.md](CLI.md).
 
 ---

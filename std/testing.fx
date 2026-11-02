@@ -1,4 +1,4 @@
-// std/testing — production asserts + stderr diagnostics (FX-PROD-ASSURE-2).
+// std/testing - production asserts + stderr diagnostics.
 module testing;
 
 using core;
@@ -29,7 +29,7 @@ fn assert_eq_i64(a: i64, b: i64) -> Result<i32, core_Err> effects { io } {
 }
 
 fn expect_ok_i32(r: Result<i32, core_Err>) -> Result<i32, core_Err> effects { io } {
-    // Propagate; callers should use ? — on Err print once here if needed.
+    // Propagate; callers should use ? - on Err print once here if needed.
     return r;
 }
 

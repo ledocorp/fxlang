@@ -1,6 +1,6 @@
 # fx
 
-**Version:** [0.9.75](VERSION) · [Release notes](docs/releases/0.9.75.md) · [GitHub](https://github.com/ledocorp/fxlang)
+**Version:** [1.0.0](VERSION) · [Release notes](docs/releases/1.0.0.md) · [GitHub](https://github.com/ledocorp/fxlang)
 
 **Copyright © 2026 Shawn Londono** · **LedoCorp** · http://www.ledocorp.org
 **License:** [GNU GPL v3](LICENSE) · [NOTICE](NOTICE) · [third-party licenses](docs/LICENSES.md)
@@ -25,7 +25,7 @@ This repo is the **language package**: put `bin/` on your `PATH` and write fx.
 ```text
 # put bin/ on PATH, then:
 fx doctor
-fx version # v0.9.75
+fx version # v1.0.0
 fx new hello
 cd hello
 fx run main.fx # expect exit 42
@@ -40,8 +40,8 @@ Prove the package: `./scripts/verify-pack.sh` (or `.\scripts\verify-pack.ps1` on
 
 Without QBE, use `fx run main.fx --emit-c`. Layout: [PACKAGE.md](PACKAGE.md).
 **Argv:** `fx run` does not forward program args — use `--scaffold cli` / `--host`.
-**Pins:** `fx new` writes `fx.mod`. Optional `fx mod vendor` / `verify` checksum `std`;
-compile still uses the `std/` beside your project (or `FX_STD_ROOT`).
+**Pins:** `fx new` writes `fx.mod`. Optional `fx mod vendor` / `verify` → `vendor/std` + `fx.sum`;
+compile prefers verified `vendor/std`, else the `std/` beside your project (or `FX_STD_ROOT`).
 
 ---
 
@@ -96,7 +96,7 @@ What’s next: [docs/NEXT.md](docs/NEXT.md).
 
 ## Companion tools (separate packs)
 
-Install from GitHub Releases (Win + Linux x86_64). Requires fx **0.9.6+** (prefer **0.9.75+**). **GPL-3.0**.
+Install from GitHub Releases (Win + Linux x86_64). Requires fx **0.9.6+** (prefer **1.0.0+**). **GPL-3.0**.
 
 | Tool | Role | Repo |
 |------|------|------|
@@ -113,15 +113,14 @@ Site index: https://www.ledocorp.org/fx/tools/ · Detail: [docs/LIBRARIES.md](do
 
 ---
 
-## What’s in 0.9.75
+## What’s in 1.0.0
 
-- **Trust / teach surface** — [C_SHAPE.md](docs/C_SHAPE.md) · [SHIP.md](docs/SHIP.md) · [PATTERNS.md](docs/PATTERNS.md)
-- **`scripts/verify-pack`** — doctor + exit-42 smokes (+ Auto when QBE present)
-- **`examples/wire_smoke`** in the T0 teaching set
-- **Linux CI** — dual-path showcase + verify-pack
-- Carry-forward: GPL-3.0, default Auto `fx run`, `--emit-c`, IR when QBE is present, pin-only `fx.mod`
+- **First stable promise** — Path C + Balance, emit-C permanent, dual-path culture, Win+Linux x86_64
+- **Vendor-first** — verified `vendor/std` wins over staged/`FX_STD_ROOT` for `import std/…`
+- **Trust / teach** — [C_SHAPE.md](docs/C_SHAPE.md) · [SHIP.md](docs/SHIP.md) · [PATTERNS.md](docs/PATTERNS.md) · `scripts/verify-pack`
+- Carry-forward: GPL-3.0, Auto `fx run`, `--emit-c`, IR when QBE is present, tools as separate packs
 
-Full notes: [docs/releases/0.9.75.md](docs/releases/0.9.75.md). Prior: [0.9.74](docs/releases/0.9.74.md) · [0.9.73](docs/releases/0.9.73.md).
+Full notes: [docs/releases/1.0.0.md](docs/releases/1.0.0.md). Prior: [0.9.75](docs/releases/0.9.75.md).
 
 ---
 
@@ -141,4 +140,4 @@ Maintained by Shawn Londono / LedoCorp. PRs not accepted; issues welcome for bug
 
 ## Releases
 
-Newest first under [docs/releases/](docs/releases/). **Latest: [0.9.75](docs/releases/0.9.75.md).**
+Newest first under [docs/releases/](docs/releases/). **Latest: [1.0.0](docs/releases/1.0.0.md).**

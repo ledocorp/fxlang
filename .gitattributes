@@ -1,17 +1,6 @@
 # Map *.fx to Fx (avoid GitHub Linguist HLSL / FLUX misdetect).
-# Note: linguist-language=Fx only affects stats once Linguist knows language "Fx"
-# (upstream github-linguist PR — FX-LINGUIST-1). Until then this is best-effort.
+# Fx language entry still needs upstream linguist (FX-LINGUIST-1); ATTR is interim.
+# Host *_ref.c stays classified as C -- intentional wrap edge, not hidden.
 *.fx linguist-language=Fx
 
-# Vendored / binary engine — not product source for the language bar.
 third_party/** linguist-vendored
-bin/** linguist-vendored
-
-# Staged static libs / object trees — generated or built artifacts.
-build/** linguist-generated
-
-# Local emit / smoke leftovers if ever tracked (also gitignored).
-out/** linguist-generated
-**/out/** linguist-generated
-
-# Host *_ref.c and examples/*.c stay classified as C — intentional wrap edge, not hidden.

@@ -61,7 +61,7 @@ overlapping trait impls, LLVM chase before Map/Vec/bind are generic.
 |-------|----------------|
 | Program argv | `--cli` / thin C host / `--scaffold cli` — not `fx run … -- args` |
 | Platforms | Prebuilt **Windows + Linux x86_64**; **linux-aarch64** = emit-C recipe (`fx target`), not zip |
-| Pins | `fx.mod` / `fx.sum` pin-only; compile uses `std/` (not `vendor/` first) |
+| Pins | `fx.mod` / `fx.sum`; compile prefers verified `vendor/std`, else `std/` / `FX_STD_ROOT` |
 | TLS in language package | `dial_tls` fails here; HTTPS via **fxfetch** |
 | Concurrency keywords | No lexer `nursery`/`spawn`/`await` — use `std/nursery` |
 | Compiler rebuild | Use `bin/fx`; [`compiler-source/`](../compiler-source/) is **inspect-only** |

@@ -1,4 +1,4 @@
-// std/time — wall clock, sleep, seeded LCG (FX-PROD-STD-TIME).
+// std/time - wall clock, sleep, seeded LCG.
 module time;
 
 using core;

@@ -1,4 +1,4 @@
-// std/strutil — contains / starts_with / ends_with (FX-STD-STRING-2).
+// std/strutil - contains / starts_with / ends_with.
 // Separate from std/string so normal emit applies (string has hand-rolled C).
 module strutil;
 

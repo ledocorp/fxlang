@@ -14,7 +14,7 @@ fx build tool_lib.fx -o out --emit-c --cli
 ./out/prog                      # missing argv → nonzero
 ```
 
-`fx run` still does not forward program argv by itself — use `--cli` (or `--host` for WRAP/GUI).
+`fx run` still does not forward program argv by itself - use `--cli` (or `--host` for WRAP/GUI).
 
-**`fx.mod`:** `fx new` writes a pin file. `fx mod vendor` / `verify` checksum `std` —
+**`fx.mod`:** `fx new` writes a pin file. `fx mod vendor` / `verify` checksum `std` -
 compile still uses the `std/` beside your project.

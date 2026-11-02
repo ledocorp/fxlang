@@ -353,7 +353,7 @@ Non-C FFI is **not** shipped. Separate product CLIs (fxrun, fxql, fxfetch, fxpip
 - Advanced fx Runtime layer (spec Phase 2) — optional
 - Further zspec modules — **pull when `std/` needs C ABI**, not a checklist
 - Deeper agent/LSP / DAP — optional; basic `fx lsp` / `fx mcp` exist
-- Vendor-first compile resolve (**frozen pin-only:** `vendor/` + `fx.sum` checksum; imports still use `std/` / `FX_STD_ROOT`)
+- Vendor-first compile resolve (`vendor/std` + `fx.sum` when present; else `std/` / `FX_STD_ROOT`)
 - Language-package TLS dial without an extra tool/link unit
 
 ### Substrate (for linkers / embedders)

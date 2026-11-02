@@ -1,4 +1,4 @@
-// rule: STD-005 / Z3 — user-facing io facade (stdout, stderr, minimal file I/O)
+// / Z3 - user-facing io facade (stdout, stderr, minimal file I/O)
 using core;
 module io;
 

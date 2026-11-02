@@ -1,4 +1,4 @@
-// std/env — getenv (FX-PROD-STD-FLAG). Argv remains host/cli.
+// std/env - getenv. Argv remains host/cli.
 module env;
 
 using core;

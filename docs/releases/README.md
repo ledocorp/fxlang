@@ -4,6 +4,7 @@ Newest first. Full notes for each language-package tag.
 
 | Version | Notes |
 |---------|--------|
+| **1.0.0** | [1.0.0.md](1.0.0.md) · tag `v1.0.0` |
 | **0.9.75** | [0.9.75.md](0.9.75.md) · tag `v0.9.75` |
 | **0.9.74** | [0.9.74.md](0.9.74.md) · tag `v0.9.74` |
 | **0.9.73** | [0.9.73.md](0.9.73.md) · tag `v0.9.73` |

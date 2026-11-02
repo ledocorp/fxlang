@@ -1,4 +1,4 @@
-// examples/capdict_writer - CapDict mint + invoke (Season F).
+// examples/capdict_writer — CapDict mint + invoke (Season F).
 // Run: fx run examples/capdict_writer/main.fx --emit-c
 //      fx run examples/capdict_writer/main.fx --backend ir
 // Expect exit 42 (emit-C and IR when QBE is staged).

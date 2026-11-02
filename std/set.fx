@@ -1,4 +1,4 @@
-// FX-0.675-4 — HashSet-like facade over Map<string, i32> (presence = value 1).
+// HashSet-like facade over Map<string, i32> (presence = value 1).
 module set;
 
 import std/map;

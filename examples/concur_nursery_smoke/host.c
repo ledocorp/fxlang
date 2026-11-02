@@ -1,4 +1,4 @@
-/* Structured task nursery smoke (host TCB) — CONCUR-1 + 1b/1c.
+/* Structured task nursery smoke (host TCB) - CONCUR-1 + 1b/1c.
  *
  * Sum 42 · FULL/DEAD · sized capacity · double join · cancel poll · timeout
  * Exit: 0 success · 1 failure

@@ -1,4 +1,4 @@
-// std/supervise — policy tags + apply (FX-PROD-CONCUR-5).
+// std/supervise - policy tags + apply.
 module supervise;
 
 using core;

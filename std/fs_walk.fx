@@ -1,4 +1,4 @@
-// std/fs_walk — immediate directory entry names (FX-PROD-STD-WALK).
+// std/fs_walk - immediate directory entry names.
 module fs_walk;
 
 using core;
