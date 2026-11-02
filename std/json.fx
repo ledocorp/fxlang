@@ -1,5 +1,5 @@
-// std/json - thin cJSON path facade. Link cjson_ref.c + cJSON.c.
-// Full validator remains programs/p2_json.
+// std/json — thin cJSON path facade (FX-PROD-STD-6). Link cjson_ref.c + cJSON.c.
+// Full validator remains programs/p2_json (FX-PROD-STD-JSON-FULL deferred).
 module json;
 
 using core;

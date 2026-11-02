@@ -1,4 +1,4 @@
-// std/log - thin tagged stderr helpers.
+// std/log — thin tagged stderr helpers (FX-PROD-STD-5).
 module log;
 
 using core;

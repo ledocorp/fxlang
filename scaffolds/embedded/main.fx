@@ -1,5 +1,5 @@
 // Embedded scaffold: small explicit arena, no std import.
-// Grow: v.push / reassign - not v2/v3 let-chains as default.
+// Grow: v.push / reassign (FX-ITER-SUGAR-1) — not v2/v3 let-chains as default.
 
 fn main() -> i32 effects { alloc, mut } {
     region r = arena(1024);

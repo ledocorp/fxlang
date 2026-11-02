@@ -1,4 +1,4 @@
-// std/http - llhttp parse-only facade. No dial/TLS.
+// std/http — llhttp parse-only facade (FX-PROD-STD-NET). No dial/TLS.
 module http;
 
 using core;

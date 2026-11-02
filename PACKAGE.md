@@ -1,6 +1,6 @@
 # Package contents
 
-**Version:** 0.9.74 (see [VERSION](VERSION))
+**Version:** 0.9.75 (see [VERSION](VERSION))
 
 **Copyright:** Shawn Londono · LedoCorp · http://www.ledocorp.org · GPL-3.0
 
@@ -43,4 +43,4 @@ The package is a native `bin/fx` (+ headers, `std/`, scaffolds, inspectable `com
 
 Start here: [docs/START_HERE.md](docs/START_HERE.md) · Weekend path: [docs/WEEKEND.md](docs/WEEKEND.md)
 
-Release notes: [docs/releases/0.9.74.md](docs/releases/0.9.74.md)
+Release notes: [docs/releases/0.9.75.md](docs/releases/0.9.75.md)

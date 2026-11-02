@@ -1,5 +1,5 @@
-// std/fs - file helpers over std/io.
-// Directory listing: std/fs_walk.
+// std/fs — file helpers over std/io (FX-PROD-STD-4).
+// Directory listing: std/fs_walk (FX-PROD-STD-WALK).
 module fs;
 
 using core;

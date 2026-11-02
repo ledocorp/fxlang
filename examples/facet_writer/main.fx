@@ -1,6 +1,6 @@
-// examples/facet_writer - static facet contract (Season F).
+// examples/facet_writer — static facet contract (Season F).
 // Run: fx run examples/facet_writer/main.fx
-// Expect exit 42. Live: --driver sh.
+// Expect exit 42. Live: --driver sh (FX-SH-LIVE-FACET-CONV-1).
 facet Writer {
     fn write(self: &mut Self, n: i32) -> i32
         effects { mut };

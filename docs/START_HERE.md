@@ -2,7 +2,7 @@
 
 Welcome to **fx**: a systems language with visible memory and dual emission to readable C.
 
-**Version:** 0.9.73 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0
+**Version:** 0.9.75 · Copyright © 2026 Shawn Londono · LedoCorp · GPL-3.0
 
 **Site:** http://www.ledocorp.org/fx/ · **Package:** https://github.com/ledocorp/fxlang
 
@@ -22,13 +22,16 @@ Check your machine:
 fx doctor
 ```
 
+**Linux / WSL:** use `bin/fx` (chmod +x). Same doctor / hello / dual-path habits as native Linux.  
+**Prove the package:** `./scripts/verify-pack.sh` (or `.\scripts\verify-pack.ps1` on Windows) — [QUALITY.md](QUALITY.md).
+
 ---
 
 ## Five-minute hello
 
 ```text
 # Put package bin/ on PATH (zspec is found next to bin/, any cwd):
-fx version # expect v0.9.73
+fx version # expect v0.9.75
 fx doctor
 
 fx new hello
@@ -91,10 +94,13 @@ Backends (Auto / emit-C / IR / `--driver sh`): **[DRIVERS.md](DRIVERS.md)**
 | You want… | Look here |
 |-----------|-----------|
 | **Weekend path** | [WEEKEND.md](WEEKEND.md) |
+| **Ship a small tool** | [SHIP.md](SHIP.md) |
+| **C shape / emit-C** | [C_SHAPE.md](C_SHAPE.md) |
+| **Copyable patterns** | [PATTERNS.md](PATTERNS.md) |
 | **How compile works** | [DRIVERS.md](DRIVERS.md) |
 | **Companion CLIs** (fxrun, fxql, fxserve, …) | [LIBRARIES.md](LIBRARIES.md) · https://www.ledocorp.org/fx/tools/ |
 | **What’s next** | [NEXT.md](NEXT.md) |
-| **Quality habits** | [QUALITY.md](QUALITY.md) |
+| **Quality / verify-pack** | [QUALITY.md](QUALITY.md) |
 | **Dogfood / teaching demos** | [DOGFOOD.md](DOGFOOD.md) · [../examples/](../examples/) |
 | **C library wrap priorities** | [LIBRARIES.md](LIBRARIES.md) |
 | **Everything that exists (cheatsheet)** | [SURFACE.md](SURFACE.md) |

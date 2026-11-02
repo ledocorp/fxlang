@@ -1,4 +1,4 @@
-// std/proptest - property helpers.
+// std/proptest — property helpers (FX-PROD-ASSURE-3/4).
 module proptest;
 
 using core;

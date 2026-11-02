@@ -55,7 +55,7 @@ fn begin(root: string, arena_bytes: i64) -> Result<GuestCtx, core_Err> effects {
     return Ok(GuestCtx { handle: h });
 }
 
-/// Nested child session under `parent`. Empty root → inherit.
+/// Nested child session under `parent` (FX-PROD-DYN-NEST). Empty root → inherit.
 fn begin_nested(
     parent: GuestCtx,
     root: string,

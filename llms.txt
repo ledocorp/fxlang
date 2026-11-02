@@ -1,10 +1,11 @@
 # fx · LedoCorp · for LLMs and agents
 
-> Canonical public docs for the fx systems language (package version 0.9.74).
+> Canonical public docs for the fx systems language (package version 0.9.75).
 > Package: https://github.com/ledocorp/fxlang (GPL-3.0)
 > Full as-implemented inventory: https://www.ledocorp.org/fx/docs/surface/ · repo `docs/SURFACE.md`
 > Composition method: https://www.ledocorp.org/fx/docs/composition/ · Tracking: https://www.ledocorp.org/fx/docs/tracking/
-> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.74.md`
+> Agent loop: package `docs/AGENT.md` · Release notes: `docs/releases/0.9.75.md`
+> Ship / C shapes / patterns: `docs/SHIP.md` · `docs/C_SHAPE.md` · `docs/PATTERNS.md` · `scripts/verify-pack`
 
 ## Product
 
@@ -28,6 +29,8 @@
 - **Composition under regions:** https://www.ledocorp.org/fx/docs/composition/
 - **Dual-emit tracking:** https://www.ledocorp.org/fx/docs/tracking/
 - Start / install: https://www.ledocorp.org/fx/docs/start/
+- Ship a tool: package `docs/SHIP.md` · C shapes: `docs/C_SHAPE.md` · Patterns: `docs/PATTERNS.md`
+- Verify claims: package `scripts/verify-pack.sh` / `verify-pack.ps1` (exit 42 smokes)
 - Language tour: https://www.ledocorp.org/fx/docs/language/
 - Reference: https://www.ledocorp.org/fx/docs/reference/
 - Regions and effects: https://www.ledocorp.org/fx/docs/regions/
@@ -66,7 +69,7 @@ fx mcp
 
 Wrap: https://www.ledocorp.org/fx/docs/wrap/ · Std: https://www.ledocorp.org/fx/docs/std/
 
-## As of 0.9.74 — can / cannot (agents)
+## As of 0.9.75 — can / cannot (agents)
 
 **Can:** scratch `fx run` + FXCACHE + `--watch`; local let elision + batch Vec init; facets / capdicts; `--freestanding` (hosted CRT for exit-code proof); `Atomic<i32>` + explicit orders (`effects { atomic }`); `MmioCap` + mmio read/write (`effects { mmio }`); native-first Auto `fx run` (the primary compiler path for supported demos; built-in fallback otherwise); IR→native when QBE staged (incl. Atomic / MMIO / CapDict / Facet); emit readable C; regions/effects; lexical loans; SoA + pools; no-grow `v[i]=x`; `--cli` / `--scaffold tool`; `fx lsp` / lean MCP; `fx surface` / `fx test` / `fx fuzz`; inspect `compiler-source/` (read-only).
 

@@ -66,6 +66,22 @@ jobs:
             echo "expected exit 42, got $code"
             exit 1
           fi
+      - name: dual-path showcase (Auto == emit-C)
+        run: |
+          set +e
+          ./bin/fx run examples/showcase_core/main.fx --emit-c
+          c=$?
+          ./bin/fx run examples/showcase_core/main.fx
+          a=$?
+          set -e
+          if [ "$c" -ne 42 ] || [ "$a" -ne 42 ]; then
+            echo "expected both exits 42, got emit-c=$c auto=$a"
+            exit 1
+          fi
+      - name: verify-pack
+        run: |
+          chmod +x scripts/verify-pack.sh
+          ./scripts/verify-pack.sh
 
   macos:
     runs-on: macos-latest

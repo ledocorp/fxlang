@@ -1,4 +1,4 @@
-// std/mailbox - Erlang-shaped i32 mailbox facade.
+// std/mailbox — Erlang-shaped i32 mailbox facade (FX-CONCUR-5).
 module mailbox;
 
 using core;

@@ -1,4 +1,4 @@
-// std/nursery - host nursery facade. Handles are i64 (pointer bits).
+// std/nursery — host nursery facade (FX-PROD-CONCUR-1). Handles are i64 (pointer bits).
 module nursery;
 
 using core;
@@ -52,7 +52,7 @@ fn slot_new() -> Result<Slot, core_Err> effects { concur, alloc } {
     return Ok(Slot { handle: h });
 }
 
-///  foothold - spawn i32 into a fresh slot (keyword sugar targets this).
+/// FX-PROD-CONCUR-LANG foothold — spawn i32 into a fresh slot (keyword sugar targets this).
 fn spawn_i32(n: Handle, value: i32) -> Result<Slot, core_Err> effects { concur, alloc } {
     let s = slot_new()?;
     let _st = spawn_store(n, s, value)?;

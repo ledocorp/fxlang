@@ -1,4 +1,4 @@
-// std/path - join / starts_with / parent_len / basename_off / ext_off / is_abs.
+// std/path — join / starts_with / parent_len / basename_off / ext_off / is_abs (FX-PROD-STD-1).
 // String-returning basename/ext/clean wait on str_slice; offsets are the production deepen.
 module path;
 

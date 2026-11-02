@@ -1,6 +1,6 @@
 # Agent loop — check, run, emit-C, locate
 
-**Last updated:** 2 September 2026
+**Last updated:** 2 November 2026
 
 fx treats **agents (LLMs) as first-class consumers** of the same contracts humans use:
 diagnostics with spans, path imports, readable emitted C, and a lean MCP server.
@@ -68,9 +68,11 @@ add tools only when a concrete agent workflow fails. See [CLI.md](CLI.md).
 - Parallel `Vec`s + typed ids (SoA), not nested growable structs — [COMPOSITION.md](COMPOSITION.md).
 - Host mints file authority when it matters: either pass **bytes** only (`examples/cap_host_smoke/`) or pass **`FsCap` / `OutCap`** and use `std/io_cap` (`examples/cap_regions_*`). Deny outside the root is exit **5**.
 - Keep types and effects visible on purpose.
+- Prefer the copyable recipes in [PATTERNS.md](PATTERNS.md) (SoA, Result, caps, wire).
+- Predict emit-C with [C_SHAPE.md](C_SHAPE.md); ship tools with [SHIP.md](SHIP.md).
 
 ---
 
 ## Related
 
-- [CLI.md](CLI.md) · [TRACKING.md](TRACKING.md) · [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md)
+- [CLI.md](CLI.md) · [TRACKING.md](TRACKING.md) · [PATTERNS.md](PATTERNS.md) · [C_SHAPE.md](C_SHAPE.md) · [NEXT.md](NEXT.md) · [DOGFOOD.md](DOGFOOD.md)

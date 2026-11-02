@@ -1,4 +1,4 @@
-// std/json_validate - RFC8259-subset validator.
+// std/json_validate - RFC8259-subset validator (FX-PROD-STD-JSON-FULL).
 // Extracted from programs/p2_json.fx; corpus in validation/reference/json_corpus.tsv.
 module json_validate;
 

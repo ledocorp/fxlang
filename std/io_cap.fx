@@ -1,4 +1,4 @@
-// Cap-required I/O - parallel to ambient std/io.
+// Cap-required I/O — parallel to ambient std/io.
 // Honest: process-trust apps may keep `import std/io`; sandbox guests use this facade.
 // Host must link `fx_io_cap_*` (examples/cap_runtime + cap_regions_*).
 module io_cap;

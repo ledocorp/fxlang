@@ -7,12 +7,15 @@ HTML also on https://www.ledocorp.org/fx/docs/
 |-----|--------|
 | [START_HERE.md](START_HERE.md) | Install, `fx doctor`, five-minute hello |
 | [WEEKEND.md](WEEKEND.md) | **Weekend path** — hello → CLI → fxserve |
+| [SHIP.md](SHIP.md) | **Ship a small tool** — pins, CLI host, dual-path check |
+| [C_SHAPE.md](C_SHAPE.md) | **C shape** — how regions/effects/Result lower |
+| [PATTERNS.md](PATTERNS.md) | **Copyable patterns** for humans and agents |
 | [DRIVERS.md](DRIVERS.md) | **Backends** — Auto / emit-C / IR / `--driver sh` |
 | [GAPS.md](GAPS.md) | **Never / may** — integrity contract (not a wishlist) |
 | [TRAP.md](TRAP.md) | Trap / abort / arena failure policy |
 | [NEXT.md](NEXT.md) | **What’s next** — product-facing sequence |
 | [DOGFOOD.md](DOGFOOD.md) | Teaching demos + historical dogfood themes |
-| [QUALITY.md](QUALITY.md) | Dual-path and CLI quality habits |
+| [QUALITY.md](QUALITY.md) | Dual-path habits + `scripts/verify-pack` |
 | [LIBRARIES.md](LIBRARIES.md) | C wrap priorities + companion tools |
 | [SURFACE.md](SURFACE.md) | **As-implemented surface map** (cheatsheet + depth ledger) |
 | [EDITOR.md](EDITOR.md) | Day-one `fx lsp` + tree-sitter |

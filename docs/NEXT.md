@@ -1,15 +1,14 @@
 # What’s next for fx
 
-**Last updated:** 9 September 2026
+**Last updated:** 2 November 2026
 
-fx **0.9.74** is the current public package. It keeps the **0.9.73** everyday
-contracts (platforms, program arguments, package pins) and adds the honesty /
-foothold cut — still **not** labeled **v1.0**.
+fx **0.9.75** is the current public package. It keeps the **0.9.74** everyday
+contracts and adds the **trust/teach** surface — still **not** labeled **v1.0**.
 
-**0.9.74** includes: **GPL-3.0**, gaps/trap honesty docs, emit-C fast-path speech,
-`std/wire` foothold, dual-emit equivalence naming, plus the **0.9.73** freezes
-(Windows + Linux x86_64; argv via `--cli`; pin-only `fx.mod`). Public **examples/**
-remain a thin teaching set.
+**0.9.75** adds: [C_SHAPE.md](C_SHAPE.md), [SHIP.md](SHIP.md), [PATTERNS.md](PATTERNS.md),
+`scripts/verify-pack`, and `examples/wire_smoke` in the teaching set — on top of
+**0.9.74** honesty (gaps/trap, emit-C fast path, GPL-3.0) and the **0.9.73** freezes
+(Windows + Linux x86_64; argv via `--cli`; pin-only `fx.mod`).
 
 **Product focus:** clear rules, short paths, and real tools — not a package
 registry first, and not a heavy debugger as the bar for “tooling.”
@@ -22,7 +21,7 @@ See [COMPOSITION.md](COMPOSITION.md), [REGIONS.md](REGIONS.md), and [SURFACE.md]
 
 **Get started:** [WEEKEND.md](WEEKEND.md) · **How compile works:** [DRIVERS.md](DRIVERS.md) · **Never / may:** [GAPS.md](GAPS.md)
 
-**0.9.74** is not **v1.0**.
+**0.9.75** is not **v1.0**.
 
 ---
 
@@ -52,9 +51,10 @@ Grow stays visible: `v.push(x)` / `v = vec_push(v, x)`.
 ## Suggested next
 
 1. Follow the [weekend path](WEEKEND.md) (hello → CLI → optional fxserve).
-2. Prefer **one real tool at a time**.
-3. Optional: `fx mod vendor` / `verify` when you want a checksummed copy of `std`.
-4. Further language and tool work continues in later **0.9.x** / **1.x** cuts when useful.
+2. Run `scripts/verify-pack` ([QUALITY.md](QUALITY.md)) after install.
+3. Prefer **one real tool at a time** — [SHIP.md](SHIP.md).
+4. Optional: `fx mod vendor` / `verify` when you want a checksummed copy of `std`.
+5. Further language and tool work continues in later **0.9.x** / **1.x** cuts when useful.
 
 **Companion tools** (separate GitHub packs — not this zip): [LIBRARIES.md](LIBRARIES.md) ·
 https://www.ledocorp.org/fx/tools/

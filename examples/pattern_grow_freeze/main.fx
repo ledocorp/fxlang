@@ -1,4 +1,4 @@
-// grow phase, then read-only walk (“freeze by convention”).
+// FX-0.7.4-D0 — grow phase, then read-only walk (“freeze by convention”).
 // Until Growing/Frozen phase types land (D3), discipline = no further push after freeze.
 // Run: fx run examples/pattern_grow_freeze/main.fx  → exit 42
 import std/vec;

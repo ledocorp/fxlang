@@ -1,4 +1,4 @@
-// user-facing math helpers
+// rule: STD-004 — user-facing math helpers
 module math;
 
 fn add(a: i32, b: i32) -> i32 {

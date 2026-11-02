@@ -1,4 +1,4 @@
-// std/json_full - fx-native JSON validate.
+// std/json_full — fx-native JSON validate (FX-PROD-STD-JSON-FULL).
 // Thin WRAP path stays in std/json; dial/TLS unrelated.
 module json_full;
 

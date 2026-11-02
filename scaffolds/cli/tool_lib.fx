@@ -1,5 +1,5 @@
-// Result CLI library - product path: `fx build tool_lib.fx -o out --emit-c --cli`
-//
+// Result CLI library — product path: `fx build tool_lib.fx -o out --emit-c --cli`
+// (FX-CLI-AUTOHOST-1: no author-written host.c)
 module tool_lib;
 
 using core;

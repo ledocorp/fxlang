@@ -1,4 +1,4 @@
-// std/sync - Mutex slot handle (i32) over host substrate.
+// std/sync — Mutex slot handle (i32) over host substrate (FX-PROD-STD-SYNC).
 // Prefer channels/mailboxes for shared work; mutex is the last sync primitive.
 module sync;
 

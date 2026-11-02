@@ -29,6 +29,7 @@ separate LedoCorp repos. Public speech: thin language package + separate tool re
 | [cap_host_smoke/](cap_host_smoke/) | Host-minted file read; guest has no `io` |
 | [concur_nursery_smoke/](concur_nursery_smoke/) | Nursery foothold |
 | [std_path_smoke/](std_path_smoke/) | `std/path` smoke |
+| [wire_smoke/](wire_smoke/) | `std/wire` endian foothold (prefer `--emit-c`) |
 
 ```text
 fx run examples/showcase_core/main.fx

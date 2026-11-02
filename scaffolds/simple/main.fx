@@ -2,7 +2,7 @@
 //   effects { alloc, mut }  states heap + mutation
 //   region r = arena(n)     named lifetime; free when r ends
 //   import std/vec          staged std/ beside this project (or FX_STD_ROOT)
-// Grow: reassign / method sugar - not v2/v3 let-chains as default:
+// Grow: reassign / method sugar (FX-ITER-SUGAR-1) — not v2/v3 let-chains as default:
 //   v.push(x);                       // expands to value-threaded grow
 //   v = vec.push(v, x);              // same physics, explicit reassign
 //   p.nodes = vec.push(p.nodes, x);  // &mut state field update

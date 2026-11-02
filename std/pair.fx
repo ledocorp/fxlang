@@ -1,4 +1,4 @@
-// user-facing Pair<A, B> facade
+// rule: STD-003 — user-facing Pair<A, B> facade
 module pair;
 
 struct Pair<A, B> {

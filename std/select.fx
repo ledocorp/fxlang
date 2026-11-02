@@ -1,4 +1,4 @@
-// std/select - wait-any on two channels.
+// std/select — wait-any on two channels (FX-PROD-CONCUR-3).
 module select;
 
 using core;
